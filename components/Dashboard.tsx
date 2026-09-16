@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+import Link from "next/link";
 import { signOut } from "next-auth/react";
+import BorderGlow from "./BorderGlow";
 
 interface DashboardProps {
   user: {
@@ -17,6 +19,8 @@ export default function Dashboard({ user }: DashboardProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [activeTab, setActiveTab] = useState<"home" | "profile">("home");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -27,6 +31,13 @@ export default function Dashboard({ user }: DashboardProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setAttachedFile(e.target.files[0]);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setAttachedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
@@ -54,21 +65,34 @@ export default function Dashboard({ user }: DashboardProps) {
   const userName = user.name ? user.name.split(" ")[0] : "there";
 
   return (
-    <div className="bg-[#F8FAFC] font-sans text-slate-800 antialiased min-h-screen">
-      {/* HEADER */}
+    <div className="bg-[#F8FAFC] font-sans text-slate-800 antialiased min-h-screen pb-20 md:pb-0">
+      {/* HEADER (DESKTOP & MOBILE RESPONSIVE) */}
       <header className="fixed top-0 left-0 right-0 h-16 bg-white/90 backdrop-blur-xl z-50 shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-slate-200/60">
-        <div className="h-16 w-full px-6 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl overflow-hidden shadow-sm flex items-center justify-center bg-[#0F172A] text-amber-400 border border-slate-800">
-              <span className="material-symbols-outlined text-[20px]">balance</span>
+        <div className="h-16 w-full px-4 sm:px-6 flex items-center justify-between">
+          {/* Left Actions & Logo */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Mobile Menu Drawer Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setIsMobileDrawerOpen(true)}
+              className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
+              aria-label="Open Mobile Menu"
+            >
+              <span className="material-symbols-outlined text-[24px]">menu</span>
+            </button>
+
+            {/* Logo */}
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl overflow-hidden shadow-sm flex items-center justify-center bg-[#0F172A] text-amber-400 border border-slate-800">
+                <span className="material-symbols-outlined text-[20px]">balance</span>
+              </div>
+              <span className="font-extrabold text-xl tracking-tight text-[#0F172A]">
+                JurisAI
+              </span>
             </div>
-            <span className="font-extrabold text-xl tracking-tight text-[#0F172A]">
-              JurisAI
-            </span>
           </div>
 
-          {/* Navigation Links */}
+          {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
             <button
               type="button"
@@ -95,13 +119,14 @@ export default function Dashboard({ user }: DashboardProps) {
           </nav>
 
           {/* Header Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               aria-label="Notifications"
-              className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors relative"
               type="button"
             >
               <span className="material-symbols-outlined text-[20px]">notifications</span>
+              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-indigo-600 ring-2 ring-white" />
             </button>
 
             {/* Profile Dropdown */}
@@ -148,17 +173,136 @@ export default function Dashboard({ user }: DashboardProps) {
         </div>
       </header>
 
-      {/* ASIDE SIDEBAR */}
-      <aside className="fixed left-0 top-16 bottom-0 w-72 bg-white z-40 flex flex-col justify-between border-r border-slate-200/60 shadow-[0_1px_8px_rgba(0,0,0,0.03)] hidden md:flex">
+      {/* MOBILE SLIDE-OVER SIDEBAR DRAWER */}
+      {isMobileDrawerOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          {/* Backdrop */}
+          <div
+            onClick={() => setIsMobileDrawerOpen(false)}
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
+          />
+
+          {/* Drawer Panel */}
+          <aside className="fixed top-0 bottom-0 left-0 w-80 max-w-[85vw] bg-white shadow-2xl flex flex-col z-50 transition-transform duration-300">
+            <div className="p-4 border-b border-slate-200/80 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-[#0F172A] text-amber-400 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[20px]">balance</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-base font-bold text-[#0F172A]">JurisAI</span>
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
+                    Legal Assistant
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMobileDrawerOpen(false)}
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[22px]">close</span>
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-slate-500 uppercase tracking-wider text-[11px]">
+                  Consultation History
+                </span>
+                <span className="text-indigo-600 font-semibold text-[11px]">2 Active</span>
+              </div>
+
+              <div className="space-y-2">
+                <Link
+                  href="/case/oakwood-lease"
+                  onClick={() => setIsMobileDrawerOpen(false)}
+                  className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/60 flex items-start gap-3 transition-colors group cursor-pointer"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="material-symbols-outlined text-[16px]">contract</span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-[#0F172A] group-hover:text-indigo-600 transition-colors truncate">
+                      Oakwood Lease Analysis
+                    </p>
+                    <p className="text-slate-500 truncate text-[11px]">2 Critical Risks • Clause 8 &amp; 15</p>
+                    <span className="text-[10px] text-indigo-600 font-medium mt-1 block">View Case Analysis →</span>
+                  </div>
+                </Link>
+
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/60 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="material-symbols-outlined text-[16px]">gavel</span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-[#0F172A] truncate">Notice to Vacate Guidance</p>
+                    <p className="text-slate-500 truncate text-[11px]">Tenant rebuttal draft</p>
+                    <span className="text-[10px] text-slate-400 mt-1 block">Yesterday • 4:40 PM</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 space-y-2">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                  Actions &amp; Settings
+                </span>
+                <button
+                  type="button"
+                  onClick={() => signOut()}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-rose-600 hover:bg-rose-50 font-semibold transition-colors text-left"
+                >
+                  <span className="material-symbols-outlined text-[20px]">logout</span>
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-slate-200/60 bg-slate-50">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">
+                  {userName.charAt(0)}
+                </div>
+                <div>
+                  <p className="font-semibold text-xs text-[#0F172A]">{user.name}</p>
+                  <p className="text-[11px] text-slate-500">Pro Bono Plan</p>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      )}
+
+      {/* DESKTOP ASIDE SIDEBAR */}
+      <aside
+        className={`fixed left-0 top-16 bottom-0 w-72 bg-white z-40 flex flex-col justify-between border-r border-slate-200/60 shadow-[0_1px_8px_rgba(0,0,0,0.03)] transition-transform duration-300 ease-in-out hidden md:flex ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-[268px]"
+        }`}
+      >
+        {/* Toggle Button on the right edge */}
+        <button
+          type="button"
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="absolute -right-3.5 top-5 w-7 h-7 rounded-full bg-white border border-slate-200/90 shadow-md text-slate-600 hover:text-indigo-600 hover:bg-slate-50 flex items-center justify-center z-50 transition-all cursor-pointer hover:scale-110 active:scale-95"
+          title={isSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+        >
+          <span className="material-symbols-outlined text-[18px]">
+            {isSidebarOpen ? "chevron_left" : "chevron_right"}
+          </span>
+        </button>
+
         <div className="p-4 flex flex-col gap-4 overflow-hidden h-full">
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold text-[#0F172A]">History</span>
-            <button
-              className="flex items-center justify-center p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
-              type="button"
-            >
-              <span className="material-symbols-outlined text-[18px]">filter_list</span>
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                className="flex items-center justify-center p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 transition-colors"
+                type="button"
+                title="Filter history"
+              >
+                <span className="material-symbols-outlined text-[18px]">filter_list</span>
+              </button>
+            </div>
           </div>
 
           <button
@@ -170,7 +314,7 @@ export default function Dashboard({ user }: DashboardProps) {
             className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-[#4f46e5] hover:bg-indigo-700 text-white font-semibold text-xs transition-all shadow-sm shadow-indigo-500/10 active:scale-[0.99]"
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
-            <span>New Legal Consultation</span>
+            <span className="truncate">New Legal Consultation</span>
           </button>
 
           {/* History list */}
@@ -180,15 +324,15 @@ export default function Dashboard({ user }: DashboardProps) {
                 Today
               </span>
               <div className="space-y-1">
-                <a
-                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors"
-                  href="#"
+                <Link
+                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group"
+                  href="/case/oakwood-lease"
                 >
                   <span className="material-symbols-outlined text-[16px] text-indigo-600">
                     description
                   </span>
-                  <span className="truncate">Residential Lease Termination</span>
-                </a>
+                  <span className="truncate font-medium">Oakwood Lease Analysis</span>
+                </Link>
                 <a
                   className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors"
                   href="#"
@@ -264,146 +408,287 @@ export default function Dashboard({ user }: DashboardProps) {
       </aside>
 
       {/* MAIN CONTENT WORKSPACE */}
-      <div className="md:pl-72 pt-16 min-h-screen">
-        <main className="w-full bg-[#F8FAFC] min-h-[calc(100vh-4rem)] p-6 sm:p-10 flex flex-col items-center justify-center">
-          <div className="w-full max-w-3xl mx-auto flex flex-col items-center justify-center my-auto py-8 text-center">
+      <div
+        className={`pt-16 min-h-screen transition-all duration-300 ease-in-out ${
+          isSidebarOpen ? "md:pl-72" : "md:pl-6"
+        }`}
+      >
+        <main className="w-full bg-[#F8FAFC] min-h-[calc(100vh-4rem)] p-4 sm:p-8 flex flex-col items-center justify-center relative">
+          {/* Subtle Ambient Glow for Mobile */}
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 w-64 h-32 bg-gradient-to-b from-indigo-500/10 via-slate-100 to-transparent rounded-full blur-3xl pointer-events-none sm:hidden" />
+
+          <div className="w-full max-w-3xl mx-auto flex flex-col items-center justify-center my-auto py-4 sm:py-8 text-center relative z-10">
             {/* Welcome Emblem & Title */}
-            <div className="flex flex-col items-center gap-3 mb-8">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-sm ring-1 ring-indigo-200/50">
-                <span className="material-symbols-outlined text-[26px]">balance</span>
+            <div className="flex flex-col items-center text-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+              <div className="w-14 h-14 sm:w-12 sm:h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-md sm:shadow-sm ring-1 ring-indigo-200/50 transition-transform hover:scale-105">
+                <span className="material-symbols-outlined text-[30px] sm:text-[26px]">
+                  balance
+                </span>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl text-[#0F172A] tracking-tight font-extrabold leading-tight">
-                Good afternoon, {userName}.<br />
-                <span className="text-[#4f46e5]">How can I assist your legal matter today?</span>
+              <p className="text-xs sm:text-sm font-medium text-slate-500 tracking-wide uppercase">
+                Good afternoon, {userName}
+              </p>
+              <h1 className="text-2xl sm:text-4xl text-[#0F172A] tracking-tight font-extrabold leading-tight max-w-[340px] sm:max-w-none">
+                How can I assist your legal matter today?
               </h1>
             </div>
 
-            {/* Conversational AI Input Card */}
-            <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl shadow-slate-900/5 border border-slate-200/80 p-3 mb-6 text-left transition-all focus-within:ring-2 focus-within:ring-indigo-500/30 focus-within:border-indigo-400">
-              <textarea
-                id="legal-input-box"
-                rows={3}
-                value={promptText}
-                onChange={(e) => setPromptText(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="w-full bg-transparent text-[#0F172A] placeholder:text-slate-400 text-sm p-3 resize-none focus:outline-none"
-                placeholder="Ask a legal question, describe your situation, or attach documents for analysis..."
-              />
+            {/* Conversational AI Input Card with React Bits BorderGlow */}
+            <BorderGlow
+              className="w-full max-w-2xl mb-6"
+              edgeSensitivity={35}
+              glowColor="240 85 65"
+              backgroundColor="#ffffff"
+              borderRadius={20}
+              glowRadius={45}
+              glowIntensity={2.0}
+              coneSpread={36}
+              animated={true}
+              colors={["#4f46e5", "#00ff37ff", "#10b981"]}
+            >
+              <div className="w-full bg-white p-3.5 sm:p-4 text-left rounded-2xl">
+                {/* Attached File Preview Chip */}
+                {attachedFile && (
+                  <div className="flex items-center justify-between bg-slate-100 px-3 py-1.5 rounded-lg mb-2 text-xs text-slate-700">
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="material-symbols-outlined text-[18px] text-indigo-600">
+                        description
+                      </span>
+                      <span className="truncate font-medium">{attachedFile.name}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRemoveFile}
+                      className="text-slate-400 hover:text-rose-600 ml-2 flex items-center"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">close</span>
+                    </button>
+                  </div>
+                )}
 
-              {/* Bottom Toolbar */}
-              <div className="flex items-center justify-between pt-2 px-1 border-t border-slate-100 mt-2">
-                <div className="flex items-center gap-2 flex-wrap">
+                <textarea
+                  id="legal-input-box"
+                  rows={3}
+                  value={promptText}
+                  onChange={(e) => setPromptText(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="w-full bg-transparent text-[#0F172A] placeholder:text-slate-400 text-sm p-2 resize-none focus:outline-none"
+                  placeholder="Ask a legal question, describe your situation, or attach documents for analysis..."
+                />
+
+                {/* Bottom Toolbar */}
+                <div className="flex items-center justify-between pt-2 px-1 border-t border-slate-100 mt-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="min-h-[40px] min-w-[40px] flex items-center justify-center px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-[20px] text-indigo-600">
+                        attach_file
+                      </span>
+                      <span className="hidden sm:inline ml-1">
+                        {attachedFile ? attachedFile.name : "Attach Document"}
+                      </span>
+                    </button>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      className="hidden"
+                      accept=".pdf,.docx,.txt,.png,.jpg"
+                    />
+                  </div>
+
                   <button
                     type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition-colors"
+                    onClick={handleAnalyze}
+                    disabled={isAnalyzing}
+                    className="min-h-[40px] px-5 rounded-xl bg-[#4f46e5] hover:bg-indigo-700 text-white flex items-center justify-center gap-1.5 shadow-md shadow-indigo-500/20 transition-all text-xs font-semibold flex-shrink-0 disabled:opacity-75 active:scale-95"
                   >
-                    <span className="material-symbols-outlined text-[17px] text-indigo-600">
-                      attach_file
-                    </span>
-                    <span className="truncate max-w-[150px]">
-                      {attachedFile ? attachedFile.name : "Attach Document"}
-                    </span>
+                    {isAnalyzing ? (
+                      <>
+                        <span className="material-symbols-outlined text-[18px] animate-spin">
+                          refresh
+                        </span>
+                        <span>Analyzing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Analyze</span>
+                        <span className="material-symbols-outlined text-[16px]">
+                          north
+                        </span>
+                      </>
+                    )}
                   </button>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    className="hidden"
-                    accept=".pdf,.docx,.txt,.png,.jpg"
-                  />
                 </div>
+              </div>
+            </BorderGlow>
+
+            {/* Quick Legal Chips (Mobile 2x2 Grid + Desktop Pills) */}
+            <div className="w-full max-w-2xl mx-auto mb-8">
+              <div className="flex items-center justify-between mb-2 px-1 text-left sm:hidden">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Recommended Inquiries
+                </span>
+              </div>
+
+              {/* Mobile 2x2 Grid Pills */}
+              <div className="grid grid-cols-2 gap-2.5 sm:hidden">
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleChipClick(
+                      "Review residential lease agreement for early termination penalties under California law"
+                    )
+                  }
+                  className="text-left p-3 rounded-xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-[76px] group active:scale-[0.98]"
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className="material-symbols-outlined text-[18px] text-indigo-600">
+                      home_work
+                    </span>
+                    <span className="material-symbols-outlined text-[14px] text-slate-400">
+                      arrow_forward
+                    </span>
+                  </div>
+                  <span className="text-xs font-semibold text-[#0F172A] truncate w-full">
+                    Review lease agreement
+                  </span>
+                </button>
 
                 <button
                   type="button"
-                  onClick={handleAnalyze}
-                  disabled={isAnalyzing}
-                  className="h-9 px-4 rounded-xl bg-[#4f46e5] hover:bg-indigo-700 text-white flex items-center justify-center gap-1.5 shadow-sm transition-all text-xs font-semibold flex-shrink-0 disabled:opacity-75"
+                  onClick={() =>
+                    handleChipClick(
+                      "How do I dispute an improper 30-day notice to vacate without just cause?"
+                    )
+                  }
+                  className="text-left p-3 rounded-xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-[76px] group active:scale-[0.98]"
                 >
-                  {isAnalyzing ? (
-                    <>
-                      <span className="material-symbols-outlined text-[18px] animate-spin">
-                        refresh
-                      </span>
-                      <span>Analyzing...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Analyze</span>
-                      <span className="material-symbols-outlined text-[16px]">
-                        arrow_upward
-                      </span>
-                    </>
-                  )}
+                  <div className="flex items-center justify-between w-full">
+                    <span className="material-symbols-outlined text-[18px] text-indigo-600">
+                      report_problem
+                    </span>
+                    <span className="material-symbols-outlined text-[14px] text-slate-400">
+                      arrow_forward
+                    </span>
+                  </div>
+                  <span className="text-xs font-semibold text-[#0F172A] truncate w-full">
+                    Dispute notice to vacate
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleChipClick("Verify non-compete and severance clause enforceability")
+                  }
+                  className="text-left p-3 rounded-xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-[76px] group active:scale-[0.98]"
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className="material-symbols-outlined text-[18px] text-indigo-600">
+                      badge
+                    </span>
+                    <span className="material-symbols-outlined text-[14px] text-slate-400">
+                      arrow_forward
+                    </span>
+                  </div>
+                  <span className="text-xs font-semibold text-[#0F172A] truncate w-full">
+                    Severance clause check
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleChipClick(
+                      "What are the statutory limits and steps to file in Small Claims court?"
+                    )
+                  }
+                  className="text-left p-3 rounded-xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-[76px] group active:scale-[0.98]"
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className="material-symbols-outlined text-[18px] text-indigo-600">
+                      account_balance
+                    </span>
+                    <span className="material-symbols-outlined text-[14px] text-slate-400">
+                      arrow_forward
+                    </span>
+                  </div>
+                  <span className="text-xs font-semibold text-[#0F172A] truncate w-full">
+                    Small claims guidance
+                  </span>
+                </button>
+              </div>
+
+              {/* Desktop Horizontal Chips */}
+              <div className="hidden sm:flex items-center justify-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleChipClick(
+                      "Review residential lease agreement for early termination penalties under California law"
+                    )
+                  }
+                  className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-[15px] text-indigo-600">
+                    description
+                  </span>
+                  <span>Review residential lease</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleChipClick(
+                      "How do I dispute an improper 30-day notice to vacate without just cause?"
+                    )
+                  }
+                  className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-[15px] text-indigo-600">
+                    gavel
+                  </span>
+                  <span>Dispute notice to vacate</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleChipClick("Verify non-compete and severance clause enforceability")
+                  }
+                  className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-[15px] text-indigo-600">
+                    assignment_turned_in
+                  </span>
+                  <span>Severance clause check</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleChipClick(
+                      "What are the statutory limits and steps to file in Small Claims court?"
+                    )
+                  }
+                  className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
+                >
+                  <span className="material-symbols-outlined text-[15px] text-indigo-600">
+                    calculate
+                  </span>
+                  <span>Small claims guidance</span>
                 </button>
               </div>
             </div>
 
-            {/* Quick Prompt Chips */}
-            <div className="flex items-center justify-center gap-2 flex-wrap max-w-2xl mx-auto mb-8">
-              <button
-                type="button"
-                onClick={() =>
-                  handleChipClick(
-                    "Review residential lease agreement for early termination penalties under California law"
-                  )
-                }
-                className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
-              >
-                <span className="material-symbols-outlined text-[15px] text-indigo-600">
-                  description
-                </span>
-                <span>Review residential lease</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  handleChipClick(
-                    "How do I dispute an improper 30-day notice to vacate without just cause?"
-                  )
-                }
-                className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
-              >
-                <span className="material-symbols-outlined text-[15px] text-indigo-600">
-                  gavel
-                </span>
-                <span>Dispute notice to vacate</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  handleChipClick("Verify non-compete and severance clause enforceability")
-                }
-                className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
-              >
-                <span className="material-symbols-outlined text-[15px] text-indigo-600">
-                  assignment_turned_in
-                </span>
-                <span>Severance clause check</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  handleChipClick(
-                    "What are the statutory limits and steps to file in Small Claims court?"
-                  )
-                }
-                className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm hidden sm:flex"
-              >
-                <span className="material-symbols-outlined text-[15px] text-indigo-600">
-                  calculate
-                </span>
-                <span>Small claims guidance</span>
-              </button>
-            </div>
-
             {/* Legal Disclaimer & Shortcuts */}
             <div className="flex flex-col items-center gap-1 text-slate-400 text-xs text-center max-w-lg">
-              <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+              <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-slate-500">
                 <span>
                   Press{" "}
                   <kbd className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-800 text-[10px] font-mono">
@@ -426,6 +711,33 @@ export default function Dashboard({ user }: DashboardProps) {
           </div>
         </main>
       </div>
+
+      {/* FIXED MOBILE BOTTOM NAVIGATION BAR */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-slate-200/70 shadow-[0_-1px_12px_rgba(0,0,0,0.05)] md:hidden">
+        <div className="flex justify-around items-center h-16 px-4">
+          <button
+            type="button"
+            onClick={() => setActiveTab("home")}
+            className={`flex flex-col items-center justify-center min-w-[64px] h-11 transition-colors ${
+              activeTab === "home" ? "text-indigo-600 font-bold" : "text-slate-500 hover:text-slate-900"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[24px]">gavel</span>
+            <span className="text-[10px] mt-0.5 font-semibold">Home</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("profile")}
+            className={`flex flex-col items-center justify-center min-w-[64px] h-11 transition-colors ${
+              activeTab === "profile" ? "text-indigo-600 font-bold" : "text-slate-500 hover:text-slate-900"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[24px]">account_circle</span>
+            <span className="text-[10px] mt-0.5 font-semibold">Profile</span>
+          </button>
+        </div>
+      </nav>
     </div>
   );
 }
