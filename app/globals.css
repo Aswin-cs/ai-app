@@ -1,26 +1,47 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-navy-dark: #0F172A;
+  --color-slate-body: #475569;
+  --color-primary: #3525cd;
+  --color-primary-container: #4f46e5;
+  --color-royal-blue: #3B82F6;
+  --color-emerald-accent: #10B981;
+  --color-surface: #F8FAFC;
+  --color-surface-alt: #F1F5F9;
+  --color-surface-card: #FFFFFF;
+  --color-on-surface: #0F172A;
+  --color-on-surface-variant: #475569;
+
+  --font-display-hero: var(--font-plus-jakarta), sans-serif;
+  --font-headline-lg: var(--font-plus-jakarta), sans-serif;
+  --font-headline-md: var(--font-plus-jakarta), sans-serif;
+  --font-headline-sm: var(--font-plus-jakarta), sans-serif;
+  --font-body-lg: var(--font-inter), sans-serif;
+  --font-body-md: var(--font-inter), sans-serif;
+  --font-body-sm: var(--font-inter), sans-serif;
+  --font-label-md: var(--font-inter), sans-serif;
+  --font-label-sm: var(--font-inter), sans-serif;
+
+  --shadow-ambient: 0 20px 40px -15px rgba(15, 23, 42, 0.05), 0 0 1px 1px rgba(15, 23, 42, 0.04);
+  --shadow-ambient-lg: 0 25px 50px -12px rgba(15, 23, 42, 0.08), 0 0 1px 1px rgba(15, 23, 42, 0.05);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: #F8FAFC;
+  --foreground: #0F172A;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), sans-serif;
+}
+
+/* Custom Utilities for smooth ambient glows & micro-animations */
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
 }
