@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import Link from "next/link";
+import BorderGlow from "./BorderGlow";
 
 interface CaseAnalysisProps {
   caseId: string;
@@ -114,7 +115,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
   });
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-[#0F172A] font-sans">
+    <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#F8FAFC] text-[#0F172A] font-sans">
       {/* Toast Notification for AI Responses or Share */}
       {copiedShare && (
         <div className="fixed top-20 right-6 z-50 bg-[#0F172A] text-white px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 text-xs font-medium animate-fade-in">
@@ -251,33 +252,9 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
       </header>
 
       {/* Main Workspace */}
-      <main className="w-full pt-16 flex-1 flex flex-col bg-[#F8FAFC] overflow-hidden">
-        {/* Document Title Sub-header */}
-        <div className="w-full bg-white px-6 py-3 flex items-center justify-between border-b border-slate-200 shadow-xs z-30">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-indigo-600 text-[20px]">
-                verified
-              </span>
-              <span className="font-semibold text-sm tracking-tight text-slate-900">
-                Oakwood Terrace Tenancy Agreement
-              </span>
-            </div>
-            <span className="h-4 w-px bg-slate-200 hidden sm:block"></span>
-            <span className="text-xs text-slate-500 font-mono hidden sm:inline">
-              Case Ref: #{caseId.substring(0, 8)}
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-700 border border-red-200 text-xs font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-600"></span>
-              2 Critical Risks Found
-            </div>
-          </div>
-        </div>
-
+      <main className="w-full pt-16 flex-1 flex flex-col bg-[#F8FAFC] overflow-hidden h-[calc(100vh-4rem)]">
         {/* 3-Column Workspace Layout */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden relative min-h-[calc(100vh-7rem)]">
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden relative h-[calc(100vh-7.5rem)] min-h-0">
           {/* LEFT COLUMN: Risk Ledger */}
           <aside className="lg:col-span-3 h-full flex flex-col bg-white border-r border-slate-200 overflow-hidden">
             <div className="p-5 pb-3 border-b border-slate-100">
@@ -316,40 +293,36 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   <div
                     key={item.id}
                     onClick={() => jumpToAnnotation(item.annId)}
-                    className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer group ${
-                      isActive
+                    className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer group ${isActive
                         ? "bg-indigo-50/80 border-indigo-300 shadow-xs"
                         : "bg-white border-slate-100 hover:bg-slate-50 hover:border-slate-200"
-                    }`}
+                      }`}
                   >
                     <span
-                      className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${
-                        item.severity === "Critical"
+                      className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${item.severity === "Critical"
                           ? "bg-red-500"
                           : item.severity === "Warning"
-                          ? "bg-amber-500"
-                          : "bg-slate-400"
-                      }`}
+                            ? "bg-amber-500"
+                            : "bg-slate-400"
+                        }`}
                     ></span>
                     <div className="min-w-0 flex-1">
                       <div
-                        className={`text-xs font-medium leading-snug transition-colors ${
-                          isActive
+                        className={`text-xs font-medium leading-snug transition-colors ${isActive
                             ? "text-indigo-900 font-semibold"
                             : "text-slate-800 group-hover:text-indigo-600"
-                        }`}
+                          }`}
                       >
                         {item.title}
                       </div>
                       <div className="flex items-center gap-2 mt-1.5 text-[11px] font-mono">
                         <span
-                          className={`font-semibold ${
-                            item.severity === "Critical"
+                          className={`font-semibold ${item.severity === "Critical"
                               ? "text-red-600"
                               : item.severity === "Warning"
-                              ? "text-amber-600"
-                              : "text-slate-500"
-                          }`}
+                                ? "text-amber-600"
+                                : "text-slate-500"
+                            }`}
                         >
                           {item.severity}
                         </span>
@@ -472,7 +445,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
             {/* Document Text Paper Viewport */}
             <div
               ref={docViewportRef}
-              className="flex-1 overflow-y-auto p-6 lg:p-10 flex justify-center bg-slate-200/50 scroll-smooth"
+              className="flex-1 overflow-y-scroll pdf-scrollbar p-6 lg:p-10 flex justify-center bg-slate-200/50 scroll-smooth pr-3 h-full min-h-0"
             >
               <article
                 style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: "top center" }}
@@ -518,11 +491,10 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   {/* Clause 4 (ann-3) */}
                   <div
                     id="ann-3"
-                    className={`p-3 rounded-xl transition-all duration-500 ${
-                      activeAnnId === "ann-3"
+                    className={`p-3 rounded-xl transition-all duration-500 ${activeAnnId === "ann-3"
                         ? "bg-amber-100/80 ring-2 ring-amber-400 shadow-sm"
                         : "bg-amber-50/40 hover:bg-amber-50"
-                    }`}
+                      }`}
                   >
                     <h4 className="font-sans font-bold text-xs text-slate-900 uppercase tracking-wider mb-1 flex items-center justify-between">
                       <span>4. Security Deposit &amp; Fees</span>
@@ -545,11 +517,10 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   {/* Clause 8 (ann-1) */}
                   <div
                     id="ann-1"
-                    className={`p-3 rounded-xl transition-all duration-500 ${
-                      activeAnnId === "ann-1"
+                    className={`p-3 rounded-xl transition-all duration-500 ${activeAnnId === "ann-1"
                         ? "bg-red-100/90 ring-2 ring-red-400 shadow-sm"
                         : "bg-red-50/40 hover:bg-red-50"
-                    }`}
+                      }`}
                   >
                     <h4 className="font-sans font-bold text-xs text-slate-900 uppercase tracking-wider mb-1 flex items-center justify-between">
                       <span>8. Default &amp; Summary Termination</span>
@@ -571,11 +542,10 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   {/* Clause 12 (ann-4) */}
                   <div
                     id="ann-4"
-                    className={`p-3 rounded-xl transition-all duration-500 ${
-                      activeAnnId === "ann-4"
+                    className={`p-3 rounded-xl transition-all duration-500 ${activeAnnId === "ann-4"
                         ? "bg-amber-100/80 ring-2 ring-amber-400 shadow-sm"
                         : "bg-amber-50/40 hover:bg-amber-50"
-                    }`}
+                      }`}
                   >
                     <h4 className="font-sans font-bold text-xs text-slate-900 uppercase tracking-wider mb-1 flex items-center justify-between">
                       <span>12. Rent Adjustment</span>
@@ -597,11 +567,10 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   {/* Clause 15 (ann-2) */}
                   <div
                     id="ann-2"
-                    className={`p-3 rounded-xl transition-all duration-500 ${
-                      activeAnnId === "ann-2"
+                    className={`p-3 rounded-xl transition-all duration-500 ${activeAnnId === "ann-2"
                         ? "bg-red-100/90 ring-2 ring-red-400 shadow-sm"
                         : "bg-red-50/40 hover:bg-red-50"
-                    }`}
+                      }`}
                   >
                     <h4 className="font-sans font-bold text-xs text-slate-900 uppercase tracking-wider mb-1 flex items-center justify-between">
                       <span>15. Indemnity &amp; Liability Release</span>
@@ -729,46 +698,58 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
       {/* FOOTER CONTROL BAR */}
       <footer className="w-full bg-white border-t border-slate-200 px-6 py-3 sticky bottom-0 z-40 shadow-lg">
         <div className="max-w-4xl mx-auto flex items-center gap-3 relative">
-          {/* AI Input Box */}
-          <div className="flex-1 bg-slate-100/80 hover:bg-slate-100 rounded-full px-4 py-2 flex items-center gap-3 focus-within:bg-white focus-within:ring-2 focus-within:ring-indigo-500/30 focus-within:border-indigo-500 transition-all border border-transparent">
-            <button
-              onClick={() => alert("Upload annex or contract file...")}
-              className="text-slate-400 hover:text-slate-600 transition-colors"
-              title="Attach File"
-            >
-              <span className="material-symbols-outlined text-[18px]">
-                attach_file
-              </span>
-            </button>
-            <input
-              className="flex-1 bg-transparent text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none"
-              id="legal-prompt-input"
-              placeholder="Ask JurisAI to draft a dispute letter, review clauses, or revise redlines..."
-              type="text"
-              value={promptText}
-              onChange={(e) => setPromptText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleExecutePrompt();
-              }}
-            />
-            <button
-              onClick={() => alert("Listening for prompt voice input...")}
-              className="text-slate-400 hover:text-slate-600 transition-colors"
-              title="Voice Input"
-            >
-              <span className="material-symbols-outlined text-[18px]">mic</span>
-            </button>
-          </div>
+          {/* AI Input Box with High-Contrast BorderGlow */}
+          <BorderGlow
+            className="flex-1 shadow-sm"
+            borderRadius={9999}
+            glowColor="245 80 60"
+            backgroundColor="#ffffff"
+            glowRadius={35}
+            glowIntensity={1.3}
+            edgeSensitivity={45}
+            colors={["#4f46e5", "#6366f1", "#10b981", "#3b82f6"]}
+          >
+            <div className="w-full bg-white hover:bg-slate-50/80 border border-slate-300 hover:border-indigo-400 focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-500/15 rounded-full px-4 py-2.5 flex items-center gap-3 transition-all shadow-xs">
+              <button
+                type="button"
+                onClick={() => alert("Upload annex or contract file...")}
+                className="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 p-1 rounded-full transition-all flex items-center justify-center shrink-0"
+                title="Attach File"
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  attach_file
+                </span>
+              </button>
+              <input
+                className="flex-1 bg-transparent text-xs font-medium text-slate-900 placeholder:text-slate-500 focus:outline-none"
+                id="legal-prompt-input"
+                placeholder="Ask JurisAI to draft a dispute letter, review clauses, or revise redlines..."
+                type="text"
+                value={promptText}
+                onChange={(e) => setPromptText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleExecutePrompt();
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => alert("Listening for prompt voice input...")}
+                className="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 p-1 rounded-full transition-all flex items-center justify-center shrink-0"
+                title="Voice Input"
+              >
+                <span className="material-symbols-outlined text-[20px]">mic</span>
+              </button>
+            </div>
+          </BorderGlow>
 
           {/* WHAT IF SCENARIO MAP TRIGGER & POPOVER */}
           <div className="relative">
             <button
               onClick={() => setShowWhatIf((prev) => !prev)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all border shadow-xs ${
-                showWhatIf
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-all border shadow-xs ${showWhatIf
                   ? "bg-indigo-600 text-white border-indigo-600"
                   : "bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200 hover:text-indigo-600"
-              }`}
+                }`}
               type="button"
             >
               <span className="material-symbols-outlined text-[16px] text-indigo-500">
