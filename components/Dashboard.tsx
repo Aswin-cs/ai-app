@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import BorderGlow from "./BorderGlow";
 
@@ -13,7 +14,19 @@ interface DashboardProps {
   };
 }
 
+interface CaseHistoryItem {
+  _id: string;
+  fileName: string;
+  documentTitle: string;
+  documentType: string;
+  overallRiskScore: number;
+  status: string;
+  createdAt: string;
+  risksCount: number;
+}
+
 export default function Dashboard({ user }: DashboardProps) {
+  const router = useRouter();
   const [promptText, setPromptText] = useState("");
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -21,8 +34,70 @@ export default function Dashboard({ user }: DashboardProps) {
   const [activeTab, setActiveTab] = useState<"home" | "profile">("home");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [analysisProgress, setAnalysisProgress] = useState("");
+
+  const [historyCases, setHistoryCases] = useState<CaseHistoryItem[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch case history on mount
+  useEffect(() => {
+    async function fetchHistory() {
+      try {
+        setIsLoadingHistory(true);
+        const res = await fetch("/api/cases");
+        const data = await res.json();
+        if (res.ok && data.cases) {
+          setHistoryCases(data.cases);
+        }
+      } catch (err) {
+        console.error("Failed to fetch case history:", err);
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    }
+
+    fetchHistory();
+  }, []);
+
+  // Group cases into timeframe buckets
+  const groupedHistory = useMemo(() => {
+    const today: CaseHistoryItem[] = [];
+    const yesterday: CaseHistoryItem[] = [];
+    const past7Days: CaseHistoryItem[] = [];
+    const older: CaseHistoryItem[] = [];
+
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfYesterday = new Date(startOfToday.getTime() - 24 * 60 * 60 * 1000);
+    const startOf7Days = new Date(startOfToday.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    historyCases.forEach((item) => {
+      const itemDate = new Date(item.createdAt);
+      if (itemDate >= startOfToday) {
+        today.push(item);
+      } else if (itemDate >= startOfYesterday) {
+        yesterday.push(item);
+      } else if (itemDate >= startOf7Days) {
+        past7Days.push(item);
+      } else {
+        older.push(item);
+      }
+    });
+
+    return { today, yesterday, past7Days, older };
+  }, [historyCases]);
+
+  const getDocIcon = (type?: string) => {
+    const lower = (type || "").toLowerCase();
+    if (lower.includes("lease") || lower.includes("rent")) return "description";
+    if (lower.includes("notice") || lower.includes("dispute")) return "gavel";
+    if (lower.includes("severance") || lower.includes("employment")) return "assignment_turned_in";
+    if (lower.includes("nda") || lower.includes("agreement")) return "article";
+    return "description";
+  };
 
   const handleChipClick = (text: string) => {
     setPromptText(text);
@@ -41,18 +116,57 @@ export default function Dashboard({ user }: DashboardProps) {
     }
   };
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (!promptText.trim() && !attachedFile) return;
 
+    if (!attachedFile) {
+      setErrorMessage("Please attach a document to analyze.");
+      setTimeout(() => setErrorMessage(null), 4000);
+      return;
+    }
+
     setIsAnalyzing(true);
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      setPromptText("");
-      setAttachedFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+    setErrorMessage(null);
+    setAnalysisProgress("Uploading document...");
+
+    try {
+      const formData = new FormData();
+      formData.append("file", attachedFile);
+      if (promptText.trim()) {
+        formData.append("prompt", promptText.trim());
       }
-    }, 1500);
+
+      setAnalysisProgress("Analyzing document with AI...");
+
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Analysis failed. Please try again.");
+      }
+
+      if (data.success && data.caseId) {
+        setAnalysisProgress("Analysis complete! Redirecting...");
+        setPromptText("");
+        setAttachedFile(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        router.push(`/case/${data.caseId}`);
+      } else {
+        throw new Error("Unexpected response from server.");
+      }
+    } catch (error: any) {
+      console.error("Analysis error:", error);
+      setErrorMessage(error.message || "Something went wrong. Please try again.");
+      setTimeout(() => setErrorMessage(null), 6000);
+      setIsAnalyzing(false);
+      setAnalysisProgress("");
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -66,6 +180,29 @@ export default function Dashboard({ user }: DashboardProps) {
 
   return (
     <div className="bg-[#F8FAFC] font-sans text-slate-800 antialiased min-h-screen pb-20 md:pb-0">
+      {/* Error Toast */}
+      {errorMessage && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[60] max-w-md w-full px-4 animate-fade-in">
+          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 text-xs font-medium">
+            <span className="material-symbols-outlined text-[18px] text-red-600 shrink-0">error</span>
+            <span className="flex-1">{errorMessage}</span>
+            <button type="button" onClick={() => setErrorMessage(null)} className="text-red-400 hover:text-red-700 shrink-0">
+              <span className="material-symbols-outlined text-[16px]">close</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Analysis Progress Indicator */}
+      {isAnalyzing && analysisProgress && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[60] max-w-md w-full px-4 animate-fade-in">
+          <div className="bg-[#0F172A] text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 text-xs font-medium">
+            <span className="material-symbols-outlined text-[18px] text-indigo-400 animate-spin shrink-0">refresh</span>
+            <span className="flex-1">{analysisProgress}</span>
+          </div>
+        </div>
+      )}
+
       {/* HEADER (DESKTOP & MOBILE RESPONSIVE) */}
       <header className="fixed top-0 left-0 right-0 h-16 bg-white/90 backdrop-blur-xl z-50 shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-slate-200/60">
         <div className="h-16 w-full px-4 sm:px-6 flex items-center justify-between">
@@ -210,37 +347,46 @@ export default function Dashboard({ user }: DashboardProps) {
                 <span className="font-bold text-slate-500 uppercase tracking-wider text-[11px]">
                   Consultation History
                 </span>
-                <span className="text-indigo-600 font-semibold text-[11px]">2 Active</span>
+                <span className="text-indigo-600 font-semibold text-[11px]">
+                  {historyCases.length} Total
+                </span>
               </div>
 
               <div className="space-y-2">
-                <Link
-                  href="/case/oakwood-lease"
-                  onClick={() => setIsMobileDrawerOpen(false)}
-                  className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/60 flex items-start gap-3 transition-colors group cursor-pointer"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="material-symbols-outlined text-[16px]">contract</span>
+                {isLoadingHistory ? (
+                  <div className="p-4 text-center text-slate-400 text-xs flex flex-col items-center gap-2">
+                    <span className="material-symbols-outlined text-[20px] animate-spin text-indigo-500">refresh</span>
+                    <span>Loading history...</span>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-[#0F172A] group-hover:text-indigo-600 transition-colors truncate">
-                      Oakwood Lease Analysis
-                    </p>
-                    <p className="text-slate-500 truncate text-[11px]">2 Critical Risks • Clause 8 &amp; 15</p>
-                    <span className="text-[10px] text-indigo-600 font-medium mt-1 block">View Case Analysis →</span>
+                ) : historyCases.length === 0 ? (
+                  <div className="p-4 text-center text-slate-400 text-xs">
+                    No previous consultations yet. Upload a document to begin!
                   </div>
-                </Link>
-
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/60 flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="material-symbols-outlined text-[16px]">gavel</span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-[#0F172A] truncate">Notice to Vacate Guidance</p>
-                    <p className="text-slate-500 truncate text-[11px]">Tenant rebuttal draft</p>
-                    <span className="text-[10px] text-slate-400 mt-1 block">Yesterday • 4:40 PM</span>
-                  </div>
-                </div>
+                ) : (
+                  historyCases.map((c) => (
+                    <Link
+                      key={c._id}
+                      href={`/case/${c._id}`}
+                      onClick={() => setIsMobileDrawerOpen(false)}
+                      className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/60 flex items-start gap-3 transition-colors group cursor-pointer"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 mt-0.5">
+                        <span className="material-symbols-outlined text-[16px]">
+                          {getDocIcon(c.documentType || c.fileName)}
+                        </span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-[#0F172A] group-hover:text-indigo-600 transition-colors truncate">
+                          {c.documentTitle || c.fileName}
+                        </p>
+                        <p className="text-slate-500 truncate text-[11px]">
+                          {c.risksCount} Flagged Items • {c.documentType}
+                        </p>
+                        <span className="text-[10px] text-indigo-600 font-medium mt-1 block">View Case Analysis →</span>
+                      </div>
+                    </Link>
+                  ))
+                )}
               </div>
 
               <div className="pt-3 border-t border-slate-100 space-y-2">
@@ -319,74 +465,106 @@ export default function Dashboard({ user }: DashboardProps) {
 
           {/* History list */}
           <nav className="flex-1 overflow-y-auto space-y-4 pr-1 text-xs">
-            <div className="space-y-1.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
-                Today
-              </span>
-              <div className="space-y-1">
-                <Link
-                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group"
-                  href="/case/oakwood-lease"
-                >
-                  <span className="material-symbols-outlined text-[16px] text-indigo-600">
-                    description
-                  </span>
-                  <span className="truncate font-medium">Oakwood Lease Analysis</span>
-                </Link>
-                <a
-                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors"
-                  href="#"
-                >
-                  <span className="material-symbols-outlined text-[16px] text-indigo-600">
-                    gavel
-                  </span>
-                  <span className="truncate">Notice to Vacate Guidance</span>
-                </a>
+            {isLoadingHistory ? (
+              <div className="p-4 text-center text-slate-400 text-xs flex flex-col items-center gap-2">
+                <span className="material-symbols-outlined text-[20px] animate-spin text-indigo-500">refresh</span>
+                <span>Loading history...</span>
               </div>
-            </div>
+            ) : historyCases.length === 0 ? (
+              <div className="p-4 text-center text-slate-400 text-xs leading-relaxed">
+                No previous consultations yet. Upload a document to start!
+              </div>
+            ) : (
+              <>
+                {groupedHistory.today.length > 0 && (
+                  <div className="space-y-1.5">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
+                      Today
+                    </span>
+                    <div className="space-y-1">
+                      {groupedHistory.today.map((c) => (
+                        <Link
+                          key={c._id}
+                          className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group"
+                          href={`/case/${c._id}`}
+                        >
+                          <span className="material-symbols-outlined text-[16px] text-indigo-600 shrink-0">
+                            {getDocIcon(c.documentType || c.fileName)}
+                          </span>
+                          <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-            <div className="space-y-1.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
-                Yesterday
-              </span>
-              <div className="space-y-1">
-                <a
-                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors"
-                  href="#"
-                >
-                  <span className="material-symbols-outlined text-[16px] text-blue-600">
-                    assignment_turned_in
-                  </span>
-                  <span className="truncate">Employment Severance Clause</span>
-                </a>
-              </div>
-            </div>
+                {groupedHistory.yesterday.length > 0 && (
+                  <div className="space-y-1.5">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
+                      Yesterday
+                    </span>
+                    <div className="space-y-1">
+                      {groupedHistory.yesterday.map((c) => (
+                        <Link
+                          key={c._id}
+                          className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group"
+                          href={`/case/${c._id}`}
+                        >
+                          <span className="material-symbols-outlined text-[16px] text-blue-600 shrink-0">
+                            {getDocIcon(c.documentType || c.fileName)}
+                          </span>
+                          <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-            <div className="space-y-1.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
-                Past 7 Days
-              </span>
-              <div className="space-y-1">
-                <a
-                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors"
-                  href="#"
-                >
-                  <span className="material-symbols-outlined text-[16px] text-slate-500">
-                    article
-                  </span>
-                  <span className="truncate">NDA Plain-Language Translation</span>
-                </a>
-                <a
-                  className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors"
-                  href="#"
-                >
-                  <span className="material-symbols-outlined text-[16px] text-slate-500">
-                    calculate
-                  </span>
-                  <span className="truncate">Statutory Damage Calculator</span>
-                </a>
-              </div>
-            </div>
+                {groupedHistory.past7Days.length > 0 && (
+                  <div className="space-y-1.5">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
+                      Past 7 Days
+                    </span>
+                    <div className="space-y-1">
+                      {groupedHistory.past7Days.map((c) => (
+                        <Link
+                          key={c._id}
+                          className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group"
+                          href={`/case/${c._id}`}
+                        >
+                          <span className="material-symbols-outlined text-[16px] text-slate-500 shrink-0">
+                            {getDocIcon(c.documentType || c.fileName)}
+                          </span>
+                          <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {groupedHistory.older.length > 0 && (
+                  <div className="space-y-1.5">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
+                      Older
+                    </span>
+                    <div className="space-y-1">
+                      {groupedHistory.older.map((c) => (
+                        <Link
+                          key={c._id}
+                          className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group"
+                          href={`/case/${c._id}`}
+                        >
+                          <span className="material-symbols-outlined text-[16px] text-slate-500 shrink-0">
+                            {getDocIcon(c.documentType || c.fileName)}
+                          </span>
+                          <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </nav>
         </div>
 
@@ -497,7 +675,7 @@ export default function Dashboard({ user }: DashboardProps) {
                       ref={fileInputRef}
                       onChange={handleFileChange}
                       className="hidden"
-                      accept=".pdf,.docx,.txt,.png,.jpg"
+                      accept=".pdf,.docx,.txt,.png,.jpg,.jpeg,.webp"
                     />
                   </div>
 
