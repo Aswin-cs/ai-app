@@ -102,7 +102,12 @@ export const generateGeminiContent = async ({
       const response = await ai.models.generateContent(requestOptions);
       const text = response.text || "";
       try {
-        return JSON.parse(text);
+        const cleanedText = text
+          .replace(/^```json\s*/i, "")
+          .replace(/^```\s*/i, "")
+          .replace(/\s*```$/, "")
+          .trim();
+        return JSON.parse(cleanedText);
       } catch {
         return text;
       }

@@ -83,3 +83,69 @@ export async function GET(
     );
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. Authenticate user
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { error: "Unauthorized. Please sign in." },
+        { status: 401 }
+      );
+    }
+
+    // 2. Connect to DB
+    await connectDB();
+    const user = await User.findOne({ email: session.user.email });
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found." },
+        { status: 404 }
+      );
+    }
+
+    // 3. Validate ID
+    const { id } = await params;
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return NextResponse.json(
+        { error: "Invalid case ID format." },
+        { status: 400 }
+      );
+    }
+
+    // 4. Find case and verify ownership
+    const caseDoc = await Case.findById(id);
+    if (!caseDoc) {
+      return NextResponse.json(
+        { error: "Case not found." },
+        { status: 404 }
+      );
+    }
+
+    if (caseDoc.userId.toString() !== user._id.toString()) {
+      return NextResponse.json(
+        { error: "Access denied. You can only delete your own cases." },
+        { status: 403 }
+      );
+    }
+
+    // 5. Delete document
+    await Case.findByIdAndDelete(id);
+
+    return NextResponse.json({
+      success: true,
+      message: "Case deleted successfully.",
+    });
+  } catch (error: any) {
+    console.error("❌ [/api/case/[id]] DELETE error:", error);
+    return NextResponse.json(
+      { error: "Failed to delete case." },
+      { status: 500 }
+    );
+  }
+}
+

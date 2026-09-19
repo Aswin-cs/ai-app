@@ -549,7 +549,19 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
       <header className="h-16 px-6 bg-white/95 border-b border-slate-200/90 flex items-center justify-between gap-4 text-slate-900 shadow-xs backdrop-blur-md">
         {/* Title & Document Context */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 shadow-xs">
+          <button
+            onClick={onClose}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 transition-all border border-slate-200 shadow-xs text-xs font-semibold group cursor-pointer"
+            title="Back to Case Analysis"
+            type="button"
+          >
+            <span className="material-symbols-outlined text-[18px] transition-transform group-hover:-translate-x-0.5">arrow_back</span>
+            <span>Back</span>
+          </button>
+
+          <div className="h-5 w-px bg-slate-200 hidden sm:block" />
+
+          <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 shadow-xs shrink-0">
             <span className="material-symbols-outlined text-[22px]">alt_route</span>
           </div>
           <div>
@@ -559,7 +571,7 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
                 Light Premium Interactive
               </span>
             </h2>
-            <p className="text-xs text-slate-500 truncate max-w-md font-[Inter]">{documentTitle}</p>
+            <p className="text-xs text-slate-500 truncate max-w-xs sm:max-w-md font-[Inter]">{documentTitle}</p>
           </div>
         </div>
 

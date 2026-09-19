@@ -1,5 +1,6 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import { NextRequest } from "next/server";
 import connectDB from "@/config/db";
 import User from "@/models/user.model";
 
@@ -76,4 +77,18 @@ export const authOptions: NextAuthOptions = {
 
 const handler = NextAuth(authOptions);
 
-export { handler as GET, handler as POST };
+export async function GET(
+  req: NextRequest,
+  context: { params: Promise<{ nextauth: string[] }> }
+) {
+  const resolvedParams = await context.params;
+  return handler(req, { params: resolvedParams });
+}
+
+export async function POST(
+  req: NextRequest,
+  context: { params: Promise<{ nextauth: string[] }> }
+) {
+  const resolvedParams = await context.params;
+  return handler(req, { params: resolvedParams });
+}

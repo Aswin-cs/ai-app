@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import BorderGlow from "./BorderGlow";
+import AiLoadingModal from "./AiLoadingModal";
+import DeleteConfirmModal from "./DeleteConfirmModal";
+import LatticeLoader from "./LatticeLoader";
 
 interface DashboardProps {
   user: {
@@ -40,7 +43,36 @@ export default function Dashboard({ user }: DashboardProps) {
   const [historyCases, setHistoryCases] = useState<CaseHistoryItem[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(true);
 
+  const [caseToDelete, setCaseToDelete] = useState<CaseHistoryItem | null>(null);
+  const [isDeletingCase, setIsDeletingCase] = useState(false);
+  const [successToast, setSuccessToast] = useState<string | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDeleteCaseConfirm = async () => {
+    if (!caseToDelete) return;
+    setIsDeletingCase(true);
+    try {
+      const res = await fetch(`/api/case/${caseToDelete._id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setHistoryCases((prev) => prev.filter((item) => item._id !== caseToDelete._id));
+        setSuccessToast(`Deleted "${caseToDelete.documentTitle || caseToDelete.fileName}"`);
+        setTimeout(() => setSuccessToast(null), 4000);
+        setCaseToDelete(null);
+      } else {
+        throw new Error(data.error || "Failed to delete case.");
+      }
+    } catch (err: any) {
+      console.error("Delete error:", err);
+      setErrorMessage(err.message || "Failed to delete case. Please try again.");
+      setTimeout(() => setErrorMessage(null), 5000);
+    } finally {
+      setIsDeletingCase(false);
+    }
+  };
 
   // Fetch case history on mount
   useEffect(() => {
@@ -48,9 +80,14 @@ export default function Dashboard({ user }: DashboardProps) {
       try {
         setIsLoadingHistory(true);
         const res = await fetch("/api/cases");
-        const data = await res.json();
-        if (res.ok && data.cases) {
-          setHistoryCases(data.cases);
+        const contentType = res.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+          const data = await res.json();
+          if (res.ok && data.cases) {
+            setHistoryCases(data.cases);
+          }
+        } else {
+          console.warn(`[/api/cases] Server returned non-JSON response (${res.status})`);
         }
       } catch (err) {
         console.error("Failed to fetch case history:", err);
@@ -193,15 +230,35 @@ export default function Dashboard({ user }: DashboardProps) {
         </div>
       )}
 
-      {/* Analysis Progress Indicator */}
-      {isAnalyzing && analysisProgress && (
+      {/* Success Toast */}
+      {successToast && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[60] max-w-md w-full px-4 animate-fade-in">
-          <div className="bg-[#0F172A] text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 text-xs font-medium">
-            <span className="material-symbols-outlined text-[18px] text-indigo-400 animate-spin shrink-0">refresh</span>
-            <span className="flex-1">{analysisProgress}</span>
+          <div className="bg-emerald-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 text-xs font-medium border border-emerald-700/60">
+            <span className="material-symbols-outlined text-[18px] text-emerald-400 shrink-0">check_circle</span>
+            <span className="flex-1">{successToast}</span>
+            <button type="button" onClick={() => setSuccessToast(null)} className="text-emerald-300 hover:text-white shrink-0">
+              <span className="material-symbols-outlined text-[16px]">close</span>
+            </button>
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Warning Modal */}
+      <DeleteConfirmModal
+        isOpen={!!caseToDelete}
+        itemTitle={caseToDelete?.documentTitle || caseToDelete?.fileName}
+        isDeleting={isDeletingCase}
+        onConfirm={handleDeleteCaseConfirm}
+        onCancel={() => setCaseToDelete(null)}
+      />
+
+      {/* AI Analysis Loading Modal Overlay */}
+      <AiLoadingModal
+        isOpen={isAnalyzing}
+        fileName={attachedFile?.name}
+        userPrompt={promptText}
+        progressMessage={analysisProgress}
+      />
 
       {/* HEADER (DESKTOP & MOBILE RESPONSIVE) */}
       <header className="fixed top-0 left-0 right-0 h-16 bg-white/90 backdrop-blur-xl z-50 shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-slate-200/60">
@@ -364,27 +421,44 @@ export default function Dashboard({ user }: DashboardProps) {
                   </div>
                 ) : (
                   historyCases.map((c) => (
-                    <Link
+                    <div
                       key={c._id}
-                      href={`/case/${c._id}`}
-                      onClick={() => setIsMobileDrawerOpen(false)}
-                      className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/60 flex items-start gap-3 transition-colors group cursor-pointer"
+                      className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/60 flex items-start justify-between gap-2 transition-colors group"
                     >
-                      <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 mt-0.5">
-                        <span className="material-symbols-outlined text-[16px]">
-                          {getDocIcon(c.documentType || c.fileName)}
-                        </span>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-[#0F172A] group-hover:text-indigo-600 transition-colors truncate">
-                          {c.documentTitle || c.fileName}
-                        </p>
-                        <p className="text-slate-500 truncate text-[11px]">
-                          {c.risksCount} Flagged Items • {c.documentType}
-                        </p>
-                        <span className="text-[10px] text-indigo-600 font-medium mt-1 block">View Case Analysis →</span>
-                      </div>
-                    </Link>
+                      <Link
+                        href={`/case/${c._id}`}
+                        onClick={() => setIsMobileDrawerOpen(false)}
+                        className="flex items-start gap-3 min-w-0 flex-1"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 mt-0.5">
+                          <span className="material-symbols-outlined text-[16px]">
+                            {getDocIcon(c.documentType || c.fileName)}
+                          </span>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-[#0F172A] group-hover:text-indigo-600 transition-colors truncate">
+                            {c.documentTitle || c.fileName}
+                          </p>
+                          <p className="text-slate-500 truncate text-[11px]">
+                            {c.risksCount} Flagged Items • {c.documentType}
+                          </p>
+                          <span className="text-[10px] text-indigo-600 font-medium mt-1 block">View Case Analysis →</span>
+                        </div>
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setCaseToDelete(c);
+                        }}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0"
+                        title="Delete consultation"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                      </button>
+                    </div>
                   ))
                 )}
               </div>
@@ -483,16 +557,33 @@ export default function Dashboard({ user }: DashboardProps) {
                     </span>
                     <div className="space-y-1">
                       {groupedHistory.today.map((c) => (
-                        <Link
+                        <div
                           key={c._id}
-                          className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group"
-                          href={`/case/${c._id}`}
+                          className="flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group"
                         >
-                          <span className="material-symbols-outlined text-[16px] text-indigo-600 shrink-0">
-                            {getDocIcon(c.documentType || c.fileName)}
-                          </span>
-                          <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
-                        </Link>
+                          <Link
+                            className="flex items-center gap-2.5 min-w-0 flex-1"
+                            href={`/case/${c._id}`}
+                          >
+                            <span className="material-symbols-outlined text-[16px] text-indigo-600 shrink-0">
+                              {getDocIcon(c.documentType || c.fileName)}
+                            </span>
+                            <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
+                          </Link>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setCaseToDelete(c);
+                            }}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-100/70 transition-all shrink-0"
+                            title="Delete consultation"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">delete</span>
+                          </button>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -505,16 +596,33 @@ export default function Dashboard({ user }: DashboardProps) {
                     </span>
                     <div className="space-y-1">
                       {groupedHistory.yesterday.map((c) => (
-                        <Link
+                        <div
                           key={c._id}
-                          className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group"
-                          href={`/case/${c._id}`}
+                          className="flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group"
                         >
-                          <span className="material-symbols-outlined text-[16px] text-blue-600 shrink-0">
-                            {getDocIcon(c.documentType || c.fileName)}
-                          </span>
-                          <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
-                        </Link>
+                          <Link
+                            className="flex items-center gap-2.5 min-w-0 flex-1"
+                            href={`/case/${c._id}`}
+                          >
+                            <span className="material-symbols-outlined text-[16px] text-blue-600 shrink-0">
+                              {getDocIcon(c.documentType || c.fileName)}
+                            </span>
+                            <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
+                          </Link>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setCaseToDelete(c);
+                            }}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-100/70 transition-all shrink-0"
+                            title="Delete consultation"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">delete</span>
+                          </button>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -527,16 +635,33 @@ export default function Dashboard({ user }: DashboardProps) {
                     </span>
                     <div className="space-y-1">
                       {groupedHistory.past7Days.map((c) => (
-                        <Link
+                        <div
                           key={c._id}
-                          className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group"
-                          href={`/case/${c._id}`}
+                          className="flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group"
                         >
-                          <span className="material-symbols-outlined text-[16px] text-slate-500 shrink-0">
-                            {getDocIcon(c.documentType || c.fileName)}
-                          </span>
-                          <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
-                        </Link>
+                          <Link
+                            className="flex items-center gap-2.5 min-w-0 flex-1"
+                            href={`/case/${c._id}`}
+                          >
+                            <span className="material-symbols-outlined text-[16px] text-slate-500 shrink-0">
+                              {getDocIcon(c.documentType || c.fileName)}
+                            </span>
+                            <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
+                          </Link>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setCaseToDelete(c);
+                            }}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-100/70 transition-all shrink-0"
+                            title="Delete consultation"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">delete</span>
+                          </button>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -549,16 +674,33 @@ export default function Dashboard({ user }: DashboardProps) {
                     </span>
                     <div className="space-y-1">
                       {groupedHistory.older.map((c) => (
-                        <Link
+                        <div
                           key={c._id}
-                          className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group"
-                          href={`/case/${c._id}`}
+                          className="flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group"
                         >
-                          <span className="material-symbols-outlined text-[16px] text-slate-500 shrink-0">
-                            {getDocIcon(c.documentType || c.fileName)}
-                          </span>
-                          <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
-                        </Link>
+                          <Link
+                            className="flex items-center gap-2.5 min-w-0 flex-1"
+                            href={`/case/${c._id}`}
+                          >
+                            <span className="material-symbols-outlined text-[16px] text-slate-500 shrink-0">
+                              {getDocIcon(c.documentType || c.fileName)}
+                            </span>
+                            <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
+                          </Link>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setCaseToDelete(c);
+                            }}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-100/70 transition-all shrink-0"
+                            title="Delete consultation"
+                          >
+                            <span className="material-symbols-outlined text-[16px]">delete</span>
+                          </button>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -683,15 +825,26 @@ export default function Dashboard({ user }: DashboardProps) {
                     type="button"
                     onClick={handleAnalyze}
                     disabled={isAnalyzing}
-                    className="min-h-[40px] px-5 rounded-xl bg-[#4f46e5] hover:bg-indigo-700 text-white flex items-center justify-center gap-1.5 shadow-md shadow-indigo-500/20 transition-all text-xs font-semibold flex-shrink-0 disabled:opacity-75 active:scale-95"
+                    className={`min-h-[40px] px-5 rounded-xl text-white flex items-center justify-center gap-2 shadow-md transition-all text-xs font-semibold flex-shrink-0 disabled:opacity-90 active:scale-95 ${
+                      isAnalyzing
+                        ? "bg-gradient-to-r from-indigo-600 via-purple-600 to-emerald-600 shadow-indigo-500/30 animate-ai-shimmer"
+                        : "bg-[#4f46e5] hover:bg-indigo-700 shadow-indigo-500/20"
+                    }`}
                   >
                     {isAnalyzing ? (
-                      <>
-                        <span className="material-symbols-outlined text-[18px] animate-spin">
-                          refresh
-                        </span>
-                        <span>Analyzing...</span>
-                      </>
+                      <LatticeLoader
+                        status="working"
+                        label="Analyzing"
+                        pattern="orbit"
+                        grid={3}
+                        shape="round"
+                        color="#ffffff"
+                        cellSize={4}
+                        gap={1.5}
+                        fontSize={12}
+                        step={80}
+                        showTimer={false}
+                      />
                     ) : (
                       <>
                         <span>Analyze</span>

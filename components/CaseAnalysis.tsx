@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import BorderGlow from "./BorderGlow";
 import WhatIfMap from "./WhatIfMap";
+import GlideSelect from "./GlideSelect";
 import type { CaseDocument, RiskItem as RiskItemType } from "@/types/case.types";
 
 interface CaseAnalysisProps {
@@ -30,8 +31,10 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
   const [copiedShare, setCopiedShare] = useState<boolean>(false);
   const [documentSearch, setDocumentSearch] = useState<string>("");
   const [showSearchBox, setShowSearchBox] = useState<boolean>(false);
+  const [isExporting, setIsExporting] = useState<boolean>(false);
 
   const docViewportRef = useRef<HTMLDivElement>(null);
+  const articleRef = useRef<HTMLDivElement>(null);
 
   // Fetch case data from API on mount
   useEffect(() => {
@@ -39,10 +42,21 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
       try {
         setIsLoading(true);
         const res = await fetch(`/api/case/${caseId}`);
-        const data = await res.json();
+        const contentType = res.headers.get("content-type") || "";
+
+        let data: any = null;
+        if (contentType.includes("application/json")) {
+          data = await res.json();
+        } else {
+          const text = await res.text();
+          if (!res.ok) {
+            throw new Error(`Server error (${res.status}): ${res.statusText || "Unable to load case"}`);
+          }
+          throw new Error("Received an invalid non-JSON response from server.");
+        }
 
         if (!res.ok) {
-          throw new Error(data.error || "Failed to load case data.");
+          throw new Error(data?.error || "Failed to load case data.");
         }
 
         setCaseData(data.case);
@@ -64,6 +78,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
 
   const analysis = caseData?.analysis;
   const risks: RiskItemType[] = analysis?.risks || [];
+  const documentTitle = analysis?.documentTitle || caseData?.fileName || "Document Analysis";
 
   const filteredRisks = risks.filter((r) => {
     if (filterSeverity === "All") return true;
@@ -103,6 +118,61 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
       setTimeout(() => setCopiedShare(false), 2000);
     }
   };
+
+  // Server-side PDF Export Handler via /api/export-pdf (Puppeteer)
+  const handleExportPDF = useCallback(async () => {
+    if (isExporting) return;
+
+    setIsExporting(true);
+
+    try {
+      const payload = {
+        documentTitle,
+        documentType: analysis?.documentType || "Legal Document",
+        jurisdiction: analysis?.jurisdiction || "",
+        effectiveDate: analysis?.effectiveDate || "",
+        overallRiskScore: analysis?.overallRiskScore ?? 0,
+        summary: analysis?.summary || "",
+        parties: analysis?.parties || [],
+        risks: risks || [],
+        fileSummary: caseData?.fileSummary || "",
+      };
+
+      const res = await fetch("/api/export-pdf", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Server error (${res.status}) generating PDF.`);
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const safeTitle = (documentTitle || "Lease_Analysis_Summary")
+        .replace(/[^a-zA-Z0-9\s-]/g, "")
+        .replace(/\s+/g, "_")
+        .substring(0, 50);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${safeTitle || "Lease_Analysis"}_Summary.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (err: any) {
+      console.error("PDF export error:", err);
+      alert(err.message || "Failed to generate PDF. Please try again.");
+    } finally {
+      setIsExporting(false);
+    }
+  }, [isExporting, documentTitle, analysis, risks, caseData]);
 
   // Severity color helpers
   const severityDotColor = (severity: string) => {
@@ -229,7 +299,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
     );
   }
 
-  const documentTitle = analysis?.documentTitle || caseData?.fileName || "Document Analysis";
   const overallRiskScore = analysis?.overallRiskScore ?? 0;
   const confidenceScore = analysis?.confidenceScore ?? 0;
 
@@ -303,12 +372,17 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 <span>What-If Map</span>
               </button>
               <button
-                onClick={() => alert("Downloading Case Report PDF...")}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 text-xs font-medium hover:bg-slate-50 hover:text-slate-900 transition-all shadow-xs"
+                onClick={handleExportPDF}
+                disabled={isExporting}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 text-xs font-medium hover:bg-slate-50 hover:text-slate-900 transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
                 type="button"
               >
-                <span className="material-symbols-outlined text-[16px]">ios_share</span>
-                <span className="hidden sm:inline">Export</span>
+                {isExporting ? (
+                  <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                ) : (
+                  <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+                )}
+                <span className="hidden sm:inline">{isExporting ? "Exporting..." : "Export PDF"}</span>
               </button>
               <button
                 onClick={handleShare}
@@ -347,16 +421,27 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                     {filteredRisks.length} Items
                   </span>
                 </div>
-                <select
+                <GlideSelect
+                  options={[
+                    { value: "All", label: "All Risks", tag: `${risks.length}` },
+                    { value: "critical", label: "Critical", tag: `${risks.filter(r => r.severity === 'critical').length}` },
+                    { value: "warning", label: "Warning", tag: `${risks.filter(r => r.severity === 'warning').length}` },
+                    { value: "note", label: "Notes", tag: `${risks.filter(r => r.severity !== 'critical' && r.severity !== 'warning').length}` },
+                  ]}
                   value={filterSeverity}
-                  onChange={(e) => setFilterSeverity(e.target.value)}
-                  className="text-xs text-indigo-600 font-medium bg-transparent border-none focus:outline-none cursor-pointer hover:underline"
-                >
-                  <option value="All">All Risks</option>
-                  <option value="critical">Critical</option>
-                  <option value="warning">Warning</option>
-                  <option value="note">Notes</option>
-                </select>
+                  onChange={(val) => setFilterSeverity(val)}
+                  ariaLabel="Filter risks by severity"
+                  showTags={true}
+                  accentColor="#4f46e5"
+                  surfaceColor="#ffffff"
+                  highlightColor="#e0e7ff"
+                  textColor="#4338ca"
+                  size="sm"
+                  radius={10}
+                  menuWidth={150}
+                  placement="bottom"
+                  align="right"
+                />
               </div>
               <p className="text-xs text-slate-500 mt-1 leading-normal">
                 AI-identified statutory flags &amp; compliance items
@@ -459,6 +544,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
               className="flex-1 overflow-y-scroll pdf-scrollbar p-4 sm:p-6 lg:p-8 flex justify-center bg-[#F1F5F9] scroll-smooth pr-3 h-full min-h-0"
             >
               <article
+                ref={articleRef}
                 style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: "top center" }}
                 className="w-full max-w-3xl lg:max-w-4xl bg-white min-h-full h-fit shadow-[0_4px_24px_rgba(15,23,42,0.08),0_1px_3px_rgba(15,23,42,0.04)] rounded-2xl text-slate-900 select-text border border-slate-200/80 border-t-4 border-t-indigo-600 transition-transform duration-200 mb-12"
               >
