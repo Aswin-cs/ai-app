@@ -37,6 +37,9 @@ export default function Dashboard({ user }: DashboardProps) {
   const [activeTab, setActiveTab] = useState<"home" | "profile">("home");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [isMobileDrawerMounted, setIsMobileDrawerMounted] = useState(false);
+  const [isMobileDrawerAnimating, setIsMobileDrawerAnimating] = useState(false);
+  const [desktopSidebarAnimClass, setDesktopSidebarAnimClass] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [analysisProgress, setAnalysisProgress] = useState("");
 
@@ -48,6 +51,36 @@ export default function Dashboard({ user }: DashboardProps) {
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Mobile drawer animated open/close
+  const openMobileDrawer = () => {
+    setIsMobileDrawerMounted(true);
+    // Force a reflow before starting animation
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsMobileDrawerAnimating(true);
+      });
+    });
+  };
+
+  const closeMobileDrawer = () => {
+    setIsMobileDrawerAnimating(false);
+    // Wait for CSS transition to finish, then unmount
+    setTimeout(() => {
+      setIsMobileDrawerMounted(false);
+    }, 320);
+  };
+
+  // Desktop sidebar content animation
+  useEffect(() => {
+    if (isSidebarOpen) {
+      // Delay to let the translate transition begin, then fade in content
+      const t = setTimeout(() => setDesktopSidebarAnimClass("sidebar-content-visible"), 80);
+      return () => clearTimeout(t);
+    } else {
+      setDesktopSidebarAnimClass("");
+    }
+  }, [isSidebarOpen]);
 
   const handleDeleteCaseConfirm = async () => {
     if (!caseToDelete) return;
@@ -268,7 +301,7 @@ export default function Dashboard({ user }: DashboardProps) {
             {/* Mobile Menu Drawer Toggle Button */}
             <button
               type="button"
-              onClick={() => setIsMobileDrawerOpen(true)}
+              onClick={openMobileDrawer}
               className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
               aria-label="Open Mobile Menu"
             >
@@ -314,15 +347,6 @@ export default function Dashboard({ user }: DashboardProps) {
 
           {/* Header Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              aria-label="Notifications"
-              className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors relative"
-              type="button"
-            >
-              <span className="material-symbols-outlined text-[20px]">notifications</span>
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-indigo-600 ring-2 ring-white" />
-            </button>
-
             {/* Profile Dropdown */}
             <div className="relative">
               <button
@@ -368,16 +392,25 @@ export default function Dashboard({ user }: DashboardProps) {
       </header>
 
       {/* MOBILE SLIDE-OVER SIDEBAR DRAWER */}
-      {isMobileDrawerOpen && (
+      {isMobileDrawerMounted && (
         <div className="fixed inset-0 z-50 md:hidden">
           {/* Backdrop */}
           <div
-            onClick={() => setIsMobileDrawerOpen(false)}
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
+            onClick={closeMobileDrawer}
+            className="fixed inset-0 backdrop-blur-sm transition-all duration-300 ease-out"
+            style={{
+              backgroundColor: isMobileDrawerAnimating ? 'rgba(15, 23, 42, 0.4)' : 'rgba(15, 23, 42, 0)',
+            }}
           />
 
           {/* Drawer Panel */}
-          <aside className="fixed top-0 bottom-0 left-0 w-80 max-w-[85vw] bg-white shadow-2xl flex flex-col z-50 transition-transform duration-300">
+          <aside
+            className="fixed top-0 bottom-0 left-0 w-80 max-w-[85vw] bg-white shadow-2xl flex flex-col z-50 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
+            style={{
+              transform: isMobileDrawerAnimating ? 'translateX(0)' : 'translateX(-100%)',
+              opacity: isMobileDrawerAnimating ? 1 : 0.5,
+            }}
+          >
             <div className="p-4 border-b border-slate-200/80 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-xl bg-[#0F172A] text-amber-400 flex items-center justify-center">
@@ -392,14 +425,21 @@ export default function Dashboard({ user }: DashboardProps) {
               </div>
               <button
                 type="button"
-                onClick={() => setIsMobileDrawerOpen(false)}
+                onClick={closeMobileDrawer}
                 className="w-9 h-9 rounded-xl flex items-center justify-center text-slate-500 hover:bg-slate-100 transition-colors"
               >
                 <span className="material-symbols-outlined text-[22px]">close</span>
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs">
+            <div
+              className="flex-1 overflow-y-auto p-4 space-y-4 text-xs transition-all duration-300 ease-out"
+              style={{
+                opacity: isMobileDrawerAnimating ? 1 : 0,
+                transform: isMobileDrawerAnimating ? 'translateX(0)' : 'translateX(-12px)',
+                transitionDelay: isMobileDrawerAnimating ? '120ms' : '0ms',
+              }}
+            >
               <div className="flex items-center justify-between">
                 <span className="font-bold text-slate-500 uppercase tracking-wider text-[11px]">
                   Consultation History
@@ -420,14 +460,19 @@ export default function Dashboard({ user }: DashboardProps) {
                     No previous consultations yet. Upload a document to begin!
                   </div>
                 ) : (
-                  historyCases.map((c) => (
+                  historyCases.map((c, idx) => (
                     <div
                       key={c._id}
-                      className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/60 flex items-start justify-between gap-2 transition-colors group"
+                      className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200/60 flex items-start justify-between gap-2 transition-all group"
+                      style={{
+                        opacity: isMobileDrawerAnimating ? 1 : 0,
+                        transform: isMobileDrawerAnimating ? 'translateY(0)' : 'translateY(8px)',
+                        transition: `opacity 280ms ease-out ${160 + idx * 60}ms, transform 280ms ease-out ${160 + idx * 60}ms`,
+                      }}
                     >
                       <Link
                         href={`/case/${c._id}`}
-                        onClick={() => setIsMobileDrawerOpen(false)}
+                        onClick={closeMobileDrawer}
                         className="flex items-start gap-3 min-w-0 flex-1"
                       >
                         <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 mt-0.5">
@@ -478,7 +523,14 @@ export default function Dashboard({ user }: DashboardProps) {
               </div>
             </div>
 
-            <div className="p-4 border-t border-slate-200/60 bg-slate-50">
+            <div
+              className="p-4 border-t border-slate-200/60 bg-slate-50 transition-all duration-200 ease-out"
+              style={{
+                opacity: isMobileDrawerAnimating ? 1 : 0,
+                transform: isMobileDrawerAnimating ? 'translateY(0)' : 'translateY(6px)',
+                transitionDelay: isMobileDrawerAnimating ? '200ms' : '0ms',
+              }}
+            >
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">
                   {userName.charAt(0)}
@@ -495,8 +547,8 @@ export default function Dashboard({ user }: DashboardProps) {
 
       {/* DESKTOP ASIDE SIDEBAR */}
       <aside
-        className={`fixed left-0 top-16 bottom-0 w-72 bg-white z-40 flex flex-col justify-between border-r border-slate-200/60 shadow-[0_1px_8px_rgba(0,0,0,0.03)] transition-transform duration-300 ease-in-out hidden md:flex ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-[268px]"
+        className={`fixed left-0 top-16 bottom-0 w-72 bg-white z-40 flex flex-col justify-between border-r border-slate-200/60 shadow-[0_1px_8px_rgba(0,0,0,0.03)] hidden md:flex transition-all duration-[380ms] ease-[cubic-bezier(0.32,0.72,0,1)] ${
+          isSidebarOpen ? "translate-x-0 opacity-100" : "-translate-x-[268px] opacity-95"
         }`}
       >
         {/* Toggle Button on the right edge */}
@@ -511,7 +563,7 @@ export default function Dashboard({ user }: DashboardProps) {
           </span>
         </button>
 
-        <div className="p-4 flex flex-col gap-4 overflow-hidden h-full">
+        <div className={`p-4 flex flex-col gap-4 overflow-hidden h-full sidebar-content ${desktopSidebarAnimClass}`}>
           <div className="flex items-center justify-between">
             <span className="text-sm font-bold text-[#0F172A]">History</span>
             <div className="flex items-center gap-1">
@@ -708,22 +760,6 @@ export default function Dashboard({ user }: DashboardProps) {
               </>
             )}
           </nav>
-        </div>
-
-        {/* Legal Aid Tier Card */}
-        <div className="p-4 bg-slate-50 border-t border-slate-200/60 rounded-b-xl space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-[#0F172A]">Legal Aid Tier: Pro Bono</span>
-            <span className="material-symbols-outlined text-emerald-600 text-[18px]">
-              verified
-            </span>
-          </div>
-          <p className="text-[11px] text-slate-500">
-            24 / 50 AI consultations utilized this billing period.
-          </p>
-          <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-            <div className="h-full bg-[#4f46e5] rounded-full w-[48%]" />
-          </div>
         </div>
       </aside>
 

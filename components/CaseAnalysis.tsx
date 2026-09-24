@@ -5,7 +5,23 @@ import Link from "next/link";
 import BorderGlow from "./BorderGlow";
 import WhatIfMap from "./WhatIfMap";
 import GlideSelect from "./GlideSelect";
+import MemeVibeCheck from "./MemeVibeCheck";
 import type { CaseDocument, RiskItem as RiskItemType } from "@/types/case.types";
+
+interface AiFollowupResponse {
+  answer: string;
+  keyPoints: string[];
+  confidence: "high" | "medium" | "low";
+  relatedClauses: string[];
+  disclaimer: boolean;
+}
+
+interface ConversationMessage {
+  _id?: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: string;
+}
 
 interface CaseAnalysisProps {
   caseId: string;
@@ -27,11 +43,96 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
   const [promptText, setPromptText] = useState<string>("");
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [showWhatIf, setShowWhatIf] = useState<boolean>(false);
-  const [aiMessage, setAiMessage] = useState<string | null>(null);
   const [copiedShare, setCopiedShare] = useState<boolean>(false);
   const [documentSearch, setDocumentSearch] = useState<string>("");
   const [showSearchBox, setShowSearchBox] = useState<boolean>(false);
   const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [showMeme, setShowMeme] = useState<boolean>(true);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const prevCaseStatusRef = useRef<string | null>(null);
+
+  // Web Audio API Synthesized Completion Chime (C5 -> E5 -> G5)
+  const playCompletionSound = useCallback(() => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+      const now = ctx.currentTime;
+
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+
+        gain.gain.setValueAtTime(0, now + idx * 0.08);
+        gain.gain.linearRampToValueAtTime(0.15, now + idx * 0.08 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.35);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now + idx * 0.08);
+        osc.stop(now + idx * 0.08 + 0.35);
+      });
+    } catch (e) {
+      console.warn("Could not play completion sound:", e);
+    }
+  }, []);
+
+  // Sync sound preference from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("jurisai_sound_enabled");
+      if (saved !== null) {
+        setSoundEnabled(saved === "true");
+      }
+    } catch (e) {}
+  }, []);
+
+  const handleToggleSound = () => {
+    setSoundEnabled((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("jurisai_sound_enabled", String(next));
+      } catch (e) {}
+      if (next) {
+        playCompletionSound();
+      }
+      return next;
+    });
+  };
+
+  // Follow-up conversation state
+  const [conversationMessages, setConversationMessages] = useState<ConversationMessage[]>([]);
+  const [latestAiResponse, setLatestAiResponse] = useState<AiFollowupResponse | null>(null);
+  const [followupError, setFollowupError] = useState<string | null>(null);
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState<boolean>(false);
+  const aiResponseSectionRef = useRef<HTMLDivElement>(null);
+
+  // Sync showMeme with localStorage on client mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("jurisai_show_meme");
+      if (saved !== null) {
+        setShowMeme(saved === "true");
+      }
+    } catch (e) {
+      console.warn("Could not read meme toggle preference from localStorage");
+    }
+  }, []);
+
+  const handleToggleMeme = () => {
+    setShowMeme((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("jurisai_show_meme", String(next));
+      } catch (e) {}
+      return next;
+    });
+  };
 
   const docViewportRef = useRef<HTMLDivElement>(null);
   const articleRef = useRef<HTMLDivElement>(null);
@@ -96,19 +197,102 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
   const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 10, 150));
   const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 10, 70));
 
-  const handleExecutePrompt = () => {
-    if (!promptText.trim()) return;
-    setIsAnalyzing(true);
-    const query = promptText;
-    setPromptText("JurisAI is analyzing...");
+  // Fetch conversation history on mount
+  useEffect(() => {
+    if (!caseId.match(/^[0-9a-fA-F]{24}$/)) return;
+    async function loadConversation() {
+      try {
+        const res = await fetch(`/api/case/${caseId}/followup`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.messages && data.messages.length > 0) {
+            setConversationMessages(data.messages);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not load conversation history:", err);
+      }
+    }
+    loadConversation();
+  }, [caseId]);
 
+  // Play completion chime when case processing finishes
+  useEffect(() => {
+    if (caseData?.status === "completed" && prevCaseStatusRef.current && prevCaseStatusRef.current !== "completed") {
+      if (soundEnabled) {
+        playCompletionSound();
+      }
+    }
+    if (caseData?.status) {
+      prevCaseStatusRef.current = caseData.status;
+    }
+  }, [caseData?.status, soundEnabled, playCompletionSound]);
+
+  const handleExecutePrompt = async () => {
+    if (!promptText.trim() || isAnalyzing) return;
+
+    const question = promptText.trim();
+    setIsAnalyzing(true);
+    setPromptText("");
+    setFollowupError(null);
+    setLatestAiResponse(null);
+
+    // Optimistically add user message
+    const userMsg: ConversationMessage = {
+      role: "user",
+      content: question,
+      timestamp: new Date().toISOString(),
+    };
+    setConversationMessages((prev) => [...prev, userMsg]);
+
+    // Scroll AI response section into view
     setTimeout(() => {
+      aiResponseSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+
+    try {
+      const res = await fetch(`/api/case/${caseId}/followup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to get AI response.");
+      }
+
+      if (data.success && data.response) {
+        const aiResponse: AiFollowupResponse = data.response;
+        setLatestAiResponse(aiResponse);
+
+        // Add assistant message to conversation
+        const assistantMsg: ConversationMessage = {
+          role: "assistant",
+          content: JSON.stringify(aiResponse),
+          timestamp: new Date().toISOString(),
+        };
+        setConversationMessages((prev) => [...prev, assistantMsg]);
+
+        // Play completion audio chime
+        if (soundEnabled) {
+          playCompletionSound();
+        }
+
+        // Scroll AI response section into view
+        setTimeout(() => {
+          aiResponseSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }, 100);
+      } else {
+        throw new Error("Unexpected response from server.");
+      }
+    } catch (err: any) {
+      console.error("Follow-up error:", err);
+      setFollowupError(err.message || "Something went wrong. Please try again.");
+    } finally {
       setIsAnalyzing(false);
-      setPromptText("");
-      setAiMessage(
-        `Legal Analysis Generated for: "${query}"\n\nThis is a follow-up analysis based on the current document context. For complete statutory analysis, please consult a licensed attorney.`
-      );
-    }, 1200);
+    }
   };
 
   const handleShare = () => {
@@ -312,28 +496,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
         </div>
       )}
 
-      {/* AI Response Toast */}
-      {aiMessage && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-xl w-full px-4">
-          <div className="bg-[#0F172A] text-white p-5 rounded-2xl shadow-2xl border border-indigo-500/30 backdrop-blur-xl animate-fade-in">
-            <div className="flex items-center justify-between mb-3 border-b border-slate-700/60 pb-2">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-indigo-400 text-[20px]">auto_awesome</span>
-                <span className="font-semibold text-sm text-indigo-200">JurisAI Response</span>
-              </div>
-              <button onClick={() => setAiMessage(null)} className="text-slate-400 hover:text-white p-1 rounded-lg transition-colors">
-                <span className="material-symbols-outlined text-[18px]">close</span>
-              </button>
-            </div>
-            <p className="text-xs leading-relaxed text-slate-300 whitespace-pre-line">{aiMessage}</p>
-            <div className="mt-4 flex justify-end">
-              <button onClick={() => setAiMessage(null)} className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-medium transition-colors">
-                Dismiss
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Header Bar */}
       <header className="fixed top-0 w-full z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.03)]">
@@ -362,7 +525,41 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {/* Sound Toggle Button */}
+              <button
+                onClick={handleToggleSound}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all shadow-xs ${
+                  soundEnabled
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200/80 hover:bg-emerald-100"
+                    : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50 hover:text-slate-700"
+                }`}
+                type="button"
+                title={soundEnabled ? "Completion sound enabled (Click to mute)" : "Completion sound muted (Click to enable)"}
+              >
+                <span className="material-symbols-outlined text-[16px]">
+                  {soundEnabled ? "volume_up" : "volume_off"}
+                </span>
+                <span className="hidden sm:inline">{soundEnabled ? "Sound On" : "Muted"}</span>
+              </button>
+
+              {/* Meme Toggle Button */}
+              <button
+                onClick={handleToggleMeme}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all shadow-xs ${
+                  showMeme
+                    ? "bg-gradient-to-r from-purple-50 to-indigo-50 text-purple-700 border-purple-200/80 hover:border-purple-300"
+                    : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                }`}
+                type="button"
+                title={showMeme ? "Hide Legal Vibe Check meme" : "Show Legal Vibe Check meme"}
+              >
+                <span className="material-symbols-outlined text-[16px] text-purple-600">
+                  {showMeme ? "visibility" : "visibility_off"}
+                </span>
+                <span className="hidden sm:inline">Vibe Check</span>
+              </button>
+
               <button
                 onClick={() => setShowWhatIf(true)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold transition-all shadow-xs"
@@ -740,25 +937,267 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                     })}
                   </div>
 
-                  {/* Original Document Text */}
+                  {/* Original Document Text / Summary */}
                   {caseData?.fileSummary && !caseData.fileSummary.startsWith("[Binary file:") && (
-                    <div className="mt-4">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="h-px flex-1 bg-slate-200" />
-                        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 px-2 flex items-center gap-1.5">
-                          <span className="material-symbols-outlined text-[13px]">article</span>
-                          Source Document
-                        </span>
-                        <div className="h-px flex-1 bg-slate-200" />
+                    <div className="mt-6">
+                      <div className="flex items-center justify-between gap-3 mb-4">
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[16px] text-indigo-600">article</span>
+                          <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                            Source Document Summary
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200/80 hover:bg-indigo-100 hover:border-indigo-300 transition-all shadow-2xs"
+                          type="button"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">
+                            {isSummaryExpanded ? "unfold_less" : "unfold_more"}
+                          </span>
+                          <span>{isSummaryExpanded ? "Shrink Summary" : "Expand Summary"}</span>
+                        </button>
                       </div>
-                      <div className="text-[12px] leading-[1.8] text-slate-600 whitespace-pre-wrap font-serif max-h-[500px] overflow-y-auto bg-[#FAFBFC] p-5 rounded-xl border border-slate-100 shadow-inner">
-                        {caseData.fileSummary.substring(0, 8000)}
-                        {caseData.fileSummary.length > 8000 && (
-                          <span className="text-slate-400 italic block mt-3 text-[11px] font-sans">— Document content truncated for display —</span>
+
+                      <div className={`relative transition-all duration-300 ease-in-out ${isSummaryExpanded ? "max-h-none overflow-visible" : "max-h-[220px] overflow-hidden"}`}>
+                        <div className="text-[12px] leading-[1.8] text-slate-700 whitespace-pre-wrap font-serif bg-[#FAFBFC] p-5 rounded-xl border border-slate-200/80 shadow-inner">
+                          {caseData.fileSummary.substring(0, 8000)}
+                          {caseData.fileSummary.length > 8000 && (
+                            <span className="text-slate-400 italic block mt-3 text-[11px] font-sans">— Document content truncated for display —</span>
+                          )}
+                        </div>
+                        {!isSummaryExpanded && (
+                          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#FAFBFC] via-[#FAFBFC]/90 to-transparent pointer-events-none rounded-b-xl flex items-end justify-center pb-2">
+                            <span className="text-[11px] font-medium text-slate-500 bg-white/90 backdrop-blur-xs px-3 py-1 rounded-full border border-slate-200/80 shadow-2xs">
+                              Click &quot;Expand Summary&quot; to view full text
+                            </span>
+                          </div>
                         )}
                       </div>
                     </div>
                   )}
+
+                  {/* INLINE JURISAI FOLLOW-UP & AI RESPONSES SECTION */}
+                  <div className="mt-8 pt-6 border-t-2 border-indigo-100/80" ref={aiResponseSectionRef}>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white shadow-sm">
+                          <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                            JurisAI Legal Assistant
+                            {conversationMessages.filter(m => m.role === "user").length > 0 && (
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-600 font-bold">
+                                {conversationMessages.filter(m => m.role === "user").length} Question{conversationMessages.filter(m => m.role === "user").length !== 1 ? 's' : ''}
+                              </span>
+                            )}
+                          </h3>
+                          <p className="text-[11px] text-slate-500">Ask follow-up questions or request clause clarifications below</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Conversation Feed */}
+                    <div className="space-y-4">
+                      {/* Empty State */}
+                      {conversationMessages.length === 0 && !isAnalyzing && (
+                        <div className="p-6 rounded-2xl bg-indigo-50/40 border border-indigo-100/80 text-center">
+                          <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mx-auto mb-2">
+                            <span className="material-symbols-outlined text-[20px]">chat</span>
+                          </div>
+                          <p className="text-xs font-semibold text-slate-700">Have questions about this document?</p>
+                          <p className="text-[11px] text-slate-500 max-w-sm mx-auto mt-1">Use the prompt bar at the bottom to ask JurisAI to analyze risk clauses, summarize key terms, or draft counter-proposals.</p>
+                        </div>
+                      )}
+
+                      {/* Messages rendering loop */}
+                      {conversationMessages.map((msg, idx) => {
+                        if (msg.role === "user") {
+                          return (
+                            <div key={idx} className="bg-slate-100/80 border border-slate-200/70 rounded-xl p-3.5 flex items-start gap-3">
+                              <div className="w-6 h-6 rounded-full bg-indigo-600 text-white font-bold text-[10px] flex items-center justify-center shrink-0 mt-0.5">
+                                {user?.name?.[0]?.toUpperCase() || "U"}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-[11px] font-bold text-slate-800">You</span>
+                                  <span className="text-[10px] text-slate-400 font-mono">
+                                    {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-slate-800 font-medium leading-relaxed">{msg.content}</p>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        // Assistant message
+                        let aiData: AiFollowupResponse | null = null;
+                        try {
+                          aiData = JSON.parse(msg.content);
+                        } catch (e) {}
+
+                        const answerText = aiData ? aiData.answer : msg.content;
+                        const keyPoints: string[] = aiData?.keyPoints || [];
+                        const clauses: string[] = aiData?.relatedClauses || [];
+
+                        return (
+                          <div key={idx} className="bg-white border border-indigo-100/80 rounded-2xl p-5 shadow-xs transition-all hover:border-indigo-200">
+                            {/* Header */}
+                            <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center text-[12px] shadow-xs">
+                                  <span className="material-symbols-outlined text-[14px]">auto_awesome</span>
+                                </div>
+                                <span className="font-bold text-xs text-slate-900">JurisAI Response</span>
+                              </div>
+                              {aiData?.confidence && (
+                                <span className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full border ${
+                                  aiData.confidence === "high"
+                                    ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                                    : aiData.confidence === "medium"
+                                      ? "text-amber-700 bg-amber-50 border-amber-200"
+                                      : "text-rose-700 bg-rose-50 border-rose-200"
+                                }`}>
+                                  ● {aiData.confidence.toUpperCase()} CONFIDENCE
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Answer Body */}
+                            <div className="text-xs leading-[1.8] text-slate-700 space-y-2">
+                              {answerText.split("\n").map((line, lIdx) => {
+                                const trimmed = line.trim();
+                                if (!trimmed) return <br key={lIdx} />;
+
+                                if (trimmed.startsWith("## ")) {
+                                  return (
+                                    <h4 key={lIdx} className="text-xs font-bold text-slate-900 mt-3 mb-1 border-l-2 border-indigo-600 pl-2 flex items-center gap-1.5">
+                                      {trimmed.replace(/^##\s*/, "")}
+                                    </h4>
+                                  );
+                                }
+
+                                if (trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
+                                  return (
+                                    <div key={lIdx} className="flex items-start gap-2 ml-1 my-0.5">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2 shrink-0"></span>
+                                      <span
+                                        className="text-xs text-slate-700"
+                                        dangerouslySetInnerHTML={{
+                                          __html: trimmed.replace(/^[-•]\s*/, "").replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 font-semibold">$1</strong>')
+                                        }}
+                                      />
+                                    </div>
+                                  );
+                                }
+
+                                if (/^\d+\.\s/.test(trimmed)) {
+                                  const num = trimmed.match(/^(\d+)\./)?.[1];
+                                  return (
+                                    <div key={lIdx} className="flex items-start gap-2 ml-1 my-0.5">
+                                      <span className="w-4 h-4 rounded bg-indigo-50 border border-indigo-200 text-indigo-700 flex items-center justify-center text-[10px] font-bold mt-0.5 shrink-0">
+                                        {num}
+                                      </span>
+                                      <span
+                                        className="text-xs text-slate-700"
+                                        dangerouslySetInnerHTML={{
+                                          __html: trimmed.replace(/^\d+\.\s*/, "").replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 font-semibold">$1</strong>')
+                                        }}
+                                      />
+                                    </div>
+                                  );
+                                }
+
+                                return (
+                                  <p
+                                    key={lIdx}
+                                    className="text-xs leading-[1.8] text-slate-700 my-1"
+                                    dangerouslySetInnerHTML={{
+                                      __html: trimmed.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 font-semibold">$1</strong>')
+                                    }}
+                                  />
+                                );
+                              })}
+                            </div>
+
+                            {/* Key Takeaways */}
+                            {keyPoints.length > 0 && (
+                              <div className="mt-4 p-3.5 rounded-xl bg-emerald-50/50 border border-emerald-100">
+                                <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 mb-2">
+                                  <span className="material-symbols-outlined text-[15px] text-emerald-600">task_alt</span>
+                                  Key Takeaways
+                                </div>
+                                <ul className="space-y-1">
+                                  {keyPoints.map((point: string, pIdx: number) => (
+                                    <li key={pIdx} className="flex items-start gap-2 text-xs text-emerald-950">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-2 shrink-0"></span>
+                                      <span>{point}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Related Clauses */}
+                            {clauses.length > 0 && (
+                              <div className="mt-3 flex items-center gap-2 flex-wrap">
+                                <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Referenced:</span>
+                                {clauses.map((clause, cIdx) => (
+                                  <span key={cIdx} className="text-[10px] font-mono bg-slate-100 border border-slate-200 text-slate-700 px-2 py-0.5 rounded-md">
+                                    {clause}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Disclaimer & Actions */}
+                            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-400">
+                              <span className="flex items-center gap-1">
+                                <span className="material-symbols-outlined text-[12px] text-amber-500">info</span>
+                                AI legal analysis based on uploaded document context.
+                              </span>
+                              <button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(answerText);
+                                }}
+                                className="hover:text-indigo-600 flex items-center gap-1 transition-colors font-medium"
+                                title="Copy response text"
+                                type="button"
+                              >
+                                <span className="material-symbols-outlined text-[12px]">content_copy</span>
+                                Copy Response
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {/* Inline Loader when isAnalyzing */}
+                      {isAnalyzing && (
+                        <div className="p-5 rounded-2xl bg-white border border-indigo-200 shadow-xs flex flex-col items-center gap-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-bounce" style={{ animationDelay: "0ms" }}></div>
+                            <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-bounce" style={{ animationDelay: "150ms" }}></div>
+                            <div className="w-2.5 h-2.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: "300ms" }}></div>
+                          </div>
+                          <p className="text-xs font-semibold text-slate-700">JurisAI is analyzing document context...</p>
+                        </div>
+                      )}
+
+                      {/* Error state */}
+                      {followupError && (
+                        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-3">
+                          <span className="material-symbols-outlined text-rose-600 text-[18px] mt-0.5 shrink-0">error</span>
+                          <div>
+                            <p className="text-xs font-bold text-rose-900">Analysis Error</p>
+                            <p className="text-[11px] text-rose-700 mt-0.5">{followupError}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
                   {/* Document Footer */}
                   <div className="pt-6 mt-4 border-t border-slate-200/80 flex items-center justify-between">
@@ -795,7 +1234,15 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
               <p className="text-xs text-slate-500 font-mono truncate">{caseData?.fileName}</p>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+            <div className="flex-1 overflow-y-auto p-5 space-y-5">
+              {/* MEME LEGAL VIBE CHECK SECTION */}
+              <MemeVibeCheck
+                riskScore={overallRiskScore}
+                criticalCount={risks.filter((r) => r.severity === "critical").length}
+                isVisible={showMeme}
+                onToggleVisible={handleToggleMeme}
+              />
+
               {/* Risk Score Card */}
               <section>
                 <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Overall Risk Assessment</h3>
@@ -863,6 +1310,20 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
       {/* FOOTER CONTROL BAR */}
       <footer className="w-full bg-white border-t border-slate-200 px-6 py-3 sticky bottom-0 z-40 shadow-lg">
         <div className="max-w-4xl mx-auto flex items-center gap-3 relative">
+          {/* Conversation History Badge */}
+          {conversationMessages.filter(m => m.role === "user").length > 0 && (
+            <button
+              onClick={() => aiResponseSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-600 hover:bg-indigo-100 transition-colors shrink-0"
+              title="Jump to conversation history"
+            >
+              <span className="material-symbols-outlined text-[14px]">forum</span>
+              <span className="text-[10px] font-bold">
+                {conversationMessages.filter(m => m.role === "user").length}
+              </span>
+            </button>
+          )}
+
           <BorderGlow
             className="flex-1 shadow-sm"
             borderRadius={9999}
@@ -873,17 +1334,18 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
             edgeSensitivity={45}
             colors={["#4f46e5", "#6366f1", "#10b981", "#3b82f6"]}
           >
-            <div className="w-full bg-white hover:bg-slate-50/80 border border-slate-300 hover:border-indigo-400 focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-500/15 rounded-full px-4 py-2.5 flex items-center gap-3 transition-all shadow-xs">
+            <div className={`w-full bg-white hover:bg-slate-50/80 border hover:border-indigo-400 focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-500/15 rounded-full px-4 py-2.5 flex items-center gap-3 transition-all shadow-xs ${isAnalyzing ? "border-indigo-400 animate-pulse" : "border-slate-300"}`}>
               <input
-                className="flex-1 bg-transparent text-xs font-medium text-slate-900 placeholder:text-slate-500 focus:outline-none"
+                className="flex-1 bg-transparent text-xs font-medium text-slate-900 placeholder:text-slate-500 focus:outline-none disabled:opacity-50"
                 id="legal-prompt-input"
-                placeholder="Ask JurisAI a follow-up question about this analysis..."
+                placeholder={isAnalyzing ? "JurisAI is analyzing your question..." : "Ask JurisAI a follow-up question about this analysis..."}
                 type="text"
                 value={promptText}
                 onChange={(e) => setPromptText(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleExecutePrompt();
                 }}
+                disabled={isAnalyzing}
               />
             </div>
           </BorderGlow>
@@ -891,12 +1353,21 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
           {/* EXECUTE BUTTON */}
           <button
             onClick={handleExecutePrompt}
-            disabled={isAnalyzing}
-            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white px-5 py-2 rounded-full font-semibold text-xs transition-colors shadow-sm"
+            disabled={isAnalyzing || !promptText.trim()}
+            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2 rounded-full font-semibold text-xs transition-colors shadow-sm"
             type="button"
           >
-            <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
-            <span>{isAnalyzing ? "Analyzing..." : "Ask"}</span>
+            {isAnalyzing ? (
+              <>
+                <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                <span>Analyzing...</span>
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
+                <span>Ask</span>
+              </>
+            )}
           </button>
         </div>
       </footer>

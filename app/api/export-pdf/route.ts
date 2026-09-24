@@ -296,7 +296,7 @@ export async function POST(request: NextRequest) {
 
     if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
       // @ts-ignore
-      const chromium = (await import("@sparticuz/chromium")).default;
+      const chromium: any = (await import("@sparticuz/chromium")).default;
       // @ts-ignore
       puppeteer = (await import("puppeteer-core")).default;
       launchOptions = {
@@ -337,7 +337,7 @@ export async function POST(request: NextRequest) {
         };
       } catch {
         // @ts-ignore
-        const chromium = (await import("@sparticuz/chromium")).default;
+        const chromium: any = (await import("@sparticuz/chromium")).default;
         // @ts-ignore
         puppeteer = (await import("puppeteer-core")).default;
         launchOptions = {

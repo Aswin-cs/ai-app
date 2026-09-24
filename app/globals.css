@@ -119,3 +119,33 @@ body {
   animation: ai-shimmer-sweep 2s infinite;
 }
 
+/* Desktop sidebar content open/close animation */
+.sidebar-content {
+  opacity: 0;
+  transform: translateX(-16px);
+  transition: opacity 320ms cubic-bezier(0.32, 0.72, 0, 1),
+              transform 320ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.sidebar-content.sidebar-content-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Staggered children animation for sidebar items */
+.sidebar-content > *:nth-child(1) { transition-delay: 40ms; }
+.sidebar-content > *:nth-child(2) { transition-delay: 80ms; }
+.sidebar-content > *:nth-child(3) { transition-delay: 120ms; }
+.sidebar-content > *:nth-child(4) { transition-delay: 160ms; }
+.sidebar-content > *:nth-child(5) { transition-delay: 200ms; }
+
+/* Fade-in utility */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 300ms ease-out forwards;
+}
+
