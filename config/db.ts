@@ -1,3 +1,9 @@
+/**
+ * JurisAI Database Configuration
+ * 
+ * [PERFORMANCE FEATURE: Mongoose Connection Pooling & Latency Optimization]
+ * Manages cached connection promises and pool configurations for serverless execution.
+ */
 import mongoose from "mongoose";
 
 const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://localhost:27017/jurisai";
@@ -26,6 +32,11 @@ export async function connectDB(): Promise<typeof mongoose> {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      maxPoolSize: 10,
+      minPoolSize: 2,
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {

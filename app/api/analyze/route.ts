@@ -1,9 +1,13 @@
+/**
+ * JurisAI Document Analysis API Route
+ * 
+ * [FEATURE: Automated Document Ingestion & Validation]
+ * [AI FEATURE: Multi-Modal Document Vision & DOCX Text Extraction]
+ * [AI FEATURE: Schema-Guided Generative Legal Risk Scoring]
+ * [SECURITY FEATURE: Input Clamping & Error Masking]
+ */
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import connectDB from "@/config/db";
 import Case from "@/models/case.model";
-import User from "@/models/user.model";
 import { generateGeminiContent } from "@/config/gemini";
 import {
   LEGAL_SYSTEM_INSTRUCTION,
@@ -11,6 +15,8 @@ import {
   MAX_FILE_SIZE,
 } from "@/config/legalSystemPrompt";
 import { GEMINI_RESPONSE_SCHEMA } from "@/types/case.types";
+import { sanitizeString, sanitizeFileName, safeErrorMessage } from "@/lib/security";
+import { getAuthenticatedUser } from "@/lib/authUtils";
 
 /**
  * Extract plain text from a DOCX file buffer.
@@ -52,8 +58,8 @@ function buildContentParts(
   category: "text" | "document" | "image",
   extractedText: string | null,
   userPrompt: string
-): any[] {
-  const parts: any[] = [];
+) {
+  const parts: Array<{ text: string } | { inlineData: { data: string; mimeType: string } }> = [];
 
   // Add user prompt context if provided
   const promptPrefix = userPrompt
@@ -81,29 +87,17 @@ function buildContentParts(
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Authenticate the user
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized. Please sign in to continue." },
-        { status: 401 }
-      );
-    }
-
-    // 2. Connect to MongoDB and find user
-    await connectDB();
-    const user = await User.findOne({ email: session.user.email });
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found in database." },
-        { status: 404 }
-      );
+    // 1. Authenticate the user & connect to DB
+    const { user, errorResponse } = await getAuthenticatedUser();
+    if (errorResponse || !user) {
+      return errorResponse || NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // 3. Parse the FormData
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
-    const prompt = (formData.get("prompt") as string) || "";
+    const rawPrompt = (formData.get("prompt") as string) || "";
+    const prompt = sanitizeString(rawPrompt, 2000);
 
     if (!file) {
       return NextResponse.json(
@@ -112,8 +106,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 4. Validate file type
-    const fileName = file.name;
+    // 4. Validate file type and name
+    const rawFileName = file.name || "document";
+    const fileName = sanitizeFileName(rawFileName);
     const fileExtension = "." + fileName.split(".").pop()?.toLowerCase();
     const fileTypeInfo = SUPPORTED_FILE_TYPES[fileExtension];
 
@@ -159,7 +154,7 @@ export async function POST(request: NextRequest) {
         // Update case as failed if DOCX extraction fails
         await Case.findByIdAndUpdate(caseDoc._id, {
           status: "failed",
-          errorMessage: `Failed to extract text from DOCX: ${docxError?.message || docxError}`,
+          errorMessage: safeErrorMessage(docxError, "Failed to extract text from DOCX"),
         });
         return NextResponse.json(
           { error: "Failed to parse DOCX file. The file may be corrupted." },
@@ -223,14 +218,13 @@ export async function POST(request: NextRequest) {
       // Update case as failed if Gemini call fails
       await Case.findByIdAndUpdate(caseDoc._id, {
         status: "failed",
-        errorMessage: aiError?.message || "AI analysis failed",
+        errorMessage: safeErrorMessage(aiError, "AI analysis failed"),
       });
 
       return NextResponse.json(
         {
           error: "AI analysis failed. Please try again.",
           caseId: caseDoc._id.toString(),
-          details: aiError?.message || "Unknown error",
         },
         { status: 500 }
       );
@@ -243,3 +237,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "tsx --test __tests__/security.test.ts __tests__/legalPrompt.test.ts __tests__/authUtils.test.ts __tests__/caseModel.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.23.0",
@@ -33,6 +34,9 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.23.15",
+    "typescript": "^5",
+    "vite": "^8.3.1",
+    "vitest": "^5.0.1"
   }
 }

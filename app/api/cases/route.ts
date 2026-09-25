@@ -1,33 +1,24 @@
+/**
+ * JurisAI Case History API Route
+ * 
+ * [FEATURE: User Case History Listing & Executive Summaries]
+ * [PERFORMANCE FEATURE: Database Query Projection & Payload Trimming]
+ * [SECURITY FEATURE: Session Ownership Verification & Error Masking]
+ */
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import connectDB from "@/config/db";
 import Case from "@/models/case.model";
-import User from "@/models/user.model";
+import { getAuthenticatedUser } from "@/lib/authUtils";
+import { safeErrorMessage } from "@/lib/security";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // 1. Authenticate user
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized. Please sign in." },
-        { status: 401 }
-      );
-    }
+    const { user, errorResponse } = await getAuthenticatedUser();
+    if (errorResponse || !user) return errorResponse!;
 
-    // 2. Connect to MongoDB
-    await connectDB();
-    const user = await User.findOne({ email: session.user.email });
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found." },
-        { status: 404 }
-      );
-    }
-
-    // 3. Fetch user's cases sorted by newest first
+    // 2. Fetch user's cases with projection (excluding heavy fileSummary string)
     const cases = await Case.find({ userId: user._id })
+      .select("_id fileName status createdAt analysis.documentTitle analysis.documentType analysis.overallRiskScore analysis.risks")
       .sort({ createdAt: -1 })
       .lean();
 
@@ -46,11 +37,13 @@ export async function GET(request: NextRequest) {
       success: true,
       cases: formattedCases,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [/api/cases] Error fetching case history:", error);
     return NextResponse.json(
-      { error: "Failed to fetch case history." },
+      { error: safeErrorMessage(error, "Failed to fetch case history.") },
       { status: 500 }
     );
   }
 }
+
+

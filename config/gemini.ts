@@ -1,3 +1,10 @@
+/**
+ * JurisAI Core AI Configuration
+ * 
+ * [AI FEATURE: Multi-Model Resiliency & Auto-Fallback Cascade]
+ * Provides initialized Google Gen AI SDK client and multi-model fallback execution
+ * loops to guarantee high availability during API rate limits or regional outages.
+ */
 import { GoogleGenAI } from "@google/genai";
 import { GEMINI_API_KEY, GEMINI_MODEL } from "./envConfig";
 

@@ -10,11 +10,13 @@ import "./ThemeToggle.css";
  * with smooth CSS transitions, crater details, and ray animations.
  */
 export default function ThemeToggle() {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   // Prevent hydration mismatch
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (!mounted) {
     // Render a placeholder with same dimensions to prevent layout shift

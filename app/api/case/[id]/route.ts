@@ -1,39 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import connectDB from "@/config/db";
 import Case from "@/models/case.model";
-import User from "@/models/user.model";
+import { getAuthenticatedUser } from "@/lib/authUtils";
+import { safeErrorMessage } from "@/lib/security";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // 1. Authenticate the user
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized. Please sign in." },
-        { status: 401 }
-      );
-    }
+    // 1. Authenticate user
+    const { user, errorResponse } = await getAuthenticatedUser();
+    if (errorResponse || !user) return errorResponse!;
 
-    // 2. Connect to MongoDB
-    await connectDB();
-    const user = await User.findOne({ email: session.user.email });
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found." },
-        { status: 404 }
-      );
-    }
-
-    // 3. Resolve params and find the case
+    // 2. Resolve params and validate ObjectId format
     const { id } = await params;
 
-    // Validate ObjectId format
-    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
       return NextResponse.json(
         { error: "Invalid case ID format." },
         { status: 400 }
@@ -49,7 +31,7 @@ export async function GET(
       );
     }
 
-    // 4. Verify ownership — user can only access their own cases
+    // 3. Verify ownership — user can only access their own cases
     if (caseDoc.userId.toString() !== user._id.toString()) {
       return NextResponse.json(
         { error: "Access denied. This case does not belong to you." },
@@ -57,7 +39,7 @@ export async function GET(
       );
     }
 
-    // 5. Return the case data
+    // 4. Return the case data
     return NextResponse.json({
       success: true,
       case: {
@@ -75,40 +57,25 @@ export async function GET(
         updatedAt: caseDoc.updatedAt,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [/api/case/[id]] Error:", error);
     return NextResponse.json(
-      { error: "Internal server error." },
+      { error: safeErrorMessage(error, "Internal server error.") },
       { status: 500 }
     );
   }
 }
 
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 1. Authenticate user
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized. Please sign in." },
-        { status: 401 }
-      );
-    }
+    const { user, errorResponse } = await getAuthenticatedUser();
+    if (errorResponse || !user) return errorResponse!;
 
-    // 2. Connect to DB
-    await connectDB();
-    const user = await User.findOne({ email: session.user.email });
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found." },
-        { status: 404 }
-      );
-    }
-
-    // 3. Validate ID
+    // 2. Validate ID
     const { id } = await params;
     if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
       return NextResponse.json(
@@ -117,7 +84,7 @@ export async function DELETE(
       );
     }
 
-    // 4. Find case and verify ownership
+    // 3. Find case and verify ownership
     const caseDoc = await Case.findById(id);
     if (!caseDoc) {
       return NextResponse.json(
@@ -133,19 +100,21 @@ export async function DELETE(
       );
     }
 
-    // 5. Delete document
+    // 4. Delete document
     await Case.findByIdAndDelete(id);
 
     return NextResponse.json({
       success: true,
       message: "Case deleted successfully.",
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("❌ [/api/case/[id]] DELETE error:", error);
     return NextResponse.json(
-      { error: "Failed to delete case." },
+      { error: safeErrorMessage(error, "Failed to delete case.") },
       { status: 500 }
     );
   }
 }
+
+
 

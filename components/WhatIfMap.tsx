@@ -24,6 +24,38 @@ interface WhatIfMapProps {
 
 export type DecisionScenarioKey = "as_is" | "negotiate" | "decline";
 
+export interface CenterNodeData {
+  title?: string;
+  description?: string;
+  scenarioLabel: string;
+}
+
+export interface ConNodeData {
+  title: string;
+  clause?: string;
+  severity: "critical" | "warning" | "note";
+  explanation: string;
+  statute?: string;
+}
+
+export interface ConImpactNodeData {
+  title: string;
+  description: string;
+}
+
+export interface ProNodeData {
+  title: string;
+  clause?: string;
+  badge?: string;
+  explanation: string;
+  benefit?: string;
+}
+
+export interface ProBenefitNodeData {
+  title: string;
+  description: string;
+}
+
 // ==========================================
 // CUSTOM NODE COMPONENTS (LIGHT PREMIUM DESIGN)
 // ==========================================
@@ -31,7 +63,7 @@ export type DecisionScenarioKey = "as_is" | "negotiate" | "decline";
 /**
  * 1. Center Decision Node ("What If I Make This Decision?")
  */
-const CenterDecisionNode = ({ data }: { data: any }) => {
+const CenterDecisionNode = ({ data }: { data: CenterNodeData }) => {
   return (
     <div className="bg-white dark:bg-slate-800 border-2 border-indigo-600 shadow-[0_12px_36px_rgba(79,70,229,0.18)] rounded-2xl p-5 w-80 text-slate-900 dark:text-slate-100 font-sans relative transition-all duration-300 hover:shadow-[0_16px_48px_rgba(79,70,229,0.24)]">
       {/* Handles: Left for Cons, Right for Pros */}
@@ -83,7 +115,7 @@ const CenterDecisionNode = ({ data }: { data: any }) => {
 /**
  * 2. Cons / Vulnerabilities Node (LEFT SIDE)
  */
-const ConNode = ({ data }: { data: any }) => {
+const ConNode = ({ data }: { data: ConNodeData }) => {
   const isCritical = data.severity === "critical";
 
   return (
@@ -140,7 +172,7 @@ const ConNode = ({ data }: { data: any }) => {
 /**
  * 3. Far-Left Impact / Financial Exposure Node
  */
-const ConImpactNode = ({ data }: { data: any }) => (
+const ConImpactNode = ({ data }: { data: ConImpactNodeData }) => (
   <div className="bg-rose-50/95 dark:bg-rose-950/90 border-2 border-rose-200 dark:border-rose-800/80 shadow-md rounded-xl p-3.5 w-64 text-slate-900 dark:text-slate-100 font-sans relative">
     <Handle
       type="target"
@@ -164,7 +196,7 @@ const ConImpactNode = ({ data }: { data: any }) => (
 /**
  * 4. Pros / Advantages Node (RIGHT SIDE)
  */
-const ProNode = ({ data }: { data: any }) => {
+const ProNode = ({ data }: { data: ProNodeData }) => {
   return (
     <div className="bg-white dark:bg-slate-800 border-2 border-emerald-400 bg-emerald-50/20 dark:bg-emerald-950/40 shadow-[0_4px_20px_rgba(16,185,129,0.08)] rounded-2xl p-4 w-72 text-slate-900 dark:text-slate-100 font-sans relative transition-all duration-300 hover:scale-[1.02]">
       {/* Target handle connecting from Center Decision Node (Left side of Pro Node) */}
@@ -219,7 +251,7 @@ const ProNode = ({ data }: { data: any }) => {
 /**
  * 5. Far-Right Strategic Gain / Benefit Node
  */
-const ProBenefitNode = ({ data }: { data: any }) => (
+const ProBenefitNode = ({ data }: { data: ProBenefitNodeData }) => (
   <div className="bg-emerald-50/95 dark:bg-emerald-950/90 border-2 border-emerald-200 dark:border-emerald-800/80 shadow-md rounded-xl p-3.5 w-64 text-slate-900 dark:text-slate-100 font-sans relative">
     <Handle
       type="target"

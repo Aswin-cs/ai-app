@@ -1,12 +1,18 @@
+/**
+ * JurisAI Case Follow-Up API Route
+ * 
+ * [AI FEATURE: Contextual Retrieval-Augmented Generation (RAG Engine)]
+ * [FEATURE: Interactive Document-Specific Q&A & Counter-Proposal Drafting]
+ * [SECURITY FEATURE: Input Sanitization & Session Verification]
+ */
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import connectDB from "@/config/db";
 import Case from "@/models/case.model";
-import User from "@/models/user.model";
 import Conversation from "@/models/conversation.model";
 import { generateGeminiContent } from "@/config/gemini";
 import { FOLLOWUP_SYSTEM_INSTRUCTION } from "@/config/followupSystemPrompt";
+import { sanitizeString, safeErrorMessage } from "@/lib/security";
+import { getAuthenticatedUser } from "@/lib/authUtils";
+
 
 /**
  * POST /api/case/[id]/followup
@@ -17,23 +23,10 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // 1. Authenticate user
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized. Please sign in." },
-        { status: 401 }
-      );
-    }
-
-    // 2. Connect to DB
-    await connectDB();
-    const user = await User.findOne({ email: session.user.email });
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found." },
-        { status: 404 }
-      );
+    // 1. Authenticate user & connect to DB
+    const { user, errorResponse } = await getAuthenticatedUser();
+    if (errorResponse || !user) {
+      return errorResponse || NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // 3. Validate case ID
@@ -70,16 +63,24 @@ export async function POST(
 
     // 5. Parse request body
     const body = await request.json();
-    const { question } = body;
+    const rawQuestion = body?.question;
 
-    if (!question || typeof question !== "string" || !question.trim()) {
+    if (!rawQuestion || typeof rawQuestion !== "string" || !rawQuestion.trim()) {
       return NextResponse.json(
         { error: "A question is required." },
         { status: 400 }
       );
     }
 
-    const trimmedQuestion = question.trim().substring(0, 2000);
+    const trimmedQuestion = sanitizeString(rawQuestion, 2000);
+
+    if (!trimmedQuestion) {
+      return NextResponse.json(
+        { error: "Invalid or empty question provided." },
+        { status: 400 }
+      );
+    }
+
 
     // 6. Get or create conversation for this case + user
     let conversation = await Conversation.findOne({
@@ -242,13 +243,13 @@ export async function POST(
     console.error("❌ [/api/case/[id]/followup] Error:", error);
     return NextResponse.json(
       {
-        error:
-          error?.message || "Failed to process follow-up question.",
+        error: safeErrorMessage(error, "Failed to process follow-up question."),
       },
       { status: 500 }
     );
   }
 }
+
 
 /**
  * GET /api/case/[id]/followup
@@ -259,21 +260,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized." },
-        { status: 401 }
-      );
-    }
-
-    await connectDB();
-    const user = await User.findOne({ email: session.user.email });
-    if (!user) {
-      return NextResponse.json(
-        { error: "User not found." },
-        { status: 404 }
-      );
+    const { user, errorResponse } = await getAuthenticatedUser();
+    if (errorResponse || !user) {
+      return errorResponse || NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;

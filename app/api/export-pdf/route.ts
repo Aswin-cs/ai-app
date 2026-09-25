@@ -1,18 +1,26 @@
+/**
+ * JurisAI Executive PDF Export Route
+ * 
+ * [FEATURE: Server-Side Executive PDF Summary Export]
+ * [SECURITY FEATURE: Multi-Layer XSS Prevention & HTML Sanitization]
+ * [PERFORMANCE FEATURE: Optimized Puppeteer Serverless Resource Lifecycle]
+ */
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { escapeHtml, safeErrorMessage, sanitizeFileName } from "@/lib/security";
+import { getAuthenticatedUser } from "@/lib/authUtils";
 
 function generatePdfHtml(data: any) {
-  const {
-    documentTitle = "Legal Analysis Summary",
-    documentType = "Legal Document",
-    jurisdiction = "",
-    effectiveDate = "",
-    overallRiskScore = 0,
-    summary = "",
-    parties = [],
-    risks = [],
-  } = data;
+  const documentTitle = escapeHtml(data?.documentTitle || "Legal Analysis Summary");
+  const documentType = escapeHtml(data?.documentType || "Legal Document");
+  const jurisdiction = escapeHtml(data?.jurisdiction || "");
+  const effectiveDate = escapeHtml(data?.effectiveDate || "");
+  const summary = escapeHtml(data?.summary || "");
+  const overallRiskScore = typeof data?.overallRiskScore === "number"
+    ? Math.max(0, Math.min(100, data.overallRiskScore))
+    : 0;
+
+  const parties = Array.isArray(data?.parties) ? data.parties : [];
+  const risks = Array.isArray(data?.risks) ? data.risks : [];
 
   const riskScoreColor =
     overallRiskScore >= 70
@@ -29,7 +37,7 @@ function generatePdfHtml(data: any) {
       : "#ecfdf5";
 
   const partiesHtml =
-    parties && parties.length > 0
+    parties.length > 0
       ? `
     <div style="margin-bottom: 24px;">
       <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 8px;">
@@ -43,10 +51,10 @@ function generatePdfHtml(data: any) {
             i > 0 ? "border-top: 1px solid #f1f5f9;" : ""
           }">
             <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; color: #64748b; width: 90px; flex-shrink: 0;">${
-              p.role
+              escapeHtml(p?.role)
             }</span>
             <span style="font-size: 13px; font-weight: 600; color: #0f172a;">${
-              p.name
+              escapeHtml(p?.name)
             }</span>
           </div>
         `
@@ -58,11 +66,12 @@ function generatePdfHtml(data: any) {
       : "";
 
   const risksHtml =
-    risks && risks.length > 0
+    risks.length > 0
       ? risks
           .map((r: any) => {
-            const isCritical = r.severity === "critical";
-            const isWarning = r.severity === "warning";
+            const rawSeverity = String(r?.severity || "info").toLowerCase();
+            const isCritical = rawSeverity === "critical";
+            const isWarning = rawSeverity === "warning";
 
             const barColor = isCritical
               ? "#dc2626"
@@ -88,27 +97,34 @@ function generatePdfHtml(data: any) {
               ? "#fef3c7"
               : "#e2e8f0";
 
+            const clause = escapeHtml(r?.clause);
+            const severity = escapeHtml(rawSeverity);
+            const title = escapeHtml(r?.title);
+            const statuteReference = escapeHtml(r?.statuteReference);
+            const sourceText = escapeHtml(r?.sourceText);
+            const explanation = escapeHtml(r?.explanation);
+
             return `
         <div style="display: flex; background: ${cardBg}; border: 1px solid ${cardBorder}; border-radius: 10px; margin-bottom: 16px; overflow: hidden; page-break-inside: avoid;">
           <div style="width: 6px; background: ${barColor}; flex-shrink: 0;"></div>
           <div style="flex: 1; padding: 14px 18px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
               <span style="font-family: monospace; font-size: 10px; font-weight: 700; text-transform: uppercase; color: #475569; background: #ffffff; border: 1px solid #cbd5e1; padding: 2px 8px; border-radius: 4px;">
-                ${r.clause}
+                ${clause}
               </span>
               <span style="font-family: monospace; font-size: 9px; font-weight: 700; text-transform: uppercase; color: #ffffff; background: ${badgeBg}; padding: 3px 8px; border-radius: 12px;">
-                ${r.severity}
+                ${severity}
               </span>
             </div>
 
             <div style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">
-              ${r.title}
+              ${title}
             </div>
 
             ${
-              r.statuteReference
+              statuteReference
                 ? `<div style="font-size: 11px; font-family: monospace; color: #4338ca; background: #ffffff; border: 1px solid #c7d2fe; padding: 4px 10px; border-radius: 6px; margin-bottom: 10px; display: inline-block;">
-                ⚖️ ${r.statuteReference}
+                ⚖️ ${statuteReference}
               </div>`
                 : ""
             }
@@ -116,14 +132,14 @@ function generatePdfHtml(data: any) {
             <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px;">
               <div style="font-size: 9px; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px;">Document Excerpt</div>
               <div style="font-size: 12px; font-style: italic; color: #1e293b; font-family: Georgia, serif; line-height: 1.5;">
-                &ldquo;${r.sourceText}&rdquo;
+                &ldquo;${sourceText}&rdquo;
               </div>
             </div>
 
             <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px;">
               <div style="font-size: 9px; font-weight: 700; text-transform: uppercase; color: #4f46e5; margin-bottom: 4px;">Statutory Explanation</div>
               <div style="font-size: 12px; color: #334155; line-height: 1.6;">
-                ${r.explanation}
+                ${explanation}
               </div>
             </div>
           </div>
@@ -265,7 +281,7 @@ function generatePdfHtml(data: any) {
 
   ${partiesHtml}
 
-  <div class="section-header">Flagged Risk Clauses (${risks ? risks.length : 0} Items)</div>
+  <div class="section-header">Flagged Risk Clauses (${risks.length} Items)</div>
   ${risksHtml}
 
   <div class="footer">
@@ -279,15 +295,12 @@ export async function POST(request: NextRequest) {
   let browser: any = null;
   try {
     // 1. Authenticate user
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized. Please sign in to export PDF." },
-        { status: 401 }
-      );
+    const { errorResponse } = await getAuthenticatedUser();
+    if (errorResponse) {
+      return errorResponse;
     }
 
-    // 2. Parse request body
+    // 2. Parse request body safely
     const body = await request.json();
 
     // 3. Launch Puppeteer browser matching server/Vercel environment
@@ -332,7 +345,15 @@ export async function POST(request: NextRequest) {
 
         launchOptions = {
           headless: true,
-          args: ["--no-sandbox", "--disable-setuid-sandbox"],
+          args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-accelerated-2d-canvas",
+            "--no-first-run",
+            "--no-zygote",
+            "--disable-gpu",
+          ],
           ...(executablePath ? { executablePath } : {}),
         };
       } catch {
@@ -351,10 +372,11 @@ export async function POST(request: NextRequest) {
 
     browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
+    page.setDefaultNavigationTimeout(15000);
 
     // 4. Generate HTML content and set page content
     const htmlContent = generatePdfHtml(body);
-    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+    await page.setContent(htmlContent, { waitUntil: "domcontentloaded", timeout: 15000 });
 
     // 5. Generate PDF buffer with format A4 and printBackground true
     const pdfBuffer = await page.pdf({
@@ -368,31 +390,33 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // 6. Return PDF response with headers
-    const safeTitle = (body.documentTitle || "Lease_Analysis_Summary")
-      .replace(/[^a-zA-Z0-9\s-]/g, "")
-      .replace(/\s+/g, "_")
-      .substring(0, 60);
+    await page.close();
 
-    const filename = `${safeTitle || "Lease_Analysis"}_Summary.pdf`;
+    // 6. Return PDF response with headers
+    const safeTitle = sanitizeFileName(body?.documentTitle || "Legal_Analysis");
+    const filename = `${safeTitle}_Summary.pdf`;
 
     return new NextResponse(pdfBuffer, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="${filename}"`,
-        "Cache-Control": "no-store",
+        "Cache-Control": "no-store, max-age=0",
       },
     });
   } catch (error: any) {
     console.error("❌ [/api/export-pdf] Error generating PDF:", error);
     return NextResponse.json(
-      { error: `PDF generation failed: ${error?.message || error}` },
+      { error: safeErrorMessage(error, "PDF generation failed. Please try again.") },
       { status: 500 }
     );
   } finally {
     if (browser) {
-      await browser.close();
+      try {
+        await browser.close();
+      } catch {}
     }
   }
 }
+
+

@@ -382,9 +382,9 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
 
   const severityTextColor = (severity: string) => {
     switch (severity) {
-      case "critical": return "text-red-600";
-      case "warning": return "text-amber-600";
-      default: return "text-slate-500";
+      case "critical": return "text-red-700 dark:text-red-400";
+      case "warning": return "text-amber-700 dark:text-amber-400";
+      default: return "text-slate-700 dark:text-slate-300";
     }
   };
 
@@ -406,17 +406,17 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
 
   const severityBadgeColor = (severity: string) => {
     switch (severity) {
-      case "critical": return "text-red-700 bg-red-100";
-      case "warning": return "text-amber-700 bg-amber-100";
-      default: return "text-slate-600 bg-slate-100";
+      case "critical": return "text-red-800 bg-red-100 dark:bg-red-950/80 dark:text-red-300";
+      case "warning": return "text-amber-800 bg-amber-100 dark:bg-amber-950/80 dark:text-amber-300";
+      default: return "text-slate-700 bg-slate-100 dark:bg-slate-800 dark:text-slate-300";
     }
   };
 
   // Risk score color
   const riskScoreColor = (score: number) => {
-    if (score >= 70) return "text-red-600";
-    if (score >= 40) return "text-amber-600";
-    return "text-emerald-600";
+    if (score >= 70) return "text-red-700 dark:text-red-400";
+    if (score >= 40) return "text-amber-700 dark:text-amber-400";
+    return "text-emerald-700 dark:text-emerald-400";
   };
 
   const riskScoreLabel = (score: number) => {
@@ -762,27 +762,27 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 {/* Document Header — Title Block */}
                 <div className="px-10 pt-10 pb-7 border-b border-slate-200/80 dark:border-slate-800">
                   <div className="flex items-center justify-center gap-2 mb-4">
-                    <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
-                    <span className="font-mono text-[10px] text-slate-400 tracking-[0.15em] uppercase shrink-0 px-3">
+                    <div className="h-px flex-1 bg-slate-300 dark:bg-slate-700" />
+                    <span className="font-mono text-[10px] font-bold text-slate-700 dark:text-slate-300 tracking-[0.15em] uppercase shrink-0 px-3">
                       {analysis?.documentType || "Legal Document"}
                     </span>
-                    <div className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-px flex-1 bg-slate-300 dark:bg-slate-700" />
                   </div>
                   <h1 className="font-extrabold text-[18px] tracking-tight text-[#0F172A] dark:text-slate-100 uppercase text-center leading-snug">
                     {documentTitle}
                   </h1>
-                  <div className="flex items-center justify-center gap-3 mt-3 text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                  <div className="flex items-center justify-center gap-3 mt-3 text-[11px] text-slate-700 dark:text-slate-300 font-mono font-medium">
                     {analysis?.jurisdiction && (
                       <span className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[13px] text-slate-400">location_on</span>
+                        <span className="material-symbols-outlined text-[13px] text-slate-600 dark:text-slate-400">location_on</span>
                         {analysis.jurisdiction}
                       </span>
                     )}
                     {analysis?.effectiveDate && (
                       <>
-                        <span className="text-slate-300 dark:text-slate-600">·</span>
+                        <span className="text-slate-400 dark:text-slate-500">·</span>
                         <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[13px] text-slate-400">calendar_today</span>
+                          <span className="material-symbols-outlined text-[13px] text-slate-600 dark:text-slate-400">calendar_today</span>
                           {analysis.effectiveDate}
                         </span>
                       </>
@@ -822,12 +822,12 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                               <span className="material-symbols-outlined text-[18px]">analytics</span>
                             </div>
                             <div>
-                              <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
+                              <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
                                 Executive Risk Assessment &amp; Vibe Check
                                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold">
                                   Hidden
                                 </span>
-                              </h3>
+                              </h2>
                               <p className="text-[11px] text-slate-500 dark:text-slate-400">
                                 Critical Threat Score: <strong className={riskScoreColor(overallRiskScore)}>{overallRiskScore}/100</strong> ({riskScoreLabel(overallRiskScore)})
                               </p>
@@ -860,9 +860,9 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                               <span className="material-symbols-outlined text-[18px]">analytics</span>
                             </div>
                             <div>
-                              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
+                              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
                                 Executive Risk Assessment &amp; Vibe Check
-                              </h3>
+                              </h2>
                               <p className="text-[11px] text-slate-500 dark:text-slate-400">
                                 AI-calculated critical threat index &amp; contextual legal vibe check
                               </p>
@@ -968,13 +968,13 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   {analysis?.parties && analysis.parties.length > 0 && (
                     <div>
                       <div className="flex items-center gap-2 mb-3">
-                        <span className="material-symbols-outlined text-[14px] text-slate-400">group</span>
-                        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Parties to the Agreement</span>
+                        <span className="material-symbols-outlined text-[14px] text-slate-600 dark:text-slate-400">group</span>
+                        <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-700 dark:text-slate-300">Parties to the Agreement</span>
                       </div>
                       <div className="bg-slate-50/80 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
                         {analysis.parties.map((p, i) => (
                           <div key={i} className={`flex items-center gap-4 px-4 py-2.5 ${i > 0 ? 'border-t border-slate-100 dark:border-slate-800' : ''}`}>
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400 w-20 shrink-0">{p.role}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 w-20 shrink-0">{p.role}</span>
                             <span className="text-xs font-semibold text-[#0F172A] dark:text-slate-100">{p.name}</span>
                           </div>
                         ))}
@@ -1133,9 +1133,9 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                             <span className="material-symbols-outlined text-[18px]">article</span>
                           </div>
                           <div>
-                            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                            <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                               Source Document Summary
-                            </h3>
+                            </h2>
                             <p className="text-[11px] text-slate-500 dark:text-slate-400">Original document context &amp; full text preview</p>
                           </div>
                         </div>
@@ -1180,14 +1180,14 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                           <span className="material-symbols-outlined text-[20px]">auto_awesome</span>
                         </div>
                         <div>
-                          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
+                          <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
                             JurisAI Follow-up &amp; AI Responses
                             {conversationMessages.filter(m => m.role === "user").length > 0 && (
                               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/80 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 font-bold">
                                 {conversationMessages.filter(m => m.role === "user").length} Question{conversationMessages.filter(m => m.role === "user").length !== 1 ? 's' : ''}
                               </span>
                             )}
-                          </h3>
+                          </h2>
                           <p className="text-[11px] text-slate-500 dark:text-slate-400">Interactive legal consultation, clause clarifications &amp; follow-up answers</p>
                         </div>
                       </div>
@@ -1275,13 +1275,22 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                                 }
 
                                 if (trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
+                                  const textToFormat = trimmed.replace(/^[-•]\s*/, "");
+                                  const safeHtml = textToFormat
+                                    .replace(/&/g, "&amp;")
+                                    .replace(/</g, "&lt;")
+                                    .replace(/>/g, "&gt;")
+                                    .replace(/"/g, "&quot;")
+                                    .replace(/'/g, "&#039;")
+                                    .replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 dark:text-slate-100 font-semibold">$1</strong>');
+
                                   return (
                                     <div key={lIdx} className="flex items-start gap-2 ml-1 my-0.5">
                                       <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 dark:bg-indigo-400 mt-2 shrink-0"></span>
                                       <span
                                         className="text-xs text-slate-700 dark:text-slate-300"
                                         dangerouslySetInnerHTML={{
-                                          __html: trimmed.replace(/^[-•]\s*/, "").replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 dark:text-slate-100 font-semibold">$1</strong>')
+                                          __html: safeHtml,
                                         }}
                                       />
                                     </div>
@@ -1290,6 +1299,15 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
 
                                 if (/^\d+\.\s/.test(trimmed)) {
                                   const num = trimmed.match(/^(\d+)\./)?.[1];
+                                  const textToFormat = trimmed.replace(/^\d+\.\s*/, "");
+                                  const safeHtml = textToFormat
+                                    .replace(/&/g, "&amp;")
+                                    .replace(/</g, "&lt;")
+                                    .replace(/>/g, "&gt;")
+                                    .replace(/"/g, "&quot;")
+                                    .replace(/'/g, "&#039;")
+                                    .replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 dark:text-slate-100 font-semibold">$1</strong>');
+
                                   return (
                                     <div key={lIdx} className="flex items-start gap-2 ml-1 my-0.5">
                                       <span className="w-4 h-4 rounded bg-indigo-50 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 flex items-center justify-center text-[10px] font-bold mt-0.5 shrink-0">
@@ -1298,22 +1316,31 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                                       <span
                                         className="text-xs text-slate-700 dark:text-slate-300"
                                         dangerouslySetInnerHTML={{
-                                          __html: trimmed.replace(/^\d+\.\s*/, "").replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 dark:text-slate-100 font-semibold">$1</strong>')
+                                          __html: safeHtml,
                                         }}
                                       />
                                     </div>
                                   );
                                 }
 
+                                const safeHtml = trimmed
+                                  .replace(/&/g, "&amp;")
+                                  .replace(/</g, "&lt;")
+                                  .replace(/>/g, "&gt;")
+                                  .replace(/"/g, "&quot;")
+                                  .replace(/'/g, "&#039;")
+                                  .replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 dark:text-slate-100 font-semibold">$1</strong>');
+
                                 return (
                                   <p
                                     key={lIdx}
                                     className="text-xs leading-[1.8] text-slate-700 dark:text-slate-300 my-1"
                                     dangerouslySetInnerHTML={{
-                                      __html: trimmed.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900 dark:text-slate-100 font-semibold">$1</strong>')
+                                      __html: safeHtml,
                                     }}
                                   />
                                 );
+
                               })}
                             </div>
 
@@ -1457,7 +1484,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
 
               {/* Synthesis */}
               <section>
-                <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">Synthesis</h3>
+                <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">Synthesis</h3>
                 <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-slate-200/70 dark:border-slate-700/60 shadow-2xs font-[Inter]">
                   {analysis?.summary || "No summary available."}
                 </p>
@@ -1466,11 +1493,11 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
               {/* Extracted Terms */}
               {analysis?.extractedTerms && analysis.extractedTerms.length > 0 && (
                 <section>
-                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">Extracted Terms</h3>
+                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3">Extracted Terms</h3>
                   <div className="grid grid-cols-2 gap-2.5">
                     {analysis.extractedTerms.map((term, i) => (
                       <div key={i} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60">
-                        <div className="text-[10px] text-slate-500 dark:text-slate-400">{term.label}</div>
+                        <div className="text-[10px] font-medium text-slate-600 dark:text-slate-400">{term.label}</div>
                         <div className="font-semibold text-xs text-slate-900 dark:text-slate-100 mt-0.5">{term.value}</div>
                       </div>
                     ))}
@@ -1481,7 +1508,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
               {/* Key Recommendations */}
               {analysis?.recommendations && analysis.recommendations.length > 0 && (
                 <section>
-                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-3">Key Recommendations</h3>
+                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3">Key Recommendations</h3>
                   <ul className="space-y-2 text-xs text-slate-700 dark:text-slate-300">
                     {analysis.recommendations.map((rec, i) => (
                       <li key={i} className="flex items-start gap-2 bg-indigo-50/50 dark:bg-indigo-950/40 p-2.5 rounded-xl border border-indigo-100 dark:border-indigo-800/60">
@@ -1495,7 +1522,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
 
               {/* Quick Action Tools */}
               <section className="pt-2">
-                <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2.5">Analysis Tools</h3>
+                <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2.5">Analysis Tools</h3>
                 <div className="space-y-2">
                   <button
                     onClick={() => setShowWhatIf(true)}

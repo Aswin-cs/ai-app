@@ -64,6 +64,9 @@ const CaseSchema: Schema<ICase> = new Schema(
   }
 );
 
+// Compound index for fast user history queries with sorting
+CaseSchema.index({ userId: 1, createdAt: -1 });
+
 // Prevent re-compilation of model in serverless environment
 const Case: Model<ICase> =
   mongoose.models.Case || mongoose.model<ICase>("Case", CaseSchema);

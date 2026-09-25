@@ -594,32 +594,32 @@ export default function Dashboard({ user }: DashboardProps) {
           {/* History list */}
           <nav className="flex-1 overflow-y-auto space-y-4 pr-1 text-xs">
             {isLoadingHistory ? (
-              <div className="p-4 text-center text-slate-400 text-xs flex flex-col items-center gap-2">
-                <span className="material-symbols-outlined text-[20px] animate-spin text-indigo-500">refresh</span>
+              <div className="p-4 text-center text-slate-600 dark:text-slate-300 text-xs flex flex-col items-center gap-2">
+                <span className="material-symbols-outlined text-[20px] animate-spin text-indigo-600 dark:text-indigo-400">refresh</span>
                 <span>Loading history...</span>
               </div>
             ) : historyCases.length === 0 ? (
-              <div className="p-4 text-center text-slate-400 text-xs leading-relaxed">
+              <div className="p-4 text-center text-slate-600 dark:text-slate-300 text-xs leading-relaxed">
                 No previous consultations yet. Upload a document to start!
               </div>
             ) : (
               <>
                 {groupedHistory.today.length > 0 && (
                   <div className="space-y-1.5">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 px-1">
                       Today
                     </span>
                     <div className="space-y-1">
                       {groupedHistory.today.map((c) => (
                         <div
                           key={c._id}
-                          className="flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group"
+                          className="flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/70 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors group"
                         >
                           <Link
                             className="flex items-center gap-2.5 min-w-0 flex-1"
                             href={`/case/${c._id}`}
                           >
-                            <span className="material-symbols-outlined text-[16px] text-indigo-600 shrink-0">
+                            <span className="material-symbols-outlined text-[16px] text-indigo-600 dark:text-indigo-400 shrink-0">
                               {getDocIcon(c.documentType || c.fileName)}
                             </span>
                             <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
@@ -632,7 +632,7 @@ export default function Dashboard({ user }: DashboardProps) {
                               e.stopPropagation();
                               setCaseToDelete(c);
                             }}
-                            className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-100/70 transition-all shrink-0"
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 hover:bg-rose-100/70 transition-all shrink-0"
                             title="Delete consultation"
                           >
                             <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -645,20 +645,20 @@ export default function Dashboard({ user }: DashboardProps) {
 
                 {groupedHistory.yesterday.length > 0 && (
                   <div className="space-y-1.5">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 px-1">
                       Yesterday
                     </span>
                     <div className="space-y-1">
                       {groupedHistory.yesterday.map((c) => (
                         <div
                           key={c._id}
-                          className="flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group"
+                          className="flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/70 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors group"
                         >
                           <Link
                             className="flex items-center gap-2.5 min-w-0 flex-1"
                             href={`/case/${c._id}`}
                           >
-                            <span className="material-symbols-outlined text-[16px] text-blue-600 shrink-0">
+                            <span className="material-symbols-outlined text-[16px] text-blue-600 dark:text-blue-400 shrink-0">
                               {getDocIcon(c.documentType || c.fileName)}
                             </span>
                             <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
@@ -671,7 +671,7 @@ export default function Dashboard({ user }: DashboardProps) {
                               e.stopPropagation();
                               setCaseToDelete(c);
                             }}
-                            className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-100/70 transition-all shrink-0"
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 hover:bg-rose-100/70 transition-all shrink-0"
                             title="Delete consultation"
                           >
                             <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -684,20 +684,20 @@ export default function Dashboard({ user }: DashboardProps) {
 
                 {groupedHistory.past7Days.length > 0 && (
                   <div className="space-y-1.5">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 px-1">
                       Past 7 Days
                     </span>
                     <div className="space-y-1">
                       {groupedHistory.past7Days.map((c) => (
                         <div
                           key={c._id}
-                          className="flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group"
+                          className="flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/70 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors group"
                         >
                           <Link
                             className="flex items-center gap-2.5 min-w-0 flex-1"
                             href={`/case/${c._id}`}
                           >
-                            <span className="material-symbols-outlined text-[16px] text-slate-500 shrink-0">
+                            <span className="material-symbols-outlined text-[16px] text-slate-600 dark:text-slate-400 shrink-0">
                               {getDocIcon(c.documentType || c.fileName)}
                             </span>
                             <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
@@ -710,7 +710,7 @@ export default function Dashboard({ user }: DashboardProps) {
                               e.stopPropagation();
                               setCaseToDelete(c);
                             }}
-                            className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-100/70 transition-all shrink-0"
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 hover:bg-rose-100/70 transition-all shrink-0"
                             title="Delete consultation"
                           >
                             <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -723,20 +723,20 @@ export default function Dashboard({ user }: DashboardProps) {
 
                 {groupedHistory.older.length > 0 && (
                   <div className="space-y-1.5">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 px-1">
                       Older
                     </span>
                     <div className="space-y-1">
                       {groupedHistory.older.map((c) => (
                         <div
                           key={c._id}
-                          className="flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors group"
+                          className="flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/70 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors group"
                         >
                           <Link
                             className="flex items-center gap-2.5 min-w-0 flex-1"
                             href={`/case/${c._id}`}
                           >
-                            <span className="material-symbols-outlined text-[16px] text-slate-500 shrink-0">
+                            <span className="material-symbols-outlined text-[16px] text-slate-600 dark:text-slate-400 shrink-0">
                               {getDocIcon(c.documentType || c.fileName)}
                             </span>
                             <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
@@ -749,7 +749,7 @@ export default function Dashboard({ user }: DashboardProps) {
                               e.stopPropagation();
                               setCaseToDelete(c);
                             }}
-                            className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-100/70 transition-all shrink-0"
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 hover:bg-rose-100/70 transition-all shrink-0"
                             title="Delete consultation"
                           >
                             <span className="material-symbols-outlined text-[16px]">delete</span>

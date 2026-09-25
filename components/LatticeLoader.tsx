@@ -115,10 +115,8 @@ export default function LatticeLoader({
 
   const timerRef = useRef<HTMLSpanElement>(null);
   const dsRef = useRef(0);
-  const markRef = useRef<"done" | "error">("done");
-  const mark = status === "working" ? markRef.current : status;
-  markRef.current = mark;
-  const [announce, setAnnounce] = useState(`${label}, in progress`);
+  const currentMark: "done" | "error" = status === "error" ? "error" : "done";
+  const [announce, setAnnounce] = useState(() => `${label}, in progress`);
 
   const paint = (ds: number) => {
     dsRef.current = ds;
@@ -138,10 +136,12 @@ export default function LatticeLoader({
   }, [status, elapsed]);
 
   useEffect(() => {
-    if (status === "working") setAnnounce(`${label}, in progress`);
-    else setAnnounce(`${status === "done" ? doneLabel : errorLabel}${showTimer ? ` ${spoken(dsRef.current)}` : ""}`);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status]);
+    const newAnnounce =
+      status === "working"
+        ? `${label}, in progress`
+        : `${status === "done" ? doneLabel : errorLabel}${showTimer ? ` ${spoken(dsRef.current)}` : ""}`;
+    setAnnounce(newAnnounce);
+  }, [status, label, doneLabel, errorLabel, showTimer]);
 
   return (
     <span
@@ -178,7 +178,7 @@ export default function LatticeLoader({
         </span>
         <span className="lattice-loader__layer lattice-loader__mark">
           {pat.cells.map((_, i) => (
-            <span key={i} className="lattice-loader__cell" data-on={marks[mark].includes(i) ? "" : undefined} />
+            <span key={i} className="lattice-loader__cell" data-on={marks[currentMark].includes(i) ? "" : undefined} />
           ))}
         </span>
       </span>

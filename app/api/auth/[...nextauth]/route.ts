@@ -3,6 +3,22 @@ import GoogleProvider from "next-auth/providers/google";
 import { NextRequest } from "next/server";
 import connectDB from "@/config/db";
 import User from "@/models/user.model";
+import crypto from "crypto";
+
+// Ensure a strong random secret if NEXTAUTH_SECRET is missing in environment
+let fallbackSecret: string | undefined;
+function getAuthSecret(): string {
+  if (process.env.NEXTAUTH_SECRET) {
+    return process.env.NEXTAUTH_SECRET;
+  }
+  if (process.env.NODE_ENV === "production") {
+    console.error("⚠️ CRITICAL SECURITY WARNING: NEXTAUTH_SECRET is not set in environment variables!");
+  }
+  if (!fallbackSecret) {
+    fallbackSecret = crypto.randomBytes(32).toString("hex");
+  }
+  return fallbackSecret;
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -72,7 +88,7 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/login",
   },
-  secret: process.env.NEXTAUTH_SECRET || "jurisai_default_nextauth_secret_key_12345",
+  secret: getAuthSecret(),
 };
 
 const handler = NextAuth(authOptions);
@@ -92,3 +108,4 @@ export async function POST(
   const resolvedParams = await context.params;
   return handler(req, { params: resolvedParams });
 }
+
