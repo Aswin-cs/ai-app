@@ -33,25 +33,25 @@ export type DecisionScenarioKey = "as_is" | "negotiate" | "decline";
  */
 const CenterDecisionNode = ({ data }: { data: any }) => {
   return (
-    <div className="bg-white border-2 border-indigo-600 shadow-[0_12px_36px_rgba(79,70,229,0.18)] rounded-2xl p-5 w-80 text-slate-900 font-sans relative transition-all duration-300 hover:shadow-[0_16px_48px_rgba(79,70,229,0.24)]">
+    <div className="bg-white dark:bg-slate-800 border-2 border-indigo-600 shadow-[0_12px_36px_rgba(79,70,229,0.18)] rounded-2xl p-5 w-80 text-slate-900 dark:text-slate-100 font-sans relative transition-all duration-300 hover:shadow-[0_16px_48px_rgba(79,70,229,0.24)]">
       {/* Handles: Left for Cons, Right for Pros */}
       <Handle
         type="source"
         position={Position.Left}
         id="center-cons-out"
-        className="!bg-rose-500 !w-3.5 !h-3.5 !-left-2 border-2 border-white shadow-md cursor-pointer"
+        className="!bg-rose-500 !w-3.5 !h-3.5 !-left-2 border-2 border-white dark:border-slate-800 shadow-md cursor-pointer"
       />
       <Handle
         type="source"
         position={Position.Right}
         id="center-pros-out"
-        className="!bg-emerald-500 !w-3.5 !h-3.5 !-right-2 border-2 border-white shadow-md cursor-pointer"
+        className="!bg-emerald-500 !w-3.5 !h-3.5 !-right-2 border-2 border-white dark:border-slate-800 shadow-md cursor-pointer"
       />
 
       {/* Header Tag */}
       <div className="flex items-center justify-between mb-2">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 font-mono text-[10px] font-bold tracking-wide uppercase">
-          <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 font-mono text-[10px] font-bold tracking-wide uppercase">
+          <span className="w-2 h-2 rounded-full bg-indigo-600 dark:bg-indigo-400 animate-pulse" />
           Central Decision Node
         </span>
         <span className="text-[10px] font-mono font-medium text-slate-400 uppercase">
@@ -60,19 +60,19 @@ const CenterDecisionNode = ({ data }: { data: any }) => {
       </div>
 
       {/* Main Title */}
-      <h3 className="font-[Plus_Jakarta_Sans] text-base font-extrabold text-slate-900 leading-snug">
+      <h3 className="font-[Plus_Jakarta_Sans] text-base font-extrabold text-slate-900 dark:text-slate-100 leading-snug">
         {data.title || "What if I make this decision?"}
       </h3>
 
       {/* Description */}
-      <p className="text-xs text-slate-600 mt-2 leading-relaxed font-[Inter]">
+      <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed font-[Inter]">
         {data.description || "Simulates the direct risks (Cons) and legal protections (Pros) resulting from this contractual agreement."}
       </p>
 
       {/* Scenario Indicator Box */}
-      <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-        <span className="text-[11px] font-semibold text-slate-500">Active Option:</span>
-        <span className="px-2.5 py-1 rounded-lg bg-slate-900 text-white font-mono text-[11px] font-bold shadow-xs">
+      <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs">
+        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Active Option:</span>
+        <span className="px-2.5 py-1 rounded-lg bg-slate-900 dark:bg-slate-700 text-white font-mono text-[11px] font-bold shadow-xs">
           {data.scenarioLabel}
         </span>
       </div>
@@ -87,24 +87,24 @@ const ConNode = ({ data }: { data: any }) => {
   const isCritical = data.severity === "critical";
 
   return (
-    <div className={`bg-white border-2 ${isCritical ? "border-rose-400 bg-rose-50/20" : "border-amber-400 bg-amber-50/20"} shadow-[0_4px_20px_rgba(244,63,94,0.08)] rounded-2xl p-4 w-72 text-slate-900 font-sans relative transition-all duration-300 hover:scale-[1.02]`}>
+    <div className={`bg-white dark:bg-slate-800 border-2 ${isCritical ? "border-rose-400 bg-rose-50/20 dark:bg-rose-950/40" : "border-amber-400 bg-amber-50/20 dark:bg-amber-950/40"} shadow-[0_4px_20px_rgba(244,63,94,0.08)] rounded-2xl p-4 w-72 text-slate-900 dark:text-slate-100 font-sans relative transition-all duration-300 hover:scale-[1.02]`}>
       {/* Target handle connecting from Center Decision Node (Right side of Con Node) */}
       <Handle
         type="target"
         position={Position.Right}
         id="con-target-right"
-        className="!bg-rose-500 !w-3 !h-3 !-right-1.5 border-2 border-white shadow-xs"
+        className="!bg-rose-500 !w-3 !h-3 !-right-1.5 border-2 border-white dark:border-slate-800 shadow-xs"
       />
       {/* Source handle connecting to Far-Left Impact Node (Left side of Con Node) */}
       <Handle
         type="source"
         position={Position.Left}
         id="con-source-left"
-        className="!bg-rose-600 !w-3 !h-3 !-left-1.5 border-2 border-white shadow-xs"
+        className="!bg-rose-600 !w-3 !h-3 !-left-1.5 border-2 border-white dark:border-slate-800 shadow-xs"
       />
 
       <div className="flex items-center justify-between mb-2">
-        <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider text-rose-700 bg-rose-100/80 px-2 py-0.5 rounded-md border border-rose-200">
+        <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300 bg-rose-100/80 dark:bg-rose-950/80 px-2 py-0.5 rounded-md border border-rose-200 dark:border-rose-800/60">
           <span className="material-symbols-outlined text-[13px]">warning</span>
           Con / Risk
         </span>
@@ -113,22 +113,22 @@ const ConNode = ({ data }: { data: any }) => {
         </span>
       </div>
 
-      <div className="text-xs font-bold text-slate-900 font-[Plus_Jakarta_Sans] leading-snug">
+      <div className="text-xs font-bold text-slate-900 dark:text-slate-100 font-[Plus_Jakarta_Sans] leading-snug">
         {data.title}
       </div>
 
       {data.clause && (
-        <div className="text-[10px] font-mono text-slate-500 mt-1 truncate">
-          Ref: <span className="font-semibold text-slate-700">{data.clause}</span>
+        <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 mt-1 truncate">
+          Ref: <span className="font-semibold text-slate-700 dark:text-slate-300">{data.clause}</span>
         </div>
       )}
 
-      <p className="text-[11px] text-slate-600 mt-2 leading-relaxed line-clamp-3 font-[Inter]">
+      <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-2 leading-relaxed line-clamp-3 font-[Inter]">
         {data.explanation}
       </p>
 
       {data.statute && (
-        <div className="mt-2.5 pt-2 border-t border-rose-100 flex items-center gap-1 text-[10px] font-mono text-rose-700">
+        <div className="mt-2.5 pt-2 border-t border-rose-100 dark:border-rose-900/40 flex items-center gap-1 text-[10px] font-mono text-rose-700 dark:text-rose-400">
           <span className="material-symbols-outlined text-[13px] shrink-0">gavel</span>
           <span className="truncate">{data.statute}</span>
         </div>
@@ -141,21 +141,21 @@ const ConNode = ({ data }: { data: any }) => {
  * 3. Far-Left Impact / Financial Exposure Node
  */
 const ConImpactNode = ({ data }: { data: any }) => (
-  <div className="bg-rose-50/95 border-2 border-rose-200 shadow-md rounded-xl p-3.5 w-64 text-slate-900 font-sans relative">
+  <div className="bg-rose-50/95 dark:bg-rose-950/90 border-2 border-rose-200 dark:border-rose-800/80 shadow-md rounded-xl p-3.5 w-64 text-slate-900 dark:text-slate-100 font-sans relative">
     <Handle
       type="target"
       position={Position.Right}
       id="impact-target-right"
-      className="!bg-rose-500 !w-3 !h-3 !-right-1.5 border-2 border-white"
+      className="!bg-rose-500 !w-3 !h-3 !-right-1.5 border-2 border-white dark:border-slate-800"
     />
-    <div className="flex items-center gap-1.5 mb-1 text-[10px] font-mono font-bold uppercase tracking-wider text-rose-800">
+    <div className="flex items-center gap-1.5 mb-1 text-[10px] font-mono font-bold uppercase tracking-wider text-rose-800 dark:text-rose-300">
       <span className="material-symbols-outlined text-[14px]">gavel</span>
       <span>Financial & Legal Exposure</span>
     </div>
-    <div className="text-xs font-bold text-rose-950 font-[Plus_Jakarta_Sans] leading-snug">
+    <div className="text-xs font-bold text-rose-950 dark:text-rose-100 font-[Plus_Jakarta_Sans] leading-snug">
       {data.title}
     </div>
-    <div className="text-[11px] text-rose-800 mt-1 leading-snug font-[Inter]">
+    <div className="text-[11px] text-rose-800 dark:text-rose-300 mt-1 leading-snug font-[Inter]">
       {data.description}
     </div>
   </div>
@@ -166,24 +166,24 @@ const ConImpactNode = ({ data }: { data: any }) => (
  */
 const ProNode = ({ data }: { data: any }) => {
   return (
-    <div className="bg-white border-2 border-emerald-400 bg-emerald-50/20 shadow-[0_4px_20px_rgba(16,185,129,0.08)] rounded-2xl p-4 w-72 text-slate-900 font-sans relative transition-all duration-300 hover:scale-[1.02]">
+    <div className="bg-white dark:bg-slate-800 border-2 border-emerald-400 bg-emerald-50/20 dark:bg-emerald-950/40 shadow-[0_4px_20px_rgba(16,185,129,0.08)] rounded-2xl p-4 w-72 text-slate-900 dark:text-slate-100 font-sans relative transition-all duration-300 hover:scale-[1.02]">
       {/* Target handle connecting from Center Decision Node (Left side of Pro Node) */}
       <Handle
         type="target"
         position={Position.Left}
         id="pro-target-left"
-        className="!bg-emerald-500 !w-3 !h-3 !-left-1.5 border-2 border-white shadow-xs"
+        className="!bg-emerald-500 !w-3 !h-3 !-left-1.5 border-2 border-white dark:border-slate-800 shadow-xs"
       />
       {/* Source handle connecting to Far-Right Benefit Node (Right side of Pro Node) */}
       <Handle
         type="source"
         position={Position.Right}
         id="pro-source-right"
-        className="!bg-emerald-600 !w-3 !h-3 !-right-1.5 border-2 border-white shadow-xs"
+        className="!bg-emerald-600 !w-3 !h-3 !-right-1.5 border-2 border-white dark:border-slate-800 shadow-xs"
       />
 
       <div className="flex items-center justify-between mb-2">
-        <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-md border border-emerald-200">
+        <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/80 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/60">
           <span className="material-symbols-outlined text-[13px]">verified</span>
           Pro / Advantage
         </span>
@@ -192,22 +192,22 @@ const ProNode = ({ data }: { data: any }) => {
         </span>
       </div>
 
-      <div className="text-xs font-bold text-slate-900 font-[Plus_Jakarta_Sans] leading-snug">
+      <div className="text-xs font-bold text-slate-900 dark:text-slate-100 font-[Plus_Jakarta_Sans] leading-snug">
         {data.title}
       </div>
 
       {data.clause && (
-        <div className="text-[10px] font-mono text-slate-500 mt-1 truncate">
-          Ref: <span className="font-semibold text-slate-700">{data.clause}</span>
+        <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 mt-1 truncate">
+          Ref: <span className="font-semibold text-slate-700 dark:text-slate-300">{data.clause}</span>
         </div>
       )}
 
-      <p className="text-[11px] text-slate-600 mt-2 leading-relaxed line-clamp-3 font-[Inter]">
+      <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-2 leading-relaxed line-clamp-3 font-[Inter]">
         {data.explanation}
       </p>
 
       {data.benefit && (
-        <div className="mt-2.5 pt-2 border-t border-emerald-100 flex items-center gap-1 text-[10px] font-mono text-emerald-700">
+        <div className="mt-2.5 pt-2 border-t border-emerald-100 dark:border-emerald-900/40 flex items-center gap-1 text-[10px] font-mono text-emerald-700 dark:text-emerald-400">
           <span className="material-symbols-outlined text-[13px] shrink-0">shield</span>
           <span className="truncate">{data.benefit}</span>
         </div>
@@ -220,21 +220,21 @@ const ProNode = ({ data }: { data: any }) => {
  * 5. Far-Right Strategic Gain / Benefit Node
  */
 const ProBenefitNode = ({ data }: { data: any }) => (
-  <div className="bg-emerald-50/95 border-2 border-emerald-200 shadow-md rounded-xl p-3.5 w-64 text-slate-900 font-sans relative">
+  <div className="bg-emerald-50/95 dark:bg-emerald-950/90 border-2 border-emerald-200 dark:border-emerald-800/80 shadow-md rounded-xl p-3.5 w-64 text-slate-900 dark:text-slate-100 font-sans relative">
     <Handle
       type="target"
       position={Position.Left}
       id="benefit-target-left"
-      className="!bg-emerald-500 !w-3 !h-3 !-left-1.5 border-2 border-white"
+      className="!bg-emerald-500 !w-3 !h-3 !-left-1.5 border-2 border-white dark:border-slate-800"
     />
-    <div className="flex items-center gap-1.5 mb-1 text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-800">
+    <div className="flex items-center gap-1.5 mb-1 text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
       <span className="material-symbols-outlined text-[14px]">stars</span>
       <span>Strategic Gain & Protection</span>
     </div>
-    <div className="text-xs font-bold text-emerald-950 font-[Plus_Jakarta_Sans] leading-snug">
+    <div className="text-xs font-bold text-emerald-950 dark:text-emerald-100 font-[Plus_Jakarta_Sans] leading-snug">
       {data.title}
     </div>
-    <div className="text-[11px] text-emerald-800 mt-1 leading-snug font-[Inter]">
+    <div className="text-[11px] text-emerald-800 dark:text-emerald-300 mt-1 leading-snug font-[Inter]">
       {data.description}
     </div>
   </div>
@@ -544,14 +544,14 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
   }, [activeScenario, filterMode, risks]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xl flex flex-col font-sans animate-fade-in text-slate-900">
-      {/* TOP HEADER BAR (AETHER LIGHT MINIMALIST) */}
-      <header className="h-16 px-6 bg-white/95 border-b border-slate-200/90 flex items-center justify-between gap-4 text-slate-900 shadow-xs backdrop-blur-md">
+    <div className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-xl flex flex-col font-sans animate-fade-in text-slate-900 dark:text-slate-100">
+      {/* TOP HEADER BAR */}
+      <header className="h-16 px-6 bg-white/95 dark:bg-slate-900/95 border-b border-slate-200/90 dark:border-slate-800 flex items-center justify-between gap-4 text-slate-900 dark:text-slate-100 shadow-xs backdrop-blur-md">
         {/* Title & Document Context */}
         <div className="flex items-center gap-3">
           <button
             onClick={onClose}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 transition-all border border-slate-200 shadow-xs text-xs font-semibold group cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition-all border border-slate-200 dark:border-slate-700 shadow-xs text-xs font-semibold group cursor-pointer"
             title="Back to Case Analysis"
             type="button"
           >
@@ -559,30 +559,30 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
             <span>Back</span>
           </button>
 
-          <div className="h-5 w-px bg-slate-200 hidden sm:block" />
+          <div className="h-5 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block" />
 
-          <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 shadow-xs shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-xs shrink-0">
             <span className="material-symbols-outlined text-[22px]">alt_route</span>
           </div>
           <div>
-            <h2 className="font-[Plus_Jakarta_Sans] font-extrabold text-sm text-slate-900 flex items-center gap-2">
+            <h2 className="font-[Plus_Jakarta_Sans] font-extrabold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
               What-If Decision Map
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200">
-                Light Premium Interactive
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60">
+                Interactive Map
               </span>
             </h2>
-            <p className="text-xs text-slate-500 truncate max-w-xs sm:max-w-md font-[Inter]">{documentTitle}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-xs sm:max-w-md font-[Inter]">{documentTitle}</p>
           </div>
         </div>
 
         {/* Center Scenario Switcher Pills */}
-        <div className="hidden lg:flex items-center gap-1.5 bg-slate-100/80 p-1 rounded-2xl border border-slate-200 text-xs font-medium">
+        <div className="hidden lg:flex items-center gap-1.5 bg-slate-100/80 dark:bg-slate-800/80 p-1 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs font-medium">
           <button
             onClick={() => setActiveScenario("as_is")}
             className={`px-3.5 py-1.5 rounded-xl transition-all font-semibold ${
               activeScenario === "as_is"
-                ? "bg-white text-indigo-700 shadow-sm border border-slate-200"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 shadow-sm border border-slate-200 dark:border-slate-600"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
             }`}
           >
             Option A: Sign As-Is
@@ -591,8 +591,8 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
             onClick={() => setActiveScenario("negotiate")}
             className={`px-3.5 py-1.5 rounded-xl transition-all font-semibold ${
               activeScenario === "negotiate"
-                ? "bg-white text-indigo-700 shadow-sm border border-slate-200"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-300 shadow-sm border border-slate-200 dark:border-slate-600"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
             }`}
           >
             Option B: Negotiate Terms
@@ -601,8 +601,8 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
             onClick={() => setActiveScenario("decline")}
             className={`px-3.5 py-1.5 rounded-xl transition-all font-semibold ${
               activeScenario === "decline"
-                ? "bg-white text-rose-700 shadow-sm border border-slate-200"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-white dark:bg-slate-700 text-rose-700 dark:text-rose-300 shadow-sm border border-slate-200 dark:border-slate-600"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
             }`}
           >
             Option C: Decline Agreement
@@ -612,11 +612,11 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
         {/* Right Action Controls */}
         <div className="flex items-center gap-3">
           {/* View Filter Filter */}
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
             <button
               onClick={() => setFilterMode("all")}
               className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
-                filterMode === "all" ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+                filterMode === "all" ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-xs" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
               }`}
             >
               All
@@ -624,7 +624,7 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
             <button
               onClick={() => setFilterMode("cons_only")}
               className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
-                filterMode === "cons_only" ? "bg-rose-600 text-white shadow-xs" : "text-slate-600 hover:text-rose-600"
+                filterMode === "cons_only" ? "bg-rose-600 text-white shadow-xs" : "text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400"
               }`}
             >
               Cons Only
@@ -632,7 +632,7 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
             <button
               onClick={() => setFilterMode("pros_only")}
               className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
-                filterMode === "pros_only" ? "bg-emerald-600 text-white shadow-xs" : "text-slate-600 hover:text-emerald-600"
+                filterMode === "pros_only" ? "bg-emerald-600 text-white shadow-xs" : "text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400"
               }`}
             >
               Pros Only
@@ -642,7 +642,7 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 flex items-center justify-center transition-colors border border-slate-200"
+            className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors border border-slate-200 dark:border-slate-700"
             title="Close What-If Map"
           >
             <span className="material-symbols-outlined text-[20px]">close</span>
@@ -651,7 +651,7 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
       </header>
 
       {/* MAIN FLOW CANVAS */}
-      <div className="flex-1 w-full h-full relative bg-[#F8F9FA]">
+      <div className="flex-1 w-full h-full relative bg-[#F8F9FA] dark:bg-[#0B1120]">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -664,7 +664,7 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
           {/* Dot Pattern Canvas */}
           <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color="#CBD5E1" />
           
-          <Controls className="bg-white border border-slate-200 text-slate-800 rounded-xl overflow-hidden shadow-lg fill-slate-800" />
+          <Controls className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-xl overflow-hidden shadow-lg fill-slate-800 dark:fill-slate-200" />
           
           <MiniMap
             nodeColor={(node) => {
@@ -673,24 +673,24 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
               if (node.type === "proNode" || node.type === "proBenefitNode") return "#10B981";
               return "#64748B";
             }}
-            maskColor="rgba(248, 249, 250, 0.7)"
-            className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-md"
+            maskColor="rgba(15, 23, 42, 0.7)"
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-md"
           />
 
           {/* Top-Left Visual Guide Panel */}
-          <Panel position="top-left" className="bg-white/90 border border-slate-200/90 text-slate-800 p-3.5 rounded-2xl backdrop-blur-md shadow-lg text-xs space-y-1.5 max-w-xs">
-            <div className="font-bold text-slate-900 flex items-center gap-2 font-[Plus_Jakarta_Sans]">
+          <Panel position="top-left" className="bg-white/90 dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800 text-slate-800 dark:text-slate-200 p-3.5 rounded-2xl backdrop-blur-md shadow-lg text-xs space-y-1.5 max-w-xs">
+            <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 font-[Plus_Jakarta_Sans]">
               <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-ping" />
               What-If Agreement Analysis
             </div>
-            <p className="text-[11px] text-slate-600 leading-relaxed font-[Inter]">
+            <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed font-[Inter]">
               The central decision node connects <strong>Cons (Risks &amp; Disadvantages)</strong> on the left side with <strong>Pros (Protections &amp; Value)</strong> on the right side.
             </p>
             <div className="pt-2 flex items-center gap-3 text-[10px] font-mono font-bold">
-              <span className="flex items-center gap-1 text-rose-600">
+              <span className="flex items-center gap-1 text-rose-600 dark:text-rose-400">
                 <span className="w-2 h-2 rounded-full bg-rose-500" /> Cons (Left)
               </span>
-              <span className="flex items-center gap-1 text-emerald-600">
+              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
                 <span className="w-2 h-2 rounded-full bg-emerald-500" /> Pros (Right)
               </span>
             </div>
@@ -698,33 +698,33 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
 
           {/* Floating Bottom Net Balance Summary Bar */}
           <Panel position="bottom-center" className="mb-4">
-            <div className="bg-white/95 border border-slate-200/90 backdrop-blur-xl px-6 py-3 rounded-full shadow-xl flex items-center gap-6 text-xs font-medium text-slate-900 border-t-2 border-t-indigo-600">
+            <div className="bg-white/95 dark:bg-slate-900/95 border border-slate-200/90 dark:border-slate-800 backdrop-blur-xl px-6 py-3 rounded-full shadow-xl flex items-center gap-6 text-xs font-medium text-slate-900 dark:text-slate-100 border-t-2 border-t-indigo-600">
               <div className="flex items-center gap-2 font-[Plus_Jakarta_Sans]">
-                <span className="font-bold text-slate-500 uppercase tracking-wider text-[10px] font-mono">Decision Balance:</span>
-                <span className="font-extrabold text-sm text-indigo-700">
+                <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[10px] font-mono">Decision Balance:</span>
+                <span className="font-extrabold text-sm text-indigo-700 dark:text-indigo-300">
                   {activeScenario === "as_is" ? "Sign Agreement As-Is" : activeScenario === "negotiate" ? "Negotiated Terms" : "Decline Agreement"}
                 </span>
               </div>
 
-              <div className="h-4 w-px bg-slate-200" />
+              <div className="h-4 w-px bg-slate-200 dark:bg-slate-800" />
 
               <div className="flex items-center gap-4 text-xs">
-                <span className="flex items-center gap-1.5 font-bold text-rose-600 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200">
+                <span className="flex items-center gap-1.5 font-bold text-rose-600 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/70 px-2.5 py-1 rounded-lg border border-rose-200 dark:border-rose-800/60">
                   <span className="material-symbols-outlined text-[16px]">warning</span>
                   {consCount} Cons Identified
                 </span>
-                <span className="flex items-center gap-1.5 font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                <span className="flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/70 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800/60">
                   <span className="material-symbols-outlined text-[16px]">verified</span>
                   {prosCount} Pros Highlighted
                 </span>
               </div>
 
-              <div className="h-4 w-px bg-slate-200 hidden sm:block" />
+              <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block" />
 
               <div className="hidden sm:flex items-center gap-2">
-                <span className="text-[11px] text-slate-500 font-mono">Net Risk Rating:</span>
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">Net Risk Rating:</span>
                 <span className={`px-2.5 py-0.5 rounded-full font-mono text-[10px] font-bold uppercase ${
-                  consCount > prosCount ? "bg-rose-100 text-rose-700 border border-rose-200" : "bg-emerald-100 text-emerald-700 border border-emerald-200"
+                  consCount > prosCount ? "bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60" : "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
                 }`}>
                   {consCount > prosCount ? "Higher Risk Exposure" : "Balanced / Favorable"}
                 </span>

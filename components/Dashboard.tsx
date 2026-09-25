@@ -8,6 +8,7 @@ import BorderGlow from "./BorderGlow";
 import AiLoadingModal from "./AiLoadingModal";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 import LatticeLoader from "./LatticeLoader";
+import ThemeToggle from "./ThemeToggle";
 
 interface DashboardProps {
   user: {
@@ -347,6 +348,7 @@ export default function Dashboard({ user }: DashboardProps) {
 
           {/* Header Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
+            <ThemeToggle />
             {/* Profile Dropdown */}
             <div className="relative">
               <button
@@ -769,23 +771,23 @@ export default function Dashboard({ user }: DashboardProps) {
           isSidebarOpen ? "md:pl-72" : "md:pl-6"
         }`}
       >
-        <main className="w-full bg-[#F8FAFC] min-h-[calc(100vh-4rem)] p-4 sm:p-8 flex flex-col items-center justify-center relative">
+        <main className="w-full bg-[#F8FAFC] dark:bg-[#0F172A] min-h-[calc(100vh-4rem)] p-4 sm:p-8 flex flex-col items-center justify-center relative">
           {/* Subtle Ambient Glow for Mobile */}
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 w-64 h-32 bg-gradient-to-b from-indigo-500/10 via-slate-100 to-transparent rounded-full blur-3xl pointer-events-none sm:hidden" />
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 w-64 h-32 bg-gradient-to-b from-indigo-500/10 via-slate-100 dark:via-slate-900/20 to-transparent rounded-full blur-3xl pointer-events-none sm:hidden" />
 
           <div className="w-full max-w-3xl mx-auto flex flex-col items-center justify-center my-auto py-4 sm:py-8 text-center relative z-10">
             {/* Welcome Emblem & Title */}
             <div className="flex flex-col items-center text-center gap-2 sm:gap-3 mb-6 sm:mb-8">
-              <div className="w-14 h-14 sm:w-12 sm:h-12 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-md sm:shadow-sm ring-1 ring-indigo-200/50 transition-transform hover:scale-105">
+              <div className="w-14 h-14 sm:w-12 sm:h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/70 border border-indigo-100 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-md sm:shadow-sm ring-1 ring-indigo-200/50 dark:ring-indigo-500/30 transition-transform hover:scale-105">
                 <span className="material-symbols-outlined text-[30px] sm:text-[26px]">
                   balance
                 </span>
               </div>
 
-              <p className="text-xs sm:text-sm font-medium text-slate-500 tracking-wide uppercase">
+              <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 tracking-wide uppercase">
                 Good afternoon, {userName}
               </p>
-              <h1 className="text-2xl sm:text-4xl text-[#0F172A] tracking-tight font-extrabold leading-tight max-w-[340px] sm:max-w-none">
+              <h1 className="text-2xl sm:text-4xl text-[#0F172A] dark:text-slate-100 tracking-tight font-extrabold leading-tight max-w-[340px] sm:max-w-none">
                 How can I assist your legal matter today?
               </h1>
             </div>
@@ -795,7 +797,7 @@ export default function Dashboard({ user }: DashboardProps) {
               className="w-full max-w-2xl mb-6"
               edgeSensitivity={35}
               glowColor="240 85 65"
-              backgroundColor="#ffffff"
+              backgroundColor="var(--border-glow-bg)"
               borderRadius={20}
               glowRadius={45}
               glowIntensity={2.0}
@@ -803,12 +805,12 @@ export default function Dashboard({ user }: DashboardProps) {
               animated={true}
               colors={["#4f46e5", "#00ff37ff", "#10b981"]}
             >
-              <div className="w-full bg-white p-3.5 sm:p-4 text-left rounded-2xl">
+              <div className="w-full bg-white dark:bg-slate-800/95 p-3.5 sm:p-4 text-left rounded-2xl border border-transparent dark:border-slate-700/50">
                 {/* Attached File Preview Chip */}
                 {attachedFile && (
-                  <div className="flex items-center justify-between bg-slate-100 px-3 py-1.5 rounded-lg mb-2 text-xs text-slate-700">
+                  <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-700/60 border border-transparent dark:border-slate-600/50 px-3 py-1.5 rounded-lg mb-2 text-xs text-slate-700 dark:text-slate-200">
                     <div className="flex items-center gap-2 truncate">
-                      <span className="material-symbols-outlined text-[18px] text-indigo-600">
+                      <span className="material-symbols-outlined text-[18px] text-indigo-600 dark:text-indigo-400">
                         description
                       </span>
                       <span className="truncate font-medium">{attachedFile.name}</span>
@@ -816,7 +818,7 @@ export default function Dashboard({ user }: DashboardProps) {
                     <button
                       type="button"
                       onClick={handleRemoveFile}
-                      className="text-slate-400 hover:text-rose-600 ml-2 flex items-center"
+                      className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 ml-2 flex items-center"
                     >
                       <span className="material-symbols-outlined text-[16px]">close</span>
                     </button>
@@ -829,19 +831,19 @@ export default function Dashboard({ user }: DashboardProps) {
                   value={promptText}
                   onChange={(e) => setPromptText(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="w-full bg-transparent text-[#0F172A] placeholder:text-slate-400 text-sm p-2 resize-none focus:outline-none"
+                  className="w-full bg-transparent text-[#0F172A] dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 text-sm p-2 resize-none focus:outline-none"
                   placeholder="Ask a legal question, describe your situation, or attach documents for analysis..."
                 />
 
                 {/* Bottom Toolbar */}
-                <div className="flex items-center justify-between pt-2 px-1 border-t border-slate-100 mt-2">
+                <div className="flex items-center justify-between pt-2 px-1 border-t border-slate-100 dark:border-slate-700/60 mt-2">
                   <div className="flex items-center gap-2 flex-wrap">
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="min-h-[40px] min-w-[40px] flex items-center justify-center px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition-colors"
+                      className="min-h-[40px] min-w-[40px] flex items-center justify-center px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-700/60 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium text-xs transition-colors border border-transparent dark:border-slate-600/50"
                     >
-                      <span className="material-symbols-outlined text-[20px] text-indigo-600">
+                      <span className="material-symbols-outlined text-[20px] text-indigo-600 dark:text-indigo-400">
                         attach_file
                       </span>
                       <span className="hidden sm:inline ml-1">
@@ -897,7 +899,7 @@ export default function Dashboard({ user }: DashboardProps) {
             {/* Quick Legal Chips (Mobile 2x2 Grid + Desktop Pills) */}
             <div className="w-full max-w-2xl mx-auto mb-8">
               <div className="flex items-center justify-between mb-2 px-1 text-left sm:hidden">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                   Recommended Inquiries
                 </span>
               </div>
@@ -911,17 +913,17 @@ export default function Dashboard({ user }: DashboardProps) {
                       "Review residential lease agreement for early termination penalties under California law"
                     )
                   }
-                  className="text-left p-3 rounded-xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-[76px] group active:scale-[0.98]"
+                  className="text-left p-3 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/70 shadow-sm hover:shadow-md dark:hover:border-indigo-500/50 transition-all flex flex-col justify-between h-[76px] group active:scale-[0.98]"
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span className="material-symbols-outlined text-[18px] text-indigo-600">
+                    <span className="material-symbols-outlined text-[18px] text-indigo-600 dark:text-indigo-400">
                       home_work
                     </span>
-                    <span className="material-symbols-outlined text-[14px] text-slate-400">
+                    <span className="material-symbols-outlined text-[14px] text-slate-400 dark:text-slate-500">
                       arrow_forward
                     </span>
                   </div>
-                  <span className="text-xs font-semibold text-[#0F172A] truncate w-full">
+                  <span className="text-xs font-semibold text-[#0F172A] dark:text-slate-200 truncate w-full">
                     Review lease agreement
                   </span>
                 </button>
@@ -933,17 +935,17 @@ export default function Dashboard({ user }: DashboardProps) {
                       "How do I dispute an improper 30-day notice to vacate without just cause?"
                     )
                   }
-                  className="text-left p-3 rounded-xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-[76px] group active:scale-[0.98]"
+                  className="text-left p-3 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/70 shadow-sm hover:shadow-md dark:hover:border-indigo-500/50 transition-all flex flex-col justify-between h-[76px] group active:scale-[0.98]"
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span className="material-symbols-outlined text-[18px] text-indigo-600">
+                    <span className="material-symbols-outlined text-[18px] text-indigo-600 dark:text-indigo-400">
                       report_problem
                     </span>
-                    <span className="material-symbols-outlined text-[14px] text-slate-400">
+                    <span className="material-symbols-outlined text-[14px] text-slate-400 dark:text-slate-500">
                       arrow_forward
                     </span>
                   </div>
-                  <span className="text-xs font-semibold text-[#0F172A] truncate w-full">
+                  <span className="text-xs font-semibold text-[#0F172A] dark:text-slate-200 truncate w-full">
                     Dispute notice to vacate
                   </span>
                 </button>
@@ -953,17 +955,17 @@ export default function Dashboard({ user }: DashboardProps) {
                   onClick={() =>
                     handleChipClick("Verify non-compete and severance clause enforceability")
                   }
-                  className="text-left p-3 rounded-xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-[76px] group active:scale-[0.98]"
+                  className="text-left p-3 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/70 shadow-sm hover:shadow-md dark:hover:border-indigo-500/50 transition-all flex flex-col justify-between h-[76px] group active:scale-[0.98]"
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span className="material-symbols-outlined text-[18px] text-indigo-600">
+                    <span className="material-symbols-outlined text-[18px] text-indigo-600 dark:text-indigo-400">
                       badge
                     </span>
-                    <span className="material-symbols-outlined text-[14px] text-slate-400">
+                    <span className="material-symbols-outlined text-[14px] text-slate-400 dark:text-slate-500">
                       arrow_forward
                     </span>
                   </div>
-                  <span className="text-xs font-semibold text-[#0F172A] truncate w-full">
+                  <span className="text-xs font-semibold text-[#0F172A] dark:text-slate-200 truncate w-full">
                     Severance clause check
                   </span>
                 </button>
@@ -975,17 +977,17 @@ export default function Dashboard({ user }: DashboardProps) {
                       "What are the statutory limits and steps to file in Small Claims court?"
                     )
                   }
-                  className="text-left p-3 rounded-xl bg-white border border-slate-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between h-[76px] group active:scale-[0.98]"
+                  className="text-left p-3 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/70 shadow-sm hover:shadow-md dark:hover:border-indigo-500/50 transition-all flex flex-col justify-between h-[76px] group active:scale-[0.98]"
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span className="material-symbols-outlined text-[18px] text-indigo-600">
+                    <span className="material-symbols-outlined text-[18px] text-indigo-600 dark:text-indigo-400">
                       account_balance
                     </span>
-                    <span className="material-symbols-outlined text-[14px] text-slate-400">
+                    <span className="material-symbols-outlined text-[14px] text-slate-400 dark:text-slate-500">
                       arrow_forward
                     </span>
                   </div>
-                  <span className="text-xs font-semibold text-[#0F172A] truncate w-full">
+                  <span className="text-xs font-semibold text-[#0F172A] dark:text-slate-200 truncate w-full">
                     Small claims guidance
                   </span>
                 </button>
@@ -1000,9 +1002,9 @@ export default function Dashboard({ user }: DashboardProps) {
                       "Review residential lease agreement for early termination penalties under California law"
                     )
                   }
-                  className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
+                  className="px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/70 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
                 >
-                  <span className="material-symbols-outlined text-[15px] text-indigo-600">
+                  <span className="material-symbols-outlined text-[15px] text-indigo-600 dark:text-indigo-400">
                     description
                   </span>
                   <span>Review residential lease</span>
@@ -1015,9 +1017,9 @@ export default function Dashboard({ user }: DashboardProps) {
                       "How do I dispute an improper 30-day notice to vacate without just cause?"
                     )
                   }
-                  className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
+                  className="px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/70 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
                 >
-                  <span className="material-symbols-outlined text-[15px] text-indigo-600">
+                  <span className="material-symbols-outlined text-[15px] text-indigo-600 dark:text-indigo-400">
                     gavel
                   </span>
                   <span>Dispute notice to vacate</span>
@@ -1028,9 +1030,9 @@ export default function Dashboard({ user }: DashboardProps) {
                   onClick={() =>
                     handleChipClick("Verify non-compete and severance clause enforceability")
                   }
-                  className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
+                  className="px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/70 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
                 >
-                  <span className="material-symbols-outlined text-[15px] text-indigo-600">
+                  <span className="material-symbols-outlined text-[15px] text-indigo-600 dark:text-indigo-400">
                     assignment_turned_in
                   </span>
                   <span>Severance clause check</span>
@@ -1043,9 +1045,9 @@ export default function Dashboard({ user }: DashboardProps) {
                       "What are the statutory limits and steps to file in Small Claims court?"
                     )
                   }
-                  className="px-3.5 py-1.5 rounded-full bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
+                  className="px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/70 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
                 >
-                  <span className="material-symbols-outlined text-[15px] text-indigo-600">
+                  <span className="material-symbols-outlined text-[15px] text-indigo-600 dark:text-indigo-400">
                     calculate
                   </span>
                   <span>Small claims guidance</span>
@@ -1054,24 +1056,24 @@ export default function Dashboard({ user }: DashboardProps) {
             </div>
 
             {/* Legal Disclaimer & Shortcuts */}
-            <div className="flex flex-col items-center gap-1 text-slate-400 text-xs text-center max-w-lg">
-              <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-slate-500">
+            <div className="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 text-xs text-center max-w-lg">
+              <div className="hidden sm:flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
                 <span>
                   Press{" "}
-                  <kbd className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-800 text-[10px] font-mono">
+                  <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-300 border border-transparent dark:border-slate-700 text-[10px] font-mono">
                     Enter
                   </kbd>{" "}
                   to submit
                 </span>
                 <span>•</span>
                 <span>
-                  <kbd className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-800 text-[10px] font-mono">
+                  <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-300 border border-transparent dark:border-slate-700 text-[10px] font-mono">
                     Shift + Enter
                   </kbd>{" "}
                   for new line
                 </span>
               </div>
-              <p className="text-slate-500 text-[11px] mt-1 leading-relaxed">
+              <p className="text-slate-500 dark:text-slate-400 text-[11px] mt-1 leading-relaxed">
                 JurisAI provides automated legal aid &amp; synthesized research. Not an attorney-client relationship or a formal legal representation substitute.
               </p>
             </div>
