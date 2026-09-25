@@ -431,7 +431,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
       <div className="h-screen w-screen overflow-hidden flex items-center justify-center bg-[#F8FAFC] text-[#0F172A] font-sans">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center animate-pulse">
-            <span className="material-symbols-outlined text-[28px] text-indigo-600">balance</span>
+            <span className="material-symbols-outlined text-[28px] text-indigo-600" aria-hidden="true">balance</span>
           </div>
           <div className="text-sm font-semibold text-slate-700">Loading case analysis...</div>
           <div className="w-48 h-1.5 bg-slate-200 rounded-full overflow-hidden">
@@ -448,11 +448,11 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
       <div className="h-screen w-screen overflow-hidden flex items-center justify-center bg-[#F8FAFC] text-[#0F172A] font-sans">
         <div className="flex flex-col items-center gap-4 max-w-md text-center px-6">
           <div className="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center">
-            <span className="material-symbols-outlined text-[30px] text-red-600">error</span>
+            <span className="material-symbols-outlined text-[30px] text-red-600" aria-hidden="true">error</span>
           </div>
           <h2 className="text-lg font-bold text-slate-900">Unable to load case</h2>
           <p className="text-sm text-slate-600">{fetchError}</p>
-          <Link href="/" className="px-5 py-2 rounded-xl bg-[#4f46e5] hover:bg-indigo-700 text-white text-xs font-semibold transition-colors">
+          <Link href="/" className="px-5 py-2 rounded-xl bg-[#4f46e5] hover:bg-indigo-700 text-white text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
             Back to Dashboard
           </Link>
         </div>
@@ -466,7 +466,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
       <div className="h-screen w-screen overflow-hidden flex items-center justify-center bg-[#F8FAFC] text-[#0F172A] font-sans">
         <div className="flex flex-col items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-indigo-100 flex items-center justify-center">
-            <span className="material-symbols-outlined text-[30px] text-indigo-600 animate-spin">refresh</span>
+            <span className="material-symbols-outlined text-[30px] text-indigo-600 animate-spin" aria-hidden="true">refresh</span>
           </div>
           <h2 className="text-lg font-bold text-slate-900">Analyzing your document...</h2>
           <p className="text-sm text-slate-500 max-w-sm text-center">JurisAI is processing &quot;{caseData.fileName}&quot;. This may take a moment.</p>
@@ -484,11 +484,11 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
       <div className="h-screen w-screen overflow-hidden flex items-center justify-center bg-[#F8FAFC] text-[#0F172A] font-sans">
         <div className="flex flex-col items-center gap-4 max-w-md text-center px-6">
           <div className="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center">
-            <span className="material-symbols-outlined text-[30px] text-red-600">warning</span>
+            <span className="material-symbols-outlined text-[30px] text-red-600" aria-hidden="true">warning</span>
           </div>
           <h2 className="text-lg font-bold text-slate-900">Analysis Failed</h2>
           <p className="text-sm text-slate-600">{caseData.errorMessage || "The AI analysis could not be completed. Please try uploading the document again."}</p>
-          <Link href="/" className="px-5 py-2 rounded-xl bg-[#4f46e5] hover:bg-indigo-700 text-white text-xs font-semibold transition-colors">
+          <Link href="/" className="px-5 py-2 rounded-xl bg-[#4f46e5] hover:bg-indigo-700 text-white text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500">
             Try Again
           </Link>
         </div>
@@ -513,8 +513,8 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
             <div className="h-4 w-px bg-slate-200 hidden md:block"></div>
 
             <nav aria-label="Breadcrumbs" className="hidden md:flex items-center gap-1.5 text-slate-500 text-xs font-medium">
-              <Link href="/" className="hover:text-slate-900 transition-colors">Dashboard</Link>
-              <span className="material-symbols-outlined text-slate-400 text-[14px]">chevron_right</span>
+              <Link href="/" className="hover:text-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded">Dashboard</Link>
+              <span className="material-symbols-outlined text-slate-400 text-[14px]" aria-hidden="true">chevron_right</span>
               <span className="text-slate-900 font-semibold truncate max-w-[240px]">{documentTitle}</span>
             </nav>
           </div>
@@ -532,15 +532,16 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
               {/* Sound Toggle Button */}
               <button
                 onClick={handleToggleSound}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all shadow-xs ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                   soundEnabled
                     ? "bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border-emerald-200/80 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/80"
                     : "bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200"
                 }`}
                 type="button"
                 title={soundEnabled ? "Completion sound enabled (Click to mute)" : "Completion sound muted (Click to enable)"}
+                aria-label={soundEnabled ? "Mute completion sound" : "Enable completion sound"}
               >
-                <span className="material-symbols-outlined text-[16px]">
+                <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
                   {soundEnabled ? "volume_up" : "volume_off"}
                 </span>
                 <span className="hidden sm:inline">{soundEnabled ? "Sound On" : "Muted"}</span>
@@ -549,15 +550,16 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
               {/* Executive Box Toggle Button */}
               <button
                 onClick={handleToggleExecBox}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all shadow-xs ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                   showExecBox
                     ? "bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/60 dark:to-purple-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-200/80 dark:border-indigo-800/60"
                     : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
                 }`}
                 type="button"
                 title={showExecBox ? "Hide Executive Risk Assessment & Vibe Check box" : "Show Executive Risk Assessment & Vibe Check box"}
+                aria-label={showExecBox ? "Hide Executive Risk Assessment box" : "Show Executive Risk Assessment box"}
               >
-                <span className="material-symbols-outlined text-[16px] text-indigo-600 dark:text-indigo-400">
+                <span className="material-symbols-outlined text-[16px] text-indigo-600 dark:text-indigo-400" aria-hidden="true">
                   {showExecBox ? "visibility" : "visibility_off"}
                 </span>
                 <span className="hidden sm:inline">Exec Box</span>
@@ -566,15 +568,16 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
               {/* Meme Toggle Button */}
               <button
                 onClick={handleToggleMeme}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all shadow-xs ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                   showMeme
                     ? "bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/60 dark:to-indigo-950/60 text-purple-700 dark:text-purple-300 border-purple-200/80 dark:border-purple-800/60"
                     : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
                 }`}
                 type="button"
                 title={showMeme ? "Hide Legal Vibe Check meme" : "Show Legal Vibe Check meme"}
+                aria-label={showMeme ? "Hide Legal Vibe Check meme" : "Show Legal Vibe Check meme"}
               >
-                <span className="material-symbols-outlined text-[16px] text-purple-600 dark:text-purple-400">
+                <span className="material-symbols-outlined text-[16px] text-purple-600 dark:text-purple-400" aria-hidden="true">
                   {showMeme ? "visibility" : "visibility_off"}
                 </span>
                 <span className="hidden sm:inline">Vibe Check</span>
@@ -582,22 +585,23 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
 
               <button
                 onClick={() => setShowWhatIf(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 text-xs font-semibold transition-all shadow-xs"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 text-xs font-semibold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 type="button"
               >
-                <span className="material-symbols-outlined text-[16px]">account_tree</span>
+                <span className="material-symbols-outlined text-[16px]" aria-hidden="true">account_tree</span>
                 <span>What-If Map</span>
               </button>
               <button
                 onClick={handleExportPDF}
                 disabled={isExporting}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Export PDF report"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 type="button"
               >
                 {isExporting ? (
-                  <span className="material-symbols-outlined text-[16px] animate-spin">progress_activity</span>
+                  <span className="material-symbols-outlined text-[16px] animate-spin" aria-hidden="true">progress_activity</span>
                 ) : (
-                  <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+                  <span className="material-symbols-outlined text-[16px]" aria-hidden="true">picture_as_pdf</span>
                 )}
                 <span className="hidden sm:inline">{isExporting ? "Exporting..." : "Export PDF"}</span>
               </button>
@@ -663,7 +667,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
             <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
               {filteredRisks.length === 0 && (
                 <div className="text-center py-8 text-slate-400 dark:text-slate-500 text-xs">
-                  <span className="material-symbols-outlined text-[32px] mb-2 block">verified</span>
+                  <span className="material-symbols-outlined text-[32px] mb-2 block" aria-hidden="true">verified</span>
                   No risks found in this category.
                 </div>
               )}
@@ -717,33 +721,38 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 </div>
                 <div className="h-4 w-px bg-slate-200 dark:bg-slate-800"></div>
                 <div className="flex items-center gap-1 text-slate-600 dark:text-slate-400">
-                  <button onClick={handleZoomOut} className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Zoom Out">
-                    <span className="material-symbols-outlined text-[16px]">remove</span>
+                  <button onClick={handleZoomOut} aria-label="Zoom Out" className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" title="Zoom Out">
+                    <span className="material-symbols-outlined text-[16px]" aria-hidden="true">remove</span>
                   </button>
                   <span className="font-mono text-[12px] px-1 text-slate-700 dark:text-slate-300 min-w-[36px] text-center">{zoomLevel}%</span>
-                  <button onClick={handleZoomIn} className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Zoom In">
-                    <span className="material-symbols-outlined text-[16px]">add</span>
+                  <button onClick={handleZoomIn} aria-label="Zoom In" className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" title="Zoom In">
+                    <span className="material-symbols-outlined text-[16px]" aria-hidden="true">add</span>
                   </button>
                 </div>
               </div>
 
               <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400">
                 {showSearchBox ? (
-                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-300 dark:border-slate-700">
+                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg border border-slate-300 dark:border-slate-700 focus-within:ring-2 focus-within:ring-indigo-500">
+                    <label htmlFor="doc-search-input" className="sr-only">
+                      Search text in document
+                    </label>
                     <input
+                      id="doc-search-input"
                       type="text"
                       placeholder="Search text..."
                       value={documentSearch}
                       onChange={(e) => setDocumentSearch(e.target.value)}
+                      aria-label="Search text in document"
                       className="bg-transparent text-xs outline-none w-28 text-slate-800 dark:text-slate-200"
                     />
-                    <button onClick={() => setShowSearchBox(false)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300">
-                      <span className="material-symbols-outlined text-[14px]">close</span>
+                    <button onClick={() => setShowSearchBox(false)} aria-label="Close document search" className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded">
+                      <span className="material-symbols-outlined text-[14px]" aria-hidden="true">close</span>
                     </button>
                   </div>
                 ) : (
-                  <button onClick={() => setShowSearchBox(true)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Search document">
-                    <span className="material-symbols-outlined text-[18px]">search</span>
+                  <button onClick={() => setShowSearchBox(true)} aria-label="Search document text" className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500" title="Search document">
+                    <span className="material-symbols-outlined text-[18px]" aria-hidden="true">search</span>
                   </button>
                 )}
               </div>
@@ -819,7 +828,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                         <div className={`mb-8 rounded-2xl border p-4 transition-all duration-500 relative overflow-hidden flex items-center justify-between gap-4 ${theme.container}`}>
                           <div className="flex items-center gap-3">
                             <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white ${theme.iconBg}`}>
-                              <span className="material-symbols-outlined text-[18px]">analytics</span>
+                              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">analytics</span>
                             </div>
                             <div>
                               <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
@@ -837,9 +846,10 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                           <button
                             type="button"
                             onClick={handleToggleExecBox}
-                            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-all flex items-center gap-1.5 shrink-0"
+                            aria-label="Show Executive Risk Assessment and Vibe Check section"
+                            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-all flex items-center gap-1.5 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                           >
-                            <span className="material-symbols-outlined text-[16px]">visibility</span>
+                            <span className="material-symbols-outlined text-[16px]" aria-hidden="true">visibility</span>
                             <span>Show Executive Assessment</span>
                           </button>
                         </div>
@@ -857,7 +867,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                         <div className="flex items-center justify-between border-b border-slate-200/70 dark:border-slate-800/80 pb-3 mb-4">
                           <div className="flex items-center gap-2.5">
                             <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white ${theme.iconBg}`}>
-                              <span className="material-symbols-outlined text-[18px]">analytics</span>
+                              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">analytics</span>
                             </div>
                             <div>
                               <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
@@ -878,10 +888,11 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                             <button
                               type="button"
                               onClick={handleToggleExecBox}
-                              className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700 transition-colors flex items-center gap-1 text-[11px] font-semibold"
+                              aria-label="Hide Executive Risk Assessment and Vibe Check section"
+                              className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700 transition-colors flex items-center gap-1 text-[11px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                               title="Hide Executive Risk Assessment & Vibe Check section"
                             >
-                              <span className="material-symbols-outlined text-[15px]">visibility_off</span>
+                              <span className="material-symbols-outlined text-[15px]" aria-hidden="true">visibility_off</span>
                               <span className="hidden sm:inline">Hide Box</span>
                             </button>
                           </div>
@@ -968,7 +979,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   {analysis?.parties && analysis.parties.length > 0 && (
                     <div>
                       <div className="flex items-center gap-2 mb-3">
-                        <span className="material-symbols-outlined text-[14px] text-slate-600 dark:text-slate-400">group</span>
+                        <span className="material-symbols-outlined text-[14px] text-slate-600 dark:text-slate-400" aria-hidden="true">group</span>
                         <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-700 dark:text-slate-300">Parties to the Agreement</span>
                       </div>
                       <div className="bg-slate-50/80 dark:bg-slate-800/60 rounded-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
@@ -988,7 +999,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                       <div className="absolute -left-[1px] top-0 bottom-0 w-[3px] rounded-full bg-gradient-to-b from-indigo-500 to-indigo-300" />
                       <div className="pl-5">
                         <div className="flex items-center gap-1.5 mb-2">
-                          <span className="material-symbols-outlined text-[15px] text-indigo-500">auto_awesome</span>
+                          <span className="material-symbols-outlined text-[15px] text-indigo-500" aria-hidden="true">auto_awesome</span>
                           <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-indigo-500">AI Synthesis</span>
                         </div>
                         <p className="text-[13px] leading-[1.75] text-slate-700 dark:text-slate-300 font-[Inter]">{analysis.summary}</p>
@@ -1073,7 +1084,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                               {/* Row 3: Statute Reference (if present) */}
                               {risk.statuteReference && (
                                 <div className="flex items-center gap-1.5 mt-2.5 text-[11px] text-slate-600 dark:text-slate-300 bg-white/80 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-200/70 dark:border-slate-700/70 w-full sm:w-fit">
-                                  <span className="material-symbols-outlined text-[15px] text-indigo-600 dark:text-indigo-400 shrink-0">
+                                  <span className="material-symbols-outlined text-[15px] text-indigo-600 dark:text-indigo-400 shrink-0" aria-hidden="true">
                                     gavel
                                   </span>
                                   <span className="font-mono text-[10px] font-medium text-slate-700 dark:text-slate-300 leading-tight">
@@ -1087,7 +1098,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                             <div className="px-5 pt-3.5 pb-3">
                               <div className={`rounded-xl border px-4 py-3 ${highlightColor}`}>
                                 <div className="flex items-start gap-2.5">
-                                  <span className="material-symbols-outlined text-[16px] text-slate-400 dark:text-slate-500 mt-0.5 shrink-0 select-none">
+                                  <span className="material-symbols-outlined text-[16px] text-slate-400 dark:text-slate-500 mt-0.5 shrink-0 select-none" aria-hidden="true">
                                     format_quote
                                   </span>
                                   <div className="min-w-0 flex-1">
@@ -1105,7 +1116,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                             {/* Legal Analysis Explanation */}
                             <div className="px-5 pb-4">
                               <div className="flex items-start gap-2.5 bg-white/90 dark:bg-slate-800/90 rounded-xl px-4 py-3 border border-slate-200/70 dark:border-slate-700/70">
-                                <span className="material-symbols-outlined text-[16px] text-indigo-600 dark:text-indigo-400 mt-0.5 shrink-0 select-none">
+                                <span className="material-symbols-outlined text-[16px] text-indigo-600 dark:text-indigo-400 mt-0.5 shrink-0 select-none" aria-hidden="true">
                                   info
                                 </span>
                                 <div className="min-w-0 flex-1">
@@ -1130,7 +1141,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                       <div className="flex items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-200/80 dark:border-slate-800">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 border border-indigo-100 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-2xs">
-                            <span className="material-symbols-outlined text-[18px]">article</span>
+                            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">article</span>
                           </div>
                           <div>
                             <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
@@ -1141,10 +1152,11 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                         </div>
                         <button
                           onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-indigo-50 dark:hover:bg-slate-700 hover:border-indigo-200 transition-all shadow-2xs"
+                          aria-label={isSummaryExpanded ? "Shrink Summary" : "Expand Summary"}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-indigo-50 dark:hover:bg-slate-700 hover:border-indigo-200 transition-all shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                           type="button"
                         >
-                          <span className="material-symbols-outlined text-[16px]">
+                          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
                             {isSummaryExpanded ? "unfold_less" : "unfold_more"}
                           </span>
                           <span>{isSummaryExpanded ? "Shrink Summary" : "Expand Summary"}</span>
@@ -1177,7 +1189,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                     <div className="flex items-center justify-between pb-4 mb-4 border-b border-indigo-100 dark:border-indigo-950/80">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-800 flex items-center justify-center text-white shadow-md shadow-indigo-500/20">
-                          <span className="material-symbols-outlined text-[20px]">auto_awesome</span>
+                          <span className="material-symbols-outlined text-[20px]" aria-hidden="true">auto_awesome</span>
                         </div>
                         <div>
                           <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
@@ -1199,7 +1211,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                       {conversationMessages.length === 0 && !isAnalyzing && (
                         <div className="p-6 rounded-2xl bg-indigo-50/40 dark:bg-indigo-950/30 border border-indigo-100/80 dark:border-indigo-900/40 text-center">
                           <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-2">
-                            <span className="material-symbols-outlined text-[20px]">chat</span>
+                            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">chat</span>
                           </div>
                           <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">Have questions about this document?</p>
                           <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-1">Use the prompt bar at the bottom to ask JurisAI to analyze risk clauses, summarize key terms, or draft counter-proposals.</p>
@@ -1243,7 +1255,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                             <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-700/60">
                               <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center text-[12px] shadow-xs">
-                                  <span className="material-symbols-outlined text-[14px]">auto_awesome</span>
+                                  <span className="material-symbols-outlined text-[14px]" aria-hidden="true">auto_awesome</span>
                                 </div>
                                 <span className="font-bold text-xs text-slate-900 dark:text-slate-100">JurisAI Response</span>
                               </div>
@@ -1348,7 +1360,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                             {keyPoints.length > 0 && (
                               <div className="mt-4 p-3.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-800/60">
                                 <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 mb-2">
-                                  <span className="material-symbols-outlined text-[15px] text-emerald-600 dark:text-emerald-400">task_alt</span>
+                                  <span className="material-symbols-outlined text-[15px] text-emerald-600 dark:text-emerald-400" aria-hidden="true">task_alt</span>
                                   Key Takeaways
                                 </div>
                                 <ul className="space-y-1">
@@ -1377,18 +1389,19 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                             {/* Disclaimer & Actions */}
                             <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[10px] text-slate-400">
                               <span className="flex items-center gap-1">
-                                <span className="material-symbols-outlined text-[12px] text-amber-500">info</span>
+                                <span className="material-symbols-outlined text-[12px] text-amber-500" aria-hidden="true">info</span>
                                 AI legal analysis based on uploaded document context.
                               </span>
                               <button
                                 onClick={() => {
                                   navigator.clipboard.writeText(answerText);
                                 }}
-                                className="hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1 transition-colors font-medium"
+                                aria-label="Copy response text"
+                                className="hover:text-indigo-600 dark:hover:text-indigo-400 flex items-center gap-1 transition-colors font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
                                 title="Copy response text"
                                 type="button"
                               >
-                                <span className="material-symbols-outlined text-[12px]">content_copy</span>
+                                <span className="material-symbols-outlined text-[12px]" aria-hidden="true">content_copy</span>
                                 Copy Response
                               </button>
                             </div>
@@ -1411,7 +1424,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                       {/* Error state */}
                       {followupError && (
                         <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/60 flex items-start gap-3">
-                          <span className="material-symbols-outlined text-rose-600 text-[18px] mt-0.5 shrink-0">error</span>
+                          <span className="material-symbols-outlined text-rose-600 text-[18px] mt-0.5 shrink-0" aria-hidden="true">error</span>
                           <div>
                             <p className="text-xs font-bold text-rose-900 dark:text-rose-200">Analysis Error</p>
                             <p className="text-[11px] text-rose-700 dark:text-rose-300 mt-0.5">{followupError}</p>
@@ -1424,7 +1437,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   {/* Document Footer */}
                   <div className="pt-6 mt-4 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[14px] text-indigo-500">verified</span>
+                      <span className="material-symbols-outlined text-[14px] text-indigo-500" aria-hidden="true">verified</span>
                       <span className="font-mono text-[10px] text-slate-400 tracking-wider">
                         Analyzed by JurisAI · {confidenceScore}% Confidence
                       </span>
@@ -1461,7 +1474,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
               <section className="bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/40 dark:from-slate-800/80 dark:via-slate-900 dark:to-slate-800/90 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 shadow-xs">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 font-mono flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-[15px] text-indigo-600 dark:text-indigo-400">overview</span>
+                    <span className="material-symbols-outlined text-[15px] text-indigo-600 dark:text-indigo-400" aria-hidden="true">overview</span>
                     Document Quick Stats
                   </h3>
                   <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
@@ -1512,7 +1525,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   <ul className="space-y-2 text-xs text-slate-700 dark:text-slate-300">
                     {analysis.recommendations.map((rec, i) => (
                       <li key={i} className="flex items-start gap-2 bg-indigo-50/50 dark:bg-indigo-950/40 p-2.5 rounded-xl border border-indigo-100 dark:border-indigo-800/60">
-                        <span className="material-symbols-outlined text-[16px] text-indigo-600 dark:text-indigo-400 mt-0.5 shrink-0">check_circle</span>
+                        <span className="material-symbols-outlined text-[16px] text-indigo-600 dark:text-indigo-400 mt-0.5 shrink-0" aria-hidden="true">check_circle</span>
                         <span>{rec}</span>
                       </li>
                     ))}
@@ -1526,27 +1539,27 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 <div className="space-y-2">
                   <button
                     onClick={() => setShowWhatIf(true)}
-                    className="w-full flex items-center justify-between p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold transition-all shadow-2xs group"
+                    className="w-full flex items-center justify-between p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold transition-all shadow-2xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                     type="button"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[18px]">account_tree</span>
+                      <span className="material-symbols-outlined text-[18px]" aria-hidden="true">account_tree</span>
                       <span>Simulate What-If Scenarios</span>
                     </div>
-                    <span className="material-symbols-outlined text-[16px] text-indigo-400 group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
+                    <span className="material-symbols-outlined text-[16px] text-indigo-400 group-hover:translate-x-0.5 transition-transform" aria-hidden="true">arrow_forward</span>
                   </button>
 
                   <button
                     onClick={handleExportPDF}
                     disabled={isExporting}
-                    className="w-full flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all shadow-2xs disabled:opacity-50"
+                    className="w-full flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all shadow-2xs disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                     type="button"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[18px] text-rose-500">picture_as_pdf</span>
+                      <span className="material-symbols-outlined text-[18px] text-rose-500" aria-hidden="true">picture_as_pdf</span>
                       <span>{isExporting ? "Exporting PDF Report..." : "Download Full PDF Report"}</span>
                     </div>
-                    <span className="material-symbols-outlined text-[16px] text-slate-400">download</span>
+                    <span className="material-symbols-outlined text-[16px] text-slate-400" aria-hidden="true">download</span>
                   </button>
                 </div>
               </section>
@@ -1562,10 +1575,11 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
           {conversationMessages.filter(m => m.role === "user").length > 0 && (
             <button
               onClick={() => aiResponseSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 transition-colors shrink-0"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800/60 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               title="Jump to conversation history"
+              aria-label="Jump to conversation history"
             >
-              <span className="material-symbols-outlined text-[14px]">forum</span>
+              <span className="material-symbols-outlined text-[14px]" aria-hidden="true">forum</span>
               <span className="text-[10px] font-bold">
                 {conversationMessages.filter(m => m.role === "user").length}
               </span>
@@ -1583,9 +1597,13 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
             colors={["#4f46e5", "#6366f1", "#10b981", "#3b82f6"]}
           >
             <div className={`w-full bg-white dark:bg-slate-800/95 hover:bg-slate-50/80 dark:hover:bg-slate-800 border hover:border-indigo-400 dark:hover:border-indigo-500 focus-within:border-indigo-600 focus-within:ring-4 focus-within:ring-indigo-500/15 rounded-full px-4 py-2.5 flex items-center gap-3 transition-all shadow-xs ${isAnalyzing ? "border-indigo-400 animate-pulse" : "border-slate-300 dark:border-slate-700"}`}>
+              <label htmlFor="legal-prompt-input" className="sr-only">
+                Ask JurisAI a follow-up question about this analysis
+              </label>
               <input
                 className="flex-1 bg-transparent text-xs font-medium text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none disabled:opacity-50"
                 id="legal-prompt-input"
+                aria-label="Ask JurisAI a follow-up question about this analysis"
                 placeholder={isAnalyzing ? "JurisAI is analyzing your question..." : "Ask JurisAI a follow-up question about this analysis..."}
                 type="text"
                 value={promptText}
@@ -1602,7 +1620,8 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
           <button
             onClick={handleExecutePrompt}
             disabled={isAnalyzing || !promptText.trim()}
-            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2 rounded-full font-semibold text-xs transition-colors shadow-sm"
+            aria-label="Ask Follow-up Question"
+            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2 rounded-full font-semibold text-xs transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1"
             type="button"
           >
             {isAnalyzing ? (
@@ -1612,7 +1631,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
               </>
             ) : (
               <>
-                <span className="material-symbols-outlined text-[16px]">auto_awesome</span>
+                <span className="material-symbols-outlined text-[16px]" aria-hidden="true">auto_awesome</span>
                 <span>Ask</span>
               </>
             )}

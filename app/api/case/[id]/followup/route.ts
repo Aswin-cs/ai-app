@@ -8,11 +8,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import Case from "@/models/case.model";
 import Conversation from "@/models/conversation.model";
-import { generateGeminiContent } from "@/config/gemini";
+import { generateGeminiContent, createGeminiContextCache } from "@/config/gemini";
 import { FOLLOWUP_SYSTEM_INSTRUCTION } from "@/config/followupSystemPrompt";
 import { sanitizeString, safeErrorMessage } from "@/lib/security";
 import { getAuthenticatedUser } from "@/lib/authUtils";
-
 
 /**
  * POST /api/case/[id]/followup
@@ -96,10 +95,10 @@ export async function POST(
       });
     }
 
-    // 7. Build context for the AI
+    // 7. Build static document context for the AI
     const analysis = caseDoc.analysis as Record<string, any>;
 
-    const documentContext = [
+    const staticDocumentContext = [
       `## Document Information`,
       `- **Title:** ${analysis.documentTitle || caseDoc.fileName}`,
       `- **Type:** ${analysis.documentType || "Legal Document"}`,
@@ -121,7 +120,7 @@ export async function POST(
         (r: any, i: number) =>
           `${i + 1}. [${r.severity.toUpperCase()}] **${r.title}** (${r.clause})${
             r.statuteReference ? ` — Ref: ${r.statuteReference}` : ""
-          }\n   Source: "${(r.sourceText || "").substring(0, 200)}"\n   Explanation: ${(r.explanation || "").substring(0, 300)}`
+          }\n   Locator: "${(r.sourceText || "").substring(0, 100)}"\n   Explanation: ${(r.explanation || "").substring(0, 150)}`
       ),
       ``,
       `## Extracted Terms`,
@@ -133,37 +132,49 @@ export async function POST(
       ...(analysis.recommendations || []).map(
         (r: string, i: number) => `${i + 1}. ${r}`
       ),
+      ...(caseDoc.fileSummary
+        ? [`\n## Original Document Text Excerpt\n${caseDoc.fileSummary.substring(0, 2000)}`]
+        : []),
+      ...(caseDoc.prompt
+        ? [`\n## User's Original Analysis Prompt\n${caseDoc.prompt}`]
+        : []),
     ].join("\n");
 
-    // Include original document text excerpt (first 4000 chars)
-    const docText = caseDoc.fileSummary
-      ? `\n\n## Original Document Text (excerpt)\n${caseDoc.fileSummary.substring(0, 4000)}`
-      : "";
+    // Attempt Gemini Context Caching for static document context
+    const cacheName = await createGeminiContextCache({
+      systemInstruction: FOLLOWUP_SYSTEM_INSTRUCTION,
+      contents: [{ role: "user", parts: [{ text: staticDocumentContext }] }],
+      ttlSeconds: 900, // 15-min TTL cache
+    });
 
-    // Include user's original prompt if available
-    const userPromptContext = caseDoc.prompt
-      ? `\n\n## User's Original Analysis Prompt\n${caseDoc.prompt}`
-      : "";
-
-    // Build conversation history for context (last 10 messages)
-    const recentMessages = conversation.messages.slice(-10);
+    // Aggressively trim conversation history (last 4 messages / 2 turns, capped at 200 chars each)
+    const recentMessages = conversation.messages.slice(-4);
     const conversationHistory = recentMessages.length
-      ? `\n\n## Previous Conversation\n${recentMessages
-          .map(
-            (m: any) =>
-              `**${m.role === "user" ? "User" : "JurisAI"}:** ${m.content.substring(0, 500)}`
-          )
+      ? `\n\n## Recent Conversation\n${recentMessages
+          .map((m: any) => {
+            let textContent = m.content;
+            if (m.role === "assistant") {
+              try {
+                const parsed = JSON.parse(m.content);
+                textContent = parsed.answer || m.content;
+              } catch {}
+            }
+            return `**${m.role === "user" ? "User" : "JurisAI"}:** ${textContent.substring(0, 200)}`;
+          })
           .join("\n\n")}`
       : "";
 
     // 8. Generate AI response
-    const fullContext = `${documentContext}${docText}${userPromptContext}${conversationHistory}`;
-
-    const userMessage = `Based on the document analysis context provided, answer this follow-up question:\n\n"${trimmedQuestion}"`;
+    const deltaPrompt = `${conversationHistory}\n\n---\n\nBased on the document analysis context, answer this follow-up question:\n\n"${trimmedQuestion}"`;
+    const fullContents = cacheName
+      ? deltaPrompt
+      : `${staticDocumentContext}\n\n${deltaPrompt}`;
 
     const aiResponse = await generateGeminiContent({
       systemInstruction: FOLLOWUP_SYSTEM_INSTRUCTION,
-      contents: `${fullContext}\n\n---\n\n${userMessage}`,
+      contents: fullContents,
+      maxOutputTokens: 2048,
+      cachedContent: cacheName || undefined,
       config: {
         responseMimeType: "application/json",
         temperature: 0.4,

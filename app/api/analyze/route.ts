@@ -8,7 +8,11 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import Case from "@/models/case.model";
-import { generateGeminiContent } from "@/config/gemini";
+import {
+  generateGeminiContent,
+  uploadGeminiFile,
+  deleteGeminiFile,
+} from "@/config/gemini";
 import {
   LEGAL_SYSTEM_INSTRUCTION,
   SUPPORTED_FILE_TYPES,
@@ -50,16 +54,18 @@ async function extractDocxText(buffer: Buffer): Promise<string> {
 /**
  * Build Gemini content parts based on file type.
  * - Text/DOCX: send as text content
- * - PDF/Images: send as inline base64 data
+ * - PDF/Images: upload via Gemini File API and reference URI (falling back to inline base64)
  */
-function buildContentParts(
+async function buildContentParts(
   fileBuffer: Buffer,
   mimeType: string,
   category: "text" | "document" | "image",
   extractedText: string | null,
-  userPrompt: string
-) {
-  const parts: Array<{ text: string } | { inlineData: { data: string; mimeType: string } }> = [];
+  userPrompt: string,
+  fileName: string
+): Promise<{ parts: any[]; uploadedFileRef?: string }> {
+  const parts: any[] = [];
+  let uploadedFileRef: string | undefined = undefined;
 
   // Add user prompt context if provided
   const promptPrefix = userPrompt
@@ -72,20 +78,34 @@ function buildContentParts(
       text: promptPrefix + (extractedText || fileBuffer.toString("utf-8")),
     });
   } else {
-    // For PDF and images, send as inline base64 data + text prompt
+    // For PDF and images, use Gemini File API upload
     parts.push({ text: promptPrefix });
-    parts.push({
-      inlineData: {
-        data: fileBuffer.toString("base64"),
-        mimeType: mimeType,
-      },
-    });
+    const uploaded = await uploadGeminiFile(fileBuffer, mimeType, fileName);
+
+    if (uploaded?.uri) {
+      uploadedFileRef = uploaded.name;
+      parts.push({
+        fileData: {
+          fileUri: uploaded.uri,
+          mimeType: uploaded.mimeType || mimeType,
+        },
+      });
+    } else {
+      // Fallback to inline base64 if File API upload fails
+      parts.push({
+        inlineData: {
+          data: fileBuffer.toString("base64"),
+          mimeType: mimeType,
+        },
+      });
+    }
   }
 
-  return parts;
+  return { parts, uploadedFileRef };
 }
 
 export async function POST(request: NextRequest) {
+  let uploadedFileRef: string | undefined = undefined;
   try {
     // 1. Authenticate the user & connect to DB
     const { user, errorResponse } = await getAuthenticatedUser();
@@ -166,26 +186,27 @@ export async function POST(request: NextRequest) {
     }
 
     // Build fileSummary — the readable text content of the uploaded file
-    // For text-based files, store the full extracted text (capped at 50K chars)
-    // For binary files (PDF/images), store a placeholder until AI analysis completes
     const fileSummary = extractedText
       ? extractedText.substring(0, 50000)
       : `[Binary file: ${fileName} — ${(file.size / 1024).toFixed(1)}KB ${fileTypeInfo.mime}]`;
 
     // 9. Build content parts for Gemini
-    const contentParts = buildContentParts(
+    const { parts: contentParts, uploadedFileRef: fileRef } = await buildContentParts(
       fileBuffer,
       fileTypeInfo.mime,
       fileTypeInfo.category,
       extractedText,
-      prompt
+      prompt,
+      fileName
     );
+    uploadedFileRef = fileRef;
 
-    // 10. Call Gemini API with legal system instruction
+    // 10. Call Gemini API with legal system instruction and explicit maxOutputTokens
     try {
       const analysisResult = await generateGeminiContent({
         contents: contentParts,
         systemInstruction: LEGAL_SYSTEM_INSTRUCTION,
+        maxOutputTokens: 4096,
         config: {
           responseMimeType: "application/json",
           responseSchema: GEMINI_RESPONSE_SCHEMA,
@@ -193,7 +214,6 @@ export async function POST(request: NextRequest) {
       });
 
       // 11. Save analysis result and fileSummary to case document
-      // For binary files, update fileSummary with the AI-generated summary
       const finalFileSummary = extractedText
         ? fileSummary
         : (typeof analysisResult === "object" && analysisResult?.summary)
@@ -235,6 +255,10 @@ export async function POST(request: NextRequest) {
       { error: "Internal server error. Please try again later." },
       { status: 500 }
     );
+  } finally {
+    if (uploadedFileRef) {
+      await deleteGeminiFile(uploadedFileRef);
+    }
   }
 }
 

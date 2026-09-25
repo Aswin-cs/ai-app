@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 interface MemeVibeCheckProps {
   riskScore: number;
@@ -101,6 +101,18 @@ export default function MemeVibeCheck({
   const activeScore = simulatedScore !== null ? simulatedScore : riskScore;
   const currentPhase = getMemePhase(activeScore);
 
+  // Escape listener for lightbox
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsLightboxOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isLightboxOpen]);
+
   if (!isVisible) {
     return (
       <div className="bg-slate-50/80 dark:bg-slate-800/80 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 p-3 flex items-center justify-between transition-all">
@@ -116,9 +128,10 @@ export default function MemeVibeCheck({
         <button
           type="button"
           onClick={onToggleVisible}
-          className="px-3 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 border border-indigo-200 dark:border-indigo-800/60 rounded-lg transition-colors flex items-center gap-1"
+          aria-label="Show Legal Vibe Check section"
+          className="px-3 py-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 border border-indigo-200 dark:border-indigo-800/60 rounded-lg transition-colors flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
         >
-          <span className="material-symbols-outlined text-[14px]">visibility</span>
+          <span className="material-symbols-outlined text-[14px]" aria-hidden="true">visibility</span>
           <span>Show</span>
         </button>
       </div>
@@ -136,7 +149,7 @@ export default function MemeVibeCheck({
         <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-xs">
-              <span className="material-symbols-outlined text-[16px]">sentiment_very_satisfied</span>
+              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">sentiment_very_satisfied</span>
             </div>
             <div>
               <h3 className="text-xs font-bold text-[#0F172A] dark:text-slate-100 tracking-tight flex items-center gap-1.5">
@@ -159,24 +172,26 @@ export default function MemeVibeCheck({
             <button
               type="button"
               onClick={() => setShowSimulator(!showSimulator)}
-              className={`px-2 py-1 rounded-lg text-[10px] font-semibold border transition-all flex items-center gap-1 ${
+              aria-label="Toggle Risk Score Simulator"
+              className={`px-2 py-1 rounded-lg text-[10px] font-semibold border transition-all flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                 showSimulator || simulatedScore !== null
                   ? "bg-amber-50 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800/60 shadow-xs"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200/70 dark:hover:bg-slate-700"
               }`}
               title="Toggle Score Simulator"
             >
-              <span className="material-symbols-outlined text-[13px]">tune</span>
+              <span className="material-symbols-outlined text-[13px]" aria-hidden="true">tune</span>
               <span>Test Slider</span>
             </button>
 
             <button
               type="button"
               onClick={onToggleVisible}
-              className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-1 text-[11px] font-medium"
+              aria-label="Hide Legal Vibe Check section"
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-1 text-[11px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               title="Hide Meme Section"
             >
-              <span className="material-symbols-outlined text-[16px]">visibility_off</span>
+              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">visibility_off</span>
             </button>
           </div>
         </div>
@@ -186,36 +201,44 @@ export default function MemeVibeCheck({
           <div className="bg-amber-50/90 dark:bg-amber-950/90 border-b border-amber-200/80 dark:border-amber-800/80 p-3.5 space-y-2.5 text-xs animate-fade-in shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-amber-900 dark:text-amber-200 font-bold text-[11px] uppercase tracking-wider">
-                <span className="material-symbols-outlined text-[15px] text-amber-600 dark:text-amber-400">science</span>
+                <span className="material-symbols-outlined text-[15px] text-amber-600 dark:text-amber-400" aria-hidden="true">science</span>
                 <span>Critical Score Test Simulator</span>
               </div>
               {simulatedScore !== null && (
                 <button
                   type="button"
                   onClick={() => setSimulatedScore(null)}
-                  className="text-[10px] text-amber-800 dark:text-amber-300 underline hover:text-amber-950 font-medium"
+                  className="text-[10px] text-amber-800 dark:text-amber-300 underline hover:text-amber-950 font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-500"
                 >
                   Reset to Actual ({riskScore})
                 </button>
               )}
             </div>
 
-            {/* Range Slider */}
+            {/* Range Slider with Accessible Label & Live Value Announcement */}
             <div className="space-y-1.5">
               <div className="flex justify-between items-center text-[11px] font-mono">
-                <span className="text-amber-800 dark:text-amber-300">Adjust Score:</span>
+                <label htmlFor="meme-simulated-score-range" className="text-amber-800 dark:text-amber-300 cursor-pointer">
+                  Adjust Score:
+                </label>
                 <span className="font-extrabold text-amber-950 dark:text-amber-100 bg-amber-200/70 dark:bg-amber-900/80 px-2 py-0.5 rounded">
                   {activeScore} / 100 ({currentPhase.title.split(":")[0]})
                 </span>
               </div>
               <input
+                id="meme-simulated-score-range"
                 type="range"
                 min="0"
                 max="100"
                 step="1"
                 value={activeScore}
                 onChange={(e) => setSimulatedScore(Number(e.target.value))}
-                className="w-full h-2 bg-amber-200 dark:bg-amber-900 rounded-lg appearance-none cursor-pointer accent-amber-600 focus:outline-none"
+                aria-label="Adjust simulated risk score threshold"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={activeScore}
+                aria-valuetext={`${activeScore} out of 100 risk score, ${currentPhase.title.split(":")[0]}`}
+                className="w-full h-2 bg-amber-200 dark:bg-amber-900 rounded-lg appearance-none cursor-pointer accent-amber-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-2"
               />
             </div>
 
@@ -234,7 +257,8 @@ export default function MemeVibeCheck({
                   key={p.phase}
                   type="button"
                   onClick={() => setSimulatedScore(p.score)}
-                  className={`px-2 py-0.5 text-[10px] font-mono rounded border transition-colors ${
+                  aria-label={`Jump to Phase ${p.phase} (Score ${p.score})`}
+                  className={`px-2 py-0.5 text-[10px] font-mono rounded border transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-600 ${
                     currentPhase.phase === p.phase
                       ? "bg-amber-700 text-white border-amber-800 font-bold"
                       : "bg-white dark:bg-slate-800 text-amber-900 dark:text-amber-200 border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/60"
@@ -247,13 +271,17 @@ export default function MemeVibeCheck({
           </div>
         )}
 
-        {/* Card Content - Responsive Wide vs Compact Layout */}
+        {/* Card Content */}
         <div className="p-4 flex-1 flex flex-col justify-center">
           {layout === "wide" ? (
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-              {/* Meme Image Frame (5 cols) */}
+              {/* Meme Image Frame */}
               <div
-                className="sm:col-span-5 relative rounded-xl overflow-hidden border border-slate-200/90 dark:border-slate-700/80 shadow-xs bg-slate-900 group/img cursor-pointer transition-transform hover:scale-[1.01]"
+                tabIndex={0}
+                role="button"
+                aria-label={`Expand ${currentPhase.title} meme preview`}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setIsLightboxOpen(true); }}
+                className="sm:col-span-5 relative rounded-xl overflow-hidden border border-slate-200/90 dark:border-slate-700/80 shadow-xs bg-slate-900 group/img cursor-pointer transition-transform hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 onClick={() => setIsLightboxOpen(true)}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -268,11 +296,11 @@ export default function MemeVibeCheck({
                   </span>
                 </div>
                 <div className="absolute top-2 right-2 opacity-0 group-hover/img:opacity-100 transition-opacity bg-slate-900/80 text-white p-1 rounded-md backdrop-blur-md">
-                  <span className="material-symbols-outlined text-[14px]">fullscreen</span>
+                  <span className="material-symbols-outlined text-[14px]" aria-hidden="true">fullscreen</span>
                 </div>
               </div>
 
-              {/* Phase Info & Progress Meter (7 cols) */}
+              {/* Phase Info & Progress Meter */}
               <div className="sm:col-span-7 flex flex-col justify-between space-y-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1.5 flex-wrap">
@@ -318,7 +346,14 @@ export default function MemeVibeCheck({
               </div>
 
               {/* Meme Image Frame */}
-              <div className="relative rounded-xl overflow-hidden border border-slate-200/90 dark:border-slate-700/80 shadow-xs bg-slate-900 group/img cursor-pointer transition-transform hover:scale-[1.01]" onClick={() => setIsLightboxOpen(true)}>
+              <div
+                tabIndex={0}
+                role="button"
+                aria-label={`Expand ${currentPhase.title} meme preview`}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setIsLightboxOpen(true); }}
+                className="relative rounded-xl overflow-hidden border border-slate-200/90 dark:border-slate-700/80 shadow-xs bg-slate-900 group/img cursor-pointer transition-transform hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                onClick={() => setIsLightboxOpen(true)}
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={currentPhase.image}
@@ -338,7 +373,7 @@ export default function MemeVibeCheck({
                 </div>
 
                 <div className="absolute top-2 right-2 opacity-0 group-hover/img:opacity-100 transition-opacity bg-slate-900/80 text-white p-1.5 rounded-lg backdrop-blur-md">
-                  <span className="material-symbols-outlined text-[16px]">fullscreen</span>
+                  <span className="material-symbols-outlined text-[16px]" aria-hidden="true">fullscreen</span>
                 </div>
               </div>
 
@@ -363,6 +398,9 @@ export default function MemeVibeCheck({
       {/* Lightbox Preview Modal */}
       {isLightboxOpen && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="meme-lightbox-title"
           className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setIsLightboxOpen(false)}
         >
@@ -372,15 +410,16 @@ export default function MemeVibeCheck({
           >
             <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <div>
-                <h3 className="font-bold text-sm text-[#0F172A]">{currentPhase.title}</h3>
+                <h3 id="meme-lightbox-title" className="font-bold text-sm text-[#0F172A]">{currentPhase.title}</h3>
                 <p className="text-xs text-slate-500">{currentPhase.vibeText}</p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsLightboxOpen(false)}
-                className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center transition-colors"
+                aria-label="Close meme preview"
+                className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
               </button>
             </div>
 

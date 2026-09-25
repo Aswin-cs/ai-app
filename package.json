@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test __tests__/security.test.ts __tests__/legalPrompt.test.ts __tests__/authUtils.test.ts __tests__/caseModel.test.ts"
+    "test": "tsx --test __tests__/security.test.ts __tests__/legalPrompt.test.ts __tests__/authUtils.test.ts __tests__/caseModel.test.ts __tests__/geminiOptimization.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.23.0",

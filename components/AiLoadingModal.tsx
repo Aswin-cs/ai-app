@@ -17,7 +17,13 @@ export default function AiLoadingModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="AI Document Analysis Processing"
+      aria-live="polite"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in"
+    >
       <div className="bg-[#0F172A] border border-indigo-500/30 rounded-2xl px-6 py-4 shadow-2xl flex items-center justify-center text-white">
         <LatticeLoader
           status="working"

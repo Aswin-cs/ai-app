@@ -39,7 +39,7 @@ export default function LoginPage() {
           <div className="flex items-center gap-3">
             {/* Scales Emblem */}
             <div className="w-11 h-11 rounded-2xl overflow-hidden shadow-md shadow-slate-900/10 flex items-center justify-center bg-[#0F172A] text-amber-400 border border-slate-800">
-              <span className="material-symbols-outlined text-[24px]">balance</span>
+              <span className="material-symbols-outlined text-[24px]" aria-hidden="true">balance</span>
             </div>
             <div>
               <span className="font-extrabold text-2xl tracking-tight text-[#0F172A]">
@@ -67,7 +67,7 @@ export default function LoginPage() {
               {/* Feature 1 */}
               <div className="flex items-start gap-3.5">
                 <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-700 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="material-symbols-outlined text-[18px]">document_scanner</span>
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">document_scanner</span>
                 </div>
                 <div>
                   <div className="text-sm font-bold text-[#0F172A]">
@@ -82,7 +82,7 @@ export default function LoginPage() {
               {/* Feature 2 */}
               <div className="flex items-start gap-3.5">
                 <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200/60 text-blue-700 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="material-symbols-outlined text-[18px]">chat</span>
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">chat</span>
                 </div>
                 <div>
                   <div className="text-sm font-bold text-[#0F172A]">
@@ -97,7 +97,7 @@ export default function LoginPage() {
               {/* Feature 3 */}
               <div className="flex items-start gap-3.5">
                 <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="material-symbols-outlined text-[18px]">verified_user</span>
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">verified_user</span>
                 </div>
                 <div>
                   <div className="text-sm font-bold text-[#0F172A]">
@@ -118,7 +118,7 @@ export default function LoginPage() {
               {/* Logo & Header */}
               <div className="flex flex-col items-center text-center space-y-3">
                 <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/15 flex items-center justify-center bg-[#0F172A] border border-slate-800 text-amber-400">
-                  <span className="material-symbols-outlined text-[32px]">gavel</span>
+                  <span className="material-symbols-outlined text-[32px]" aria-hidden="true">gavel</span>
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-[#0F172A] tracking-tight">
@@ -163,7 +163,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => signOut()}
-                    className="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition-all shadow-sm"
+                    className="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                   >
                     Sign Out
                   </button>
@@ -176,11 +176,11 @@ export default function LoginPage() {
                     id="google-auth-btn"
                     onClick={handleGoogleAuth}
                     disabled={isLoading}
-                    className="w-full relative group flex items-center justify-center gap-3 px-5 py-3.5 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.99] cursor-pointer disabled:opacity-80"
+                    className="w-full relative group flex items-center justify-center gap-3 px-5 py-3.5 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.99] cursor-pointer disabled:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                     style={{ boxShadow: "0 2px 10px -2px rgba(15, 23, 42, 0.06)" }}
                   >
                     {/* Google Official 4-Color Icon */}
-                    <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" aria-hidden="true">
                       <path
                         d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
                         fill="#4285F4"
@@ -211,6 +211,7 @@ export default function LoginPage() {
                               className="animate-spin h-5 w-5 text-indigo-600"
                               fill="none"
                               viewBox="0 0 24 24"
+                              aria-hidden="true"
                             >
                               <circle
                                 className="opacity-25"
@@ -232,7 +233,7 @@ export default function LoginPage() {
                           </>
                         ) : (
                           <>
-                            <span className="material-symbols-outlined text-emerald-600 text-[20px]">
+                            <span className="material-symbols-outlined text-emerald-600 text-[20px]" aria-hidden="true">
                               verified
                             </span>
                             <span className="text-xs font-semibold text-[#0F172A]">

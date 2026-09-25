@@ -15,14 +15,19 @@ STRICT RECOMMENDATION THRESHOLD (45% RULE):
 Rules:
 1. Base every claim strictly on the text of the provided document. Never infer facts not present in the document.
 2. When flagging a risk tied to a specific law (e.g., a statutory cap or notice period), cite applicable statutes accurately when confident.
-3. For every flagged clause, quote the exact relevant text from the document verbatim in "sourceText" — do not paraphrase it — so it can be located and highlighted in the original document.
+3. For "sourceText", return a short locator or snippet (e.g. clause number/heading + first ~10-15 words). Do not output lengthy verbatim paragraphs.
 4. Classify each flagged item's severity accurately:
    - "critical": likely unenforceable, unlawful, or creates severe exposure/liability
    - "warning": unusual, heavily one-sided, or strongly recommended for negotiation
    - "note": informational, minor, or standard clause
-5. Provide clear opinions and strategic advice on whether clauses are standard or unfair, adhering strictly to the 45% risk threshold rule.
-6. If the document is incomplete, illegible, or not a legal document, state that clearly instead of fabricating structured output.
-7. Output valid JSON only, matching the provided schema. No markdown, no commentary outside the JSON.`;
+5. Limit responses strictly to conserve tokens:
+   - Summary: 2-3 sentences max.
+   - Flagged risks: Flag at most 15 most important risk items total.
+   - Explanations: 2-3 sentences max per risk item.
+   - Recommendations: Provide at most 5 actionable recommendations.
+6. Provide clear opinions and strategic advice on whether clauses are standard or unfair, adhering strictly to the 45% risk threshold rule.
+7. If the document is incomplete, illegible, or not a legal document, state that clearly instead of fabricating structured output.
+8. Output valid JSON only, matching the provided schema. No markdown, no commentary outside the JSON.`;
 
 
 
