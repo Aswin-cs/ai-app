@@ -320,31 +320,7 @@ export default function Dashboard({ user }: DashboardProps) {
             </div>
           </div>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
-            <button
-              type="button"
-              onClick={() => setActiveTab("home")}
-              className={`px-4 py-1.5 rounded-lg transition-all text-xs font-semibold ${
-                activeTab === "home"
-                  ? "bg-[#4f46e5] text-white shadow-sm"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
-              }`}
-            >
-              Home
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("profile")}
-              className={`px-4 py-1.5 rounded-lg transition-all text-xs font-semibold ${
-                activeTab === "profile"
-                  ? "bg-[#4f46e5] text-white shadow-sm"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
-              }`}
-            >
-              Profile
-            </button>
-          </nav>
+
 
           {/* Header Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
