@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "tsx --test __tests__/security.test.ts __tests__/legalPrompt.test.ts __tests__/authUtils.test.ts __tests__/caseModel.test.ts __tests__/geminiOptimization.test.ts __tests__/lib/severityStyles.test.ts __tests__/api/analyze.test.ts __tests__/api/cases.test.ts __tests__/api/caseId.test.ts __tests__/api/exportPdf.test.ts __tests__/api/followup.test.ts __tests__/hooks/useCaseList.test.ts __tests__/hooks/useCaseFollowup.test.ts __tests__/components/DeleteConfirmModal.test.tsx",
-    "test:coverage": "node --experimental-test-coverage --import tsx --test __tests__/security.test.ts __tests__/legalPrompt.test.ts __tests__/authUtils.test.ts __tests__/caseModel.test.ts __tests__/geminiOptimization.test.ts __tests__/lib/severityStyles.test.ts __tests__/api/analyze.test.ts __tests__/api/cases.test.ts __tests__/api/caseId.test.ts __tests__/api/exportPdf.test.ts __tests__/api/followup.test.ts __tests__/hooks/useCaseList.test.ts __tests__/hooks/useCaseFollowup.test.ts __tests__/components/DeleteConfirmModal.test.tsx"
+    "test:coverage": "npx c8 tsx --test __tests__/security.test.ts __tests__/legalPrompt.test.ts __tests__/authUtils.test.ts __tests__/caseModel.test.ts __tests__/geminiOptimization.test.ts __tests__/lib/severityStyles.test.ts __tests__/api/analyze.test.ts __tests__/api/cases.test.ts __tests__/api/caseId.test.ts __tests__/api/exportPdf.test.ts __tests__/api/followup.test.ts __tests__/hooks/useCaseList.test.ts __tests__/hooks/useCaseFollowup.test.ts __tests__/components/DeleteConfirmModal.test.tsx"
   },
   "dependencies": {
     "@google/genai": "^2.23.0",
