@@ -30,38 +30,43 @@ export const ai = new GoogleGenAI({
  * List of available Gemini Flash models
  */
 export const GEMINI_FLASH_MODELS = {
-  GEMINI_2_5_FLASH: "gemini-2.5-flash",
+  GEMINI_3_8_FLASH: "gemini-3.8-flash",
+  GEMINI_3_7_FLASH: "gemini-3.7-flash",
+  GEMINI_3_6_FLASH: "gemini-3.6-flash",
+  GEMINI_3_5_FLASH: "gemini-3.5-flash",
+  GEMINI_3_5_FLASH_LITE: "gemini-3.5-flash-lite",
+  GEMINI_3_FLASH_PREVIEW: "gemini-3-flash-preview",
   GEMINI_2_0_FLASH: "gemini-2.0-flash",
   GEMINI_2_0_FLASH_LITE: "gemini-2.0-flash-lite",
   GEMINI_1_5_FLASH: "gemini-1.5-flash",
   GEMINI_1_5_FLASH_8B: "gemini-1.5-flash-8b",
-  GEMINI_3_6_FLASH: "gemini-3.6-flash",
-  GEMINI_3_5_FLASH: "gemini-3.5-flash",
-  GEMINI_3_5_FLASH_LITE: "gemini-3.5-flash-lite",
-  GEMINI_3_8_FLASH: "gemini-3.8-flash",
-  GEMINI_3_7_FLASH: "gemini-3.7-flash",
-  GEMINI_3_FLASH_PREVIEW: "gemini-3-flash-preview",
 };
 
 /**
- * Capped fallback order for Gemini models (max 3 candidates for fast failure)
+ * Fallback order for Gemini models from latest 3.8 down to 3 Flash preview and 2.0/1.5 Flash
  */
 export const FALLBACK_MODEL_LIST = [
-  GEMINI_FLASH_MODELS.GEMINI_2_5_FLASH,
+  GEMINI_FLASH_MODELS.GEMINI_3_8_FLASH,
+  GEMINI_FLASH_MODELS.GEMINI_3_7_FLASH,
+  GEMINI_FLASH_MODELS.GEMINI_3_6_FLASH,
+  GEMINI_FLASH_MODELS.GEMINI_3_5_FLASH,
+  GEMINI_FLASH_MODELS.GEMINI_3_5_FLASH_LITE,
+  GEMINI_FLASH_MODELS.GEMINI_3_FLASH_PREVIEW,
   GEMINI_FLASH_MODELS.GEMINI_2_0_FLASH,
+  GEMINI_FLASH_MODELS.GEMINI_2_0_FLASH_LITE,
   GEMINI_FLASH_MODELS.GEMINI_1_5_FLASH,
 ];
 
 /**
  * Maximum model candidates tried in a single fallback loop
  */
-export const MAX_FALLBACK_CANDIDATES = 3;
+export const MAX_FALLBACK_CANDIDATES = FALLBACK_MODEL_LIST.length;
 
 /**
  * Default Gemini model used across the backend
  */
 export const DEFAULT_GEMINI_MODEL =
-  GEMINI_MODEL || GEMINI_FLASH_MODELS.GEMINI_2_5_FLASH;
+  GEMINI_MODEL || GEMINI_FLASH_MODELS.GEMINI_3_8_FLASH;
 
 export interface GeminiPart {
   text?: string;
@@ -219,7 +224,7 @@ export async function uploadGeminiFile(
       });
 
       if (fs.existsSync(tmpPath)) {
-        try { fs.unlinkSync(tmpPath); } catch {}
+        try { fs.unlinkSync(tmpPath); } catch { }
       }
 
       if (uploadResp?.uri && uploadResp?.name) {
@@ -231,7 +236,7 @@ export async function uploadGeminiFile(
       }
     } catch (uploadErr) {
       if (fs.existsSync(tmpPath)) {
-        try { fs.unlinkSync(tmpPath); } catch {}
+        try { fs.unlinkSync(tmpPath); } catch { }
       }
       logger.warn("⚠️ Gemini File API upload failed, falling back to inline data:", uploadErr);
     }

@@ -45,9 +45,9 @@ describe("Gemini Cost & Token Optimizations", () => {
     assert.ok(sourceTextDesc.includes("Short clause locator"));
   });
 
-  it("should cap the fallback model list to at most 3 candidate models to fail fast", () => {
-    assert.ok(FALLBACK_MODEL_LIST.length <= 3);
-    assert.strictEqual(MAX_FALLBACK_CANDIDATES, 3);
+  it("should configure fallback model list starting with gemini-3.8-flash and allow full fallback cascade", () => {
+    assert.strictEqual(FALLBACK_MODEL_LIST[0], "gemini-3.8-flash");
+    assert.strictEqual(MAX_FALLBACK_CANDIDATES, FALLBACK_MODEL_LIST.length);
   });
 
   it("should enforce field size limits in LEGAL_SYSTEM_INSTRUCTION", () => {
