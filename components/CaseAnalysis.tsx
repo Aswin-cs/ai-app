@@ -265,8 +265,8 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
     return (
       <div className="h-screen w-screen overflow-hidden flex items-center justify-center bg-[#F8FAFC] text-[#0F172A] font-sans">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-100 flex items-center justify-center animate-pulse">
-            <span className="material-symbols-outlined text-[28px] text-indigo-600" aria-hidden="true">balance</span>
+          <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md animate-pulse">
+            <span className="material-symbols-outlined text-[28px] text-white" aria-hidden="true">balance</span>
           </div>
           <div className="text-sm font-semibold text-slate-700">Loading case analysis...</div>
           <div className="w-48 h-1.5 bg-slate-200 rounded-full overflow-hidden">
@@ -360,7 +360,9 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
         <div className="fixed inset-0 z-50 md:hidden flex flex-col bg-slate-950/80 backdrop-blur-md transition-all duration-300">
           <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-4 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md">J</div>
+              <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md shrink-0">
+                <span className="material-symbols-outlined text-[20px] text-white" aria-hidden="true">balance</span>
+              </div>
               <div>
                 <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-100">JurisAI Navigation</h3>
                 <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[200px]">{documentTitle}</p>

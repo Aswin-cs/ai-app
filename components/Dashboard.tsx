@@ -225,8 +225,8 @@ export default function Dashboard({ user }: DashboardProps) {
 
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 shrink-0">
-              <div className="w-8 h-8 rounded-xl overflow-hidden shadow-sm flex items-center justify-center bg-[#0F172A] text-amber-400 border border-slate-800 shrink-0">
-                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">balance</span>
+              <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shrink-0">
+                <span className="material-symbols-outlined text-[18px] text-white" aria-hidden="true">balance</span>
               </div>
               <span className="font-extrabold text-lg sm:text-xl tracking-tight text-[#0F172A] dark:text-slate-100">
                 JurisAI
@@ -306,8 +306,8 @@ export default function Dashboard({ user }: DashboardProps) {
           >
             <div className="p-4 border-b border-slate-200/80 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-xl bg-[#0F172A] text-amber-400 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-[20px]" aria-hidden="true">balance</span>
+                <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shrink-0">
+                  <span className="material-symbols-outlined text-[20px] text-white" aria-hidden="true">balance</span>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-base font-bold text-[#0F172A]">JurisAI</span>

@@ -39,8 +39,8 @@ export default function LoginPage() {
         <div className="flex items-center justify-between w-full">
           <div className="flex items-center gap-3">
             {/* Scales Emblem */}
-            <div className="w-11 h-11 rounded-2xl overflow-hidden shadow-md shadow-slate-900/10 flex items-center justify-center bg-[#0F172A] text-amber-400 border border-slate-800">
-              <span className="material-symbols-outlined text-[24px]" aria-hidden="true">balance</span>
+            <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-indigo-600 text-white shadow-md shadow-indigo-600/20 shrink-0">
+              <span className="material-symbols-outlined text-[24px] text-white" aria-hidden="true">balance</span>
             </div>
             <div>
               <span className="font-extrabold text-2xl tracking-tight text-[#0F172A]">
@@ -118,8 +118,8 @@ export default function LoginPage() {
             <div className="w-full max-w-[400px] sm:w-[400px] bg-white rounded-[24px] p-8 sm:p-9 shadow-2xl shadow-slate-900/10 border border-slate-200/80">
               {/* Logo & Header */}
               <div className="flex flex-col items-center text-center space-y-3">
-                <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-lg shadow-slate-900/15 flex items-center justify-center bg-[#0F172A] border border-slate-800 text-amber-400">
-                  <span className="material-symbols-outlined text-[32px]" aria-hidden="true">gavel</span>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 shrink-0">
+                  <span className="material-symbols-outlined text-[32px] text-white" aria-hidden="true">balance</span>
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-[#0F172A] tracking-tight">

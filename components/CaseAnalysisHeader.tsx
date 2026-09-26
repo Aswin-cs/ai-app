@@ -50,8 +50,8 @@ export const CaseAnalysisHeader = React.memo(function CaseAnalysisHeader({
       <div className="h-16 w-full px-4 sm:px-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-              J
+            <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shrink-0">
+              <span className="material-symbols-outlined text-[18px] text-white" aria-hidden="true">balance</span>
             </div>
             <span className="font-bold text-lg tracking-tight text-[#0F172A] dark:text-slate-100">
               JurisAI
