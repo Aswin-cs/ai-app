@@ -378,7 +378,7 @@ export async function POST(request: NextRequest) {
 
         let executablePath: string | undefined = undefined;
         for (const p of localChromePaths) {
-          if (fs.existsSync(p)) {
+          if (fs.existsSync(/*turbopackIgnore: true*/ p)) {
             executablePath = p;
             break;
           }
