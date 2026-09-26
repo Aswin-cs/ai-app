@@ -3,6 +3,7 @@
 import React from "react";
 import MemeVibeCheck from "./MemeVibeCheck";
 import type { CaseDocument, RiskItem } from "@/types/case.types";
+import type { ConversationMessage } from "@/hooks/useCaseFollowup";
 
 interface CaseAnalysisMobileWorkspaceProps {
   mobileTab: "overview" | "document";
@@ -19,7 +20,7 @@ interface CaseAnalysisMobileWorkspaceProps {
   isSummaryExpanded: boolean;
   setIsSummaryExpanded: (val: boolean) => void;
   setShowCriticalModal: (val: boolean) => void;
-  conversationMessages: Array<{ role: string; content: string; timestamp: number }>;
+  conversationMessages: ConversationMessage[];
   documentTitle: string;
   zoomLevel: number;
   handleZoomIn: () => void;

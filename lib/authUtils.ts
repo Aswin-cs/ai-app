@@ -3,7 +3,7 @@
  * Provides a clean, reusable helper to authenticate server-side API requests via NextAuth
  * and fetch the associated database user document.
  */
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectDB from "@/config/db";
