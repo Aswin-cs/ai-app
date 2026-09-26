@@ -12,6 +12,40 @@ import { generateGeminiContent, createGeminiContextCache } from "@/config/gemini
 import { FOLLOWUP_SYSTEM_INSTRUCTION } from "@/config/followupSystemPrompt";
 import { sanitizeString, safeErrorMessage } from "@/lib/security";
 import { getAuthenticatedUser } from "@/lib/authUtils";
+import { logger } from "@/lib/logger";
+
+export interface FollowupParty {
+  role?: string;
+  name?: string;
+}
+
+export interface FollowupRisk {
+  severity: string;
+  title: string;
+  clause: string;
+  statuteReference?: string;
+  sourceText?: string;
+  explanation?: string;
+}
+
+export interface FollowupExtractedTerm {
+  label: string;
+  value: string;
+}
+
+export interface FollowupMessageItem {
+  role: "user" | "assistant";
+  content: string;
+  timestamp?: Date | string;
+}
+
+export interface FollowupParsedResponse {
+  answer?: string;
+  keyPoints?: string[];
+  confidence?: "high" | "medium" | "low" | string;
+  relatedClauses?: string[];
+  disclaimer?: boolean;
+}
 
 /**
  * POST /api/case/[id]/followup
@@ -80,7 +114,6 @@ export async function POST(
       );
     }
 
-
     // 6. Get or create conversation for this case + user
     let conversation = await Conversation.findOne({
       caseId: caseDoc._id,
@@ -96,42 +129,44 @@ export async function POST(
     }
 
     // 7. Build static document context for the AI
-    const analysis = caseDoc.analysis as Record<string, any>;
+    const analysis = (caseDoc.analysis || {}) as Record<string, unknown>;
+    const parties = Array.isArray(analysis.parties) ? (analysis.parties as FollowupParty[]) : [];
+    const risks = Array.isArray(analysis.risks) ? (analysis.risks as FollowupRisk[]) : [];
+    const extractedTerms = Array.isArray(analysis.extractedTerms)
+      ? (analysis.extractedTerms as FollowupExtractedTerm[])
+      : [];
+    const recommendations = Array.isArray(analysis.recommendations)
+      ? (analysis.recommendations as string[])
+      : [];
 
     const staticDocumentContext = [
       `## Document Information`,
-      `- **Title:** ${analysis.documentTitle || caseDoc.fileName}`,
-      `- **Type:** ${analysis.documentType || "Legal Document"}`,
-      `- **Jurisdiction:** ${analysis.jurisdiction || "Not specified"}`,
-      `- **Effective Date:** ${analysis.effectiveDate || "Not specified"}`,
-      `- **Overall Risk Score:** ${analysis.overallRiskScore ?? "N/A"}/100`,
-      `- **Confidence Score:** ${analysis.confidenceScore ?? "N/A"}%`,
+      `- **Title:** ${(analysis.documentTitle as string) || caseDoc.fileName}`,
+      `- **Type:** ${(analysis.documentType as string) || "Legal Document"}`,
+      `- **Jurisdiction:** ${(analysis.jurisdiction as string) || "Not specified"}`,
+      `- **Effective Date:** ${(analysis.effectiveDate as string) || "Not specified"}`,
+      `- **Overall Risk Score:** ${(analysis.overallRiskScore as number) ?? "N/A"}/100`,
+      `- **Confidence Score:** ${(analysis.confidenceScore as number) ?? "N/A"}%`,
       ``,
       `## AI Summary`,
-      analysis.summary || "No summary available.",
+      (analysis.summary as string) || "No summary available.",
       ``,
       `## Parties`,
-      ...(analysis.parties || []).map(
-        (p: any) => `- **${p.role}:** ${p.name}`
-      ),
+      ...parties.map((p) => `- **${p.role || "Party"}:** ${p.name || "Unknown"}`),
       ``,
-      `## Flagged Risks (${(analysis.risks || []).length} items)`,
-      ...(analysis.risks || []).map(
-        (r: any, i: number) =>
-          `${i + 1}. [${r.severity.toUpperCase()}] **${r.title}** (${r.clause})${
+      `## Flagged Risks (${risks.length} items)`,
+      ...risks.map(
+        (r, i) =>
+          `${i + 1}. [${(r.severity || "").toUpperCase()}] **${r.title || ""}** (${r.clause || ""})${
             r.statuteReference ? ` — Ref: ${r.statuteReference}` : ""
           }\n   Locator: "${(r.sourceText || "").substring(0, 100)}"\n   Explanation: ${(r.explanation || "").substring(0, 150)}`
       ),
       ``,
       `## Extracted Terms`,
-      ...(analysis.extractedTerms || []).map(
-        (t: any) => `- **${t.label}:** ${t.value}`
-      ),
+      ...extractedTerms.map((t) => `- **${t.label || ""}:** ${t.value || ""}`),
       ``,
       `## Recommendations`,
-      ...(analysis.recommendations || []).map(
-        (r: string, i: number) => `${i + 1}. ${r}`
-      ),
+      ...recommendations.map((r, i) => `${i + 1}. ${r}`),
       ...(caseDoc.fileSummary
         ? [`\n## Original Document Text Excerpt\n${caseDoc.fileSummary.substring(0, 2000)}`]
         : []),
@@ -151,11 +186,11 @@ export async function POST(
     const recentMessages = conversation.messages.slice(-4);
     const conversationHistory = recentMessages.length
       ? `\n\n## Recent Conversation\n${recentMessages
-          .map((m: any) => {
+          .map((m: FollowupMessageItem) => {
             let textContent = m.content;
             if (m.role === "assistant") {
               try {
-                const parsed = JSON.parse(m.content);
+                const parsed = JSON.parse(m.content) as FollowupParsedResponse;
                 textContent = parsed.answer || m.content;
               } catch {}
             }
@@ -182,10 +217,10 @@ export async function POST(
     });
 
     // 9. Parse and validate AI response
-    let parsedResponse: any;
+    let parsedResponse: FollowupParsedResponse;
 
     if (typeof aiResponse === "object" && aiResponse !== null) {
-      parsedResponse = aiResponse;
+      parsedResponse = aiResponse as FollowupParsedResponse;
     } else if (typeof aiResponse === "string") {
       try {
         const cleaned = aiResponse
@@ -193,7 +228,7 @@ export async function POST(
           .replace(/^```\s*/i, "")
           .replace(/\s*```$/, "")
           .trim();
-        parsedResponse = JSON.parse(cleaned);
+        parsedResponse = JSON.parse(cleaned) as FollowupParsedResponse;
       } catch {
         // If JSON parsing fails, wrap raw text into structure
         parsedResponse = {
@@ -220,7 +255,7 @@ export async function POST(
       keyPoints: Array.isArray(parsedResponse.keyPoints)
         ? parsedResponse.keyPoints
         : [],
-      confidence: ["high", "medium", "low"].includes(parsedResponse.confidence)
+      confidence: ["high", "medium", "low"].includes(parsedResponse.confidence || "")
         ? parsedResponse.confidence
         : "medium",
       relatedClauses: Array.isArray(parsedResponse.relatedClauses)
@@ -250,8 +285,8 @@ export async function POST(
       response: finalResponse,
       messageCount: conversation.messages.length,
     });
-  } catch (error: any) {
-    console.error("❌ [/api/case/[id]/followup] Error:", error);
+  } catch (error: unknown) {
+    logger.error("❌ [/api/case/[id]/followup] Error:", error);
     return NextResponse.json(
       {
         error: safeErrorMessage(error, "Failed to process follow-up question."),
@@ -260,7 +295,6 @@ export async function POST(
     );
   }
 }
-
 
 /**
  * GET /api/case/[id]/followup
@@ -293,8 +327,8 @@ export async function GET(
       success: true,
       messages: conversation?.messages || [],
     });
-  } catch (error: any) {
-    console.error("❌ [/api/case/[id]/followup] GET Error:", error);
+  } catch (error: unknown) {
+    logger.error("❌ [/api/case/[id]/followup] GET Error:", error);
     return NextResponse.json(
       { error: "Failed to load conversation." },
       { status: 500 }

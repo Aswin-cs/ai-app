@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import dynamic from "next/dynamic";
@@ -9,6 +9,9 @@ import { signOut } from "next-auth/react";
 import BorderGlow from "./BorderGlow";
 import LatticeLoader from "./LatticeLoader";
 import ThemeToggle from "./ThemeToggle";
+import { SidebarCaseItem } from "./SidebarCaseItem";
+import { useCaseList, CaseHistoryItem } from "@/hooks/useCaseList";
+import { logger } from "@/lib/logger";
 
 const AiLoadingModal = dynamic(() => import("./AiLoadingModal"), { ssr: false });
 const DeleteConfirmModal = dynamic(() => import("./DeleteConfirmModal"), { ssr: false });
@@ -20,58 +23,6 @@ interface DashboardProps {
     image?: string | null;
   };
 }
-
-interface CaseHistoryItem {
-  _id: string;
-  fileName: string;
-  documentTitle: string;
-  documentType: string;
-  overallRiskScore: number;
-  status: string;
-  createdAt: string;
-  risksCount: number;
-}
-
-interface SidebarCaseItemProps {
-  item: CaseHistoryItem;
-  iconColorClass: string;
-  onDelete: (item: CaseHistoryItem) => void;
-  getDocIcon: (type?: string) => string;
-}
-
-const SidebarCaseItem = React.memo(function SidebarCaseItem({
-  item,
-  iconColorClass,
-  onDelete,
-  getDocIcon,
-}: SidebarCaseItemProps) {
-  return (
-    <div className="flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/70 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors group">
-      <Link
-        className="flex items-center gap-2.5 min-w-0 flex-1"
-        href={`/case/${item._id}`}
-      >
-        <span className={`material-symbols-outlined text-[16px] shrink-0 ${iconColorClass}`}>
-          {getDocIcon(item.documentType || item.fileName)}
-        </span>
-        <span className="truncate font-medium">{item.documentTitle || item.fileName}</span>
-      </Link>
-
-      <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onDelete(item);
-        }}
-        className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 hover:bg-rose-100/70 transition-all shrink-0"
-        title="Delete consultation"
-      >
-        <span className="material-symbols-outlined text-[16px]">delete</span>
-      </button>
-    </div>
-  );
-});
 
 export default function Dashboard({ user }: DashboardProps) {
   const router = useRouter();
@@ -85,22 +36,29 @@ export default function Dashboard({ user }: DashboardProps) {
   const [isMobileDrawerMounted, setIsMobileDrawerMounted] = useState(false);
   const [isMobileDrawerAnimating, setIsMobileDrawerAnimating] = useState(false);
   const [desktopSidebarAnimClass, setDesktopSidebarAnimClass] = useState("");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [analysisProgress, setAnalysisProgress] = useState("");
 
-  const [historyCases, setHistoryCases] = useState<CaseHistoryItem[]>([]);
-  const [isLoadingHistory, setIsLoadingHistory] = useState<boolean>(true);
-
-  const [caseToDelete, setCaseToDelete] = useState<CaseHistoryItem | null>(null);
-  const [isDeletingCase, setIsDeletingCase] = useState(false);
-  const [successToast, setSuccessToast] = useState<string | null>(null);
-
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Case history management custom hook
+  const {
+    historyCases,
+    isLoadingHistory,
+    errorMessage,
+    setErrorMessage,
+    successToast,
+    setSuccessToast,
+    caseToDelete,
+    setCaseToDelete,
+    isDeletingCase,
+    handleDeleteCaseConfirm,
+    groupedHistory,
+    getDocIcon,
+  } = useCaseList();
 
   // Mobile drawer animated open/close
   const openMobileDrawer = () => {
     setIsMobileDrawerMounted(true);
-    // Force a reflow before starting animation
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         setIsMobileDrawerAnimating(true);
@@ -110,7 +68,6 @@ export default function Dashboard({ user }: DashboardProps) {
 
   const closeMobileDrawer = () => {
     setIsMobileDrawerAnimating(false);
-    // Wait for CSS transition to finish, then unmount
     setTimeout(() => {
       setIsMobileDrawerMounted(false);
     }, 320);
@@ -119,100 +76,12 @@ export default function Dashboard({ user }: DashboardProps) {
   // Desktop sidebar content animation
   useEffect(() => {
     if (isSidebarOpen) {
-      // Delay to let the translate transition begin, then fade in content
       const t = setTimeout(() => setDesktopSidebarAnimClass("sidebar-content-visible"), 80);
       return () => clearTimeout(t);
     } else {
       setDesktopSidebarAnimClass("");
     }
   }, [isSidebarOpen]);
-
-  const handleDeleteCaseConfirm = async () => {
-    if (!caseToDelete) return;
-    setIsDeletingCase(true);
-    try {
-      const res = await fetch(`/api/case/${caseToDelete._id}`, {
-        method: "DELETE",
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setHistoryCases((prev) => prev.filter((item) => item._id !== caseToDelete._id));
-        setSuccessToast(`Deleted "${caseToDelete.documentTitle || caseToDelete.fileName}"`);
-        setTimeout(() => setSuccessToast(null), 4000);
-        setCaseToDelete(null);
-      } else {
-        throw new Error(data.error || "Failed to delete case.");
-      }
-    } catch (err: any) {
-      console.error("Delete error:", err);
-      setErrorMessage(err.message || "Failed to delete case. Please try again.");
-      setTimeout(() => setErrorMessage(null), 5000);
-    } finally {
-      setIsDeletingCase(false);
-    }
-  };
-
-  // Fetch case history on mount
-  useEffect(() => {
-    async function fetchHistory() {
-      try {
-        setIsLoadingHistory(true);
-        const res = await fetch("/api/cases");
-        const contentType = res.headers.get("content-type") || "";
-        if (contentType.includes("application/json")) {
-          const data = await res.json();
-          if (res.ok && data.cases) {
-            setHistoryCases(data.cases);
-          }
-        } else {
-          console.warn(`[/api/cases] Server returned non-JSON response (${res.status})`);
-        }
-      } catch (err) {
-        console.error("Failed to fetch case history:", err);
-      } finally {
-        setIsLoadingHistory(false);
-      }
-    }
-
-    fetchHistory();
-  }, []);
-
-  // Group cases into timeframe buckets
-  const groupedHistory = useMemo(() => {
-    const today: CaseHistoryItem[] = [];
-    const yesterday: CaseHistoryItem[] = [];
-    const past7Days: CaseHistoryItem[] = [];
-    const older: CaseHistoryItem[] = [];
-
-    const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const startOfYesterday = new Date(startOfToday.getTime() - 24 * 60 * 60 * 1000);
-    const startOf7Days = new Date(startOfToday.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-    historyCases.forEach((item) => {
-      const itemDate = new Date(item.createdAt);
-      if (itemDate >= startOfToday) {
-        today.push(item);
-      } else if (itemDate >= startOfYesterday) {
-        yesterday.push(item);
-      } else if (itemDate >= startOf7Days) {
-        past7Days.push(item);
-      } else {
-        older.push(item);
-      }
-    });
-
-    return { today, yesterday, past7Days, older };
-  }, [historyCases]);
-
-  const getDocIcon = useCallback((type?: string) => {
-    const lower = (type || "").toLowerCase();
-    if (lower.includes("lease") || lower.includes("rent")) return "description";
-    if (lower.includes("notice") || lower.includes("dispute")) return "gavel";
-    if (lower.includes("severance") || lower.includes("employment")) return "assignment_turned_in";
-    if (lower.includes("nda") || lower.includes("agreement")) return "article";
-    return "description";
-  }, []);
 
   const handleChipClick = useCallback((text: string) => {
     setPromptText(text);
@@ -248,6 +117,7 @@ export default function Dashboard({ user }: DashboardProps) {
       const formData = new FormData();
       formData.append("file", attachedFile);
       if (promptText.trim()) {
+
         formData.append("prompt", promptText.trim());
       }
 

@@ -8,11 +8,13 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import connectDB from "@/config/db";
 import User, { IUser } from "@/models/user.model";
+import { logger } from "@/lib/logger";
 
 export interface AuthUserResult {
   user: IUser | null;
   errorResponse: NextResponse | null;
 }
+
 
 /**
  * Authenticates the current server request and retrieves the corresponding database user.
@@ -47,7 +49,7 @@ export async function getAuthenticatedUser(): Promise<AuthUserResult> {
   } catch (error) {
     const isRequestScopeError = error instanceof Error && error.message.includes("headers");
     if (!isRequestScopeError) {
-      console.error("❌ [getAuthenticatedUser] Authentication error:", error);
+      logger.error("❌ [getAuthenticatedUser] Authentication error:", error);
     }
     return {
       user: null,

@@ -9,6 +9,20 @@ import { NextRequest, NextResponse } from "next/server";
 import Case from "@/models/case.model";
 import { getAuthenticatedUser } from "@/lib/authUtils";
 import { safeErrorMessage } from "@/lib/security";
+import { logger } from "@/lib/logger";
+
+interface LeanCaseItem {
+  _id: { toString: () => string };
+  fileName: string;
+  status: string;
+  createdAt: Date;
+  analysis?: {
+    documentTitle?: string;
+    documentType?: string;
+    overallRiskScore?: number;
+    risks?: unknown[];
+  };
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,7 +47,7 @@ export async function GET(request: NextRequest) {
       Case.countDocuments({ userId: user._id }),
     ]);
 
-    const formattedCases = cases.map((c: any) => ({
+    const formattedCases = (cases as unknown as LeanCaseItem[]).map((c) => ({
       _id: c._id.toString(),
       fileName: c.fileName,
       documentTitle: c.analysis?.documentTitle || c.fileName,
@@ -55,12 +69,10 @@ export async function GET(request: NextRequest) {
       hasMore,
     });
   } catch (error: unknown) {
-    console.error("❌ [/api/cases] Error fetching case history:", error);
+    logger.error("❌ [/api/cases] Error fetching case history:", error);
     return NextResponse.json(
       { error: safeErrorMessage(error, "Failed to fetch case history.") },
       { status: 500 }
     );
   }
 }
-
-

@@ -12,6 +12,7 @@ import {
   generateGeminiContent,
   uploadGeminiFile,
   deleteGeminiFile,
+  GeminiPart,
 } from "@/config/gemini";
 import {
   LEGAL_SYSTEM_INSTRUCTION,
@@ -21,6 +22,7 @@ import {
 import { GEMINI_RESPONSE_SCHEMA } from "@/types/case.types";
 import { sanitizeString, sanitizeFileName, safeErrorMessage } from "@/lib/security";
 import { getAuthenticatedUser } from "@/lib/authUtils";
+import { logger } from "@/lib/logger";
 
 /**
  * Extract plain text from a DOCX file buffer.
@@ -63,8 +65,8 @@ async function buildContentParts(
   extractedText: string | null,
   userPrompt: string,
   fileName: string
-): Promise<{ parts: any[]; uploadedFileRef?: string }> {
-  const parts: any[] = [];
+): Promise<{ parts: GeminiPart[]; uploadedFileRef?: string }> {
+  const parts: GeminiPart[] = [];
   let uploadedFileRef: string | undefined = undefined;
 
   // Add user prompt context if provided
@@ -170,7 +172,7 @@ export async function POST(request: NextRequest) {
     if (fileExtension === ".docx") {
       try {
         extractedText = await extractDocxText(fileBuffer);
-      } catch (docxError: any) {
+      } catch (docxError: unknown) {
         // Update case as failed if DOCX extraction fails
         await Case.findByIdAndUpdate(caseDoc._id, {
           status: "failed",
@@ -216,8 +218,8 @@ export async function POST(request: NextRequest) {
       // 11. Save analysis result and fileSummary to case document
       const finalFileSummary = extractedText
         ? fileSummary
-        : (typeof analysisResult === "object" && analysisResult?.summary)
-          ? analysisResult.summary
+        : (typeof analysisResult === "object" && analysisResult !== null && "summary" in (analysisResult as Record<string, unknown>))
+          ? (analysisResult as Record<string, string>).summary
           : fileSummary;
 
       await Case.findByIdAndUpdate(caseDoc._id, {
@@ -234,7 +236,7 @@ export async function POST(request: NextRequest) {
         },
         { status: 200 }
       );
-    } catch (aiError: any) {
+    } catch (aiError: unknown) {
       // Update case as failed if Gemini call fails
       await Case.findByIdAndUpdate(caseDoc._id, {
         status: "failed",
@@ -249,8 +251,8 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-  } catch (error: any) {
-    console.error("❌ [/api/analyze] Unexpected error:", error);
+  } catch (error: unknown) {
+    logger.error("❌ [/api/analyze] Unexpected error:", error);
     return NextResponse.json(
       { error: "Internal server error. Please try again later." },
       { status: 500 }
@@ -261,4 +263,3 @@ export async function POST(request: NextRequest) {
     }
   }
 }
-

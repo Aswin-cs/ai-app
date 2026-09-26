@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Case from "@/models/case.model";
 import { getAuthenticatedUser } from "@/lib/authUtils";
 import { safeErrorMessage } from "@/lib/security";
+import { logger } from "@/lib/logger";
 
 export async function GET(
   _request: NextRequest,
@@ -58,7 +59,7 @@ export async function GET(
       },
     });
   } catch (error: unknown) {
-    console.error("❌ [/api/case/[id]] Error:", error);
+    logger.error("❌ [/api/case/[id]] Error:", error);
     return NextResponse.json(
       { error: safeErrorMessage(error, "Internal server error.") },
       { status: 500 }
@@ -108,13 +109,10 @@ export async function DELETE(
       message: "Case deleted successfully.",
     });
   } catch (error: unknown) {
-    console.error("❌ [/api/case/[id]] DELETE error:", error);
+    logger.error("❌ [/api/case/[id]] DELETE error:", error);
     return NextResponse.json(
       { error: safeErrorMessage(error, "Failed to delete case.") },
       { status: 500 }
     );
   }
 }
-
-
-

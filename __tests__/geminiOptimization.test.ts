@@ -16,19 +16,32 @@ import {
 } from "@/config/gemini";
 import { LEGAL_SYSTEM_INSTRUCTION } from "@/config/legalSystemPrompt";
 
+interface SchemaArrayProperty {
+  type: string;
+  maxItems?: number;
+  items?: {
+    properties?: {
+      sourceText?: {
+        description?: string;
+      };
+    };
+  };
+}
+
 describe("Gemini Cost & Token Optimizations", () => {
   it("should cap GEMINI_RESPONSE_SCHEMA array sizes and require concise sourceText locators", () => {
-    const risksSchema: any = GEMINI_RESPONSE_SCHEMA.properties.risks;
-    const recommendationsSchema: any = GEMINI_RESPONSE_SCHEMA.properties.recommendations;
-    const termsSchema: any = GEMINI_RESPONSE_SCHEMA.properties.extractedTerms;
-    const partiesSchema: any = GEMINI_RESPONSE_SCHEMA.properties.parties;
+    const properties = GEMINI_RESPONSE_SCHEMA.properties as unknown as Record<string, SchemaArrayProperty>;
+    const risksSchema = properties.risks;
+    const recommendationsSchema = properties.recommendations;
+    const termsSchema = properties.extractedTerms;
+    const partiesSchema = properties.parties;
 
     assert.strictEqual(risksSchema.maxItems, 15);
     assert.strictEqual(recommendationsSchema.maxItems, 5);
     assert.strictEqual(termsSchema.maxItems, 10);
     assert.strictEqual(partiesSchema.maxItems, 5);
 
-    const sourceTextDesc = risksSchema.items.properties.sourceText.description;
+    const sourceTextDesc = risksSchema.items?.properties?.sourceText?.description || "";
     assert.ok(sourceTextDesc.includes("Short clause locator"));
   });
 

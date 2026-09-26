@@ -4,6 +4,7 @@ import { NextRequest } from "next/server";
 import connectDB from "@/config/db";
 import User from "@/models/user.model";
 import crypto from "crypto";
+import { logger } from "@/lib/logger";
 
 // Ensure a strong random secret if NEXTAUTH_SECRET is missing in environment
 let fallbackSecret: string | undefined;
@@ -12,7 +13,7 @@ function getAuthSecret(): string {
     return process.env.NEXTAUTH_SECRET;
   }
   if (process.env.NODE_ENV === "production") {
-    console.error("⚠️ CRITICAL SECURITY WARNING: NEXTAUTH_SECRET is not set in environment variables!");
+    logger.error("⚠️ CRITICAL SECURITY WARNING: NEXTAUTH_SECRET is not set in environment variables!");
   }
   if (!fallbackSecret) {
     fallbackSecret = crypto.randomBytes(32).toString("hex");
@@ -62,7 +63,7 @@ export const authOptions: NextAuthOptions = {
           }
           return true;
         } catch (error) {
-          console.error("Error saving user to DB during Google sign in:", error);
+          logger.error("Error saving user to DB during Google sign in:", error);
           return true;
         }
       }
@@ -80,7 +81,7 @@ export const authOptions: NextAuthOptions = {
           }
         }
       } catch (error) {
-        console.error("Error attaching user data to session:", error);
+        logger.error("Error attaching user data to session:", error);
       }
       return session;
     },
@@ -108,4 +109,3 @@ export async function POST(
   const resolvedParams = await context.params;
   return handler(req, { params: resolvedParams });
 }
-

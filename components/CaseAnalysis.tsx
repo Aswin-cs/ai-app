@@ -9,6 +9,14 @@ import GlideSelect from "./GlideSelect";
 import MemeVibeCheck from "./MemeVibeCheck";
 import ThemeToggle from "./ThemeToggle";
 import type { CaseDocument, RiskItem as RiskItemType } from "@/types/case.types";
+import { CaseAnalysisHeader } from "./CaseAnalysisHeader";
+import { CriticalPointsModal } from "./CriticalPointsModal";
+import { RiskLedgerCard } from "./RiskLedgerCard";
+import { ModalRiskItemCard } from "./ModalRiskItemCard";
+import { useCaseFollowup, AiFollowupResponse, ConversationMessage } from "@/hooks/useCaseFollowup";
+import { useAudioChime } from "@/hooks/useAudioChime";
+import { getSeverityStyles, getRiskScoreStyles } from "@/lib/severityStyles";
+import { logger } from "@/lib/logger";
 
 const WhatIfMap = dynamic(() => import("./WhatIfMap"), {
   ssr: false,
@@ -25,133 +33,6 @@ const WhatIfMap = dynamic(() => import("./WhatIfMap"), {
     </div>
   ),
 });
-
-const RiskLedgerCard = React.memo(function RiskLedgerCard({
-  item,
-  isActive,
-  onJump,
-}: {
-  item: RiskItemType;
-  isActive: boolean;
-  onJump: (id: string) => void;
-}) {
-  const dotColor =
-    item.severity === "critical"
-      ? "bg-red-500"
-      : item.severity === "warning"
-      ? "bg-amber-500"
-      : "bg-emerald-500";
-
-  const textColor =
-    item.severity === "critical"
-      ? "text-red-600 dark:text-red-400"
-      : item.severity === "warning"
-      ? "text-amber-600 dark:text-amber-400"
-      : "text-emerald-600 dark:text-emerald-400";
-
-  return (
-    <div
-      onClick={() => onJump(item.id)}
-      className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer group ${
-        isActive
-          ? "bg-indigo-50/80 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-800/80 shadow-xs"
-          : "bg-white dark:bg-slate-800/80 border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
-      }`}
-    >
-      <span className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${dotColor}`}></span>
-      <div className="min-w-0 flex-1">
-        <div className={`text-xs font-medium leading-snug transition-colors ${
-          isActive
-            ? "text-indigo-900 dark:text-indigo-200 font-semibold"
-            : "text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"
-        }`}>
-          {item.title}
-        </div>
-        <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-mono flex-wrap">
-          <span className={`font-semibold capitalize ${textColor}`}>
-            {item.severity}
-          </span>
-          <span className="text-slate-300 dark:text-slate-600">·</span>
-          <span className="text-slate-500 dark:text-slate-400 truncate max-w-[120px]">{item.clause}</span>
-          {item.statuteReference && (
-            <>
-              <span className="text-slate-300 dark:text-slate-600">·</span>
-              <span className="text-indigo-600 dark:text-indigo-400 text-[10px] truncate max-w-[130px]" title={item.statuteReference}>
-                {item.statuteReference}
-              </span>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-});
-
-const ModalRiskItemCard = React.memo(function ModalRiskItemCard({
-  risk,
-}: {
-  risk: RiskItemType;
-}) {
-  return (
-    <div
-      className={`rounded-2xl border p-4 transition-all ${
-        risk.severity === "critical"
-          ? "bg-red-50/40 dark:bg-red-950/30 border-red-200 dark:border-red-900/60"
-          : risk.severity === "warning"
-            ? "bg-amber-50/40 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/60"
-            : "bg-slate-50/50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800"
-      }`}
-    >
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <span className="font-mono text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-0.5 rounded-md truncate max-w-[260px]">
-          {risk.clause}
-        </span>
-        <span className={`font-mono text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
-          risk.severity === "critical" ? "bg-red-600 text-white" : risk.severity === "warning" ? "bg-amber-500 text-white" : "bg-slate-600 text-white"
-        }`}>
-          {risk.severity}
-        </span>
-      </div>
-
-      <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-2">
-        {risk.title}
-      </h4>
-
-      {risk.statuteReference && (
-        <div className="flex items-center gap-1 text-[11px] text-indigo-600 dark:text-indigo-400 font-mono mb-3">
-          <span className="material-symbols-outlined text-[14px]">gavel</span>
-          <span>{risk.statuteReference}</span>
-        </div>
-      )}
-
-      {/* Excerpt */}
-      <div className="p-3 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 mb-3 text-xs italic font-serif text-slate-700 dark:text-slate-300">
-        &ldquo;{risk.sourceText}&rdquo;
-      </div>
-
-      {/* Explanation */}
-      <div className="p-3 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 text-xs text-slate-700 dark:text-slate-300">
-        <div className="text-[10px] font-mono font-bold uppercase text-indigo-600 dark:text-indigo-400 mb-1">Statutory Explanation</div>
-        <p>{risk.explanation}</p>
-      </div>
-    </div>
-  );
-});
-
-interface AiFollowupResponse {
-  answer: string;
-  keyPoints: string[];
-  confidence: "high" | "medium" | "low";
-  relatedClauses: string[];
-  disclaimer: boolean;
-}
-
-interface ConversationMessage {
-  _id?: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: string;
-}
 
 interface CaseAnalysisProps {
   caseId: string;
@@ -170,20 +51,40 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
   const [activeRiskId, setActiveRiskId] = useState<string | null>(null);
   const [filterSeverity, setFilterSeverity] = useState<string>("All");
   const [zoomLevel, setZoomLevel] = useState<number>(100);
-  const [promptText, setPromptText] = useState<string>("");
-  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [showWhatIf, setShowWhatIf] = useState<boolean>(false);
   const [documentSearch, setDocumentSearch] = useState<string>("");
   const [showSearchBox, setShowSearchBox] = useState<boolean>(false);
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [showMeme, setShowMeme] = useState<boolean>(true);
   const [showExecBox, setShowExecBox] = useState<boolean>(true);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [showCriticalModal, setShowCriticalModal] = useState<boolean>(false);
   const [mobileTab, setMobileTab] = useState<"overview" | "document">("overview");
   const [modalSearch, setModalSearch] = useState<string>("");
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState<boolean>(false);
+
   const prevCaseStatusRef = useRef<string | null>(null);
+  const docViewportRef = useRef<HTMLDivElement>(null);
+  const articleRef = useRef<HTMLDivElement>(null);
+  const aiResponseSectionRef = useRef<HTMLDivElement>(null);
+
+  // Audio completion chime hook
+  const { soundEnabled, playCompletionSound, handleToggleSound } = useAudioChime();
+
+  // Follow-up conversation hook
+  const {
+    conversationMessages,
+    isAnalyzing,
+    promptText,
+    setPromptText,
+    followupError,
+    handleExecutePrompt,
+  } = useCaseFollowup({
+    caseId,
+    soundEnabled,
+    playCompletionSound,
+    aiResponseSectionRef,
+  });
 
   // Sync showExecBox with localStorage on mount
   useEffect(() => {
@@ -205,67 +106,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
     });
   };
 
-  // Web Audio API Synthesized Completion Chime (C5 -> E5 -> G5)
-  const playCompletionSound = useCallback(() => {
-    try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
-      const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
-      const now = ctx.currentTime;
-
-      notes.forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-
-        gain.gain.setValueAtTime(0, now + idx * 0.08);
-        gain.gain.linearRampToValueAtTime(0.15, now + idx * 0.08 + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.35);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-
-        osc.start(now + idx * 0.08);
-        osc.stop(now + idx * 0.08 + 0.35);
-      });
-    } catch (e) {
-      console.warn("Could not play completion sound:", e);
-    }
-  }, []);
-
-  // Sync sound preference from localStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("jurisai_sound_enabled");
-      if (saved !== null) {
-        setSoundEnabled(saved === "true");
-      }
-    } catch (e) {}
-  }, []);
-
-  const handleToggleSound = () => {
-    setSoundEnabled((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem("jurisai_sound_enabled", String(next));
-      } catch (e) {}
-      if (next) {
-        playCompletionSound();
-      }
-      return next;
-    });
-  };
-
-  // Follow-up conversation state
-  const [conversationMessages, setConversationMessages] = useState<ConversationMessage[]>([]);
-  const [latestAiResponse, setLatestAiResponse] = useState<AiFollowupResponse | null>(null);
-  const [followupError, setFollowupError] = useState<string | null>(null);
-  const [isSummaryExpanded, setIsSummaryExpanded] = useState<boolean>(false);
-  const aiResponseSectionRef = useRef<HTMLDivElement>(null);
-
   // Sync showMeme with localStorage on client mount
   useEffect(() => {
     try {
@@ -273,9 +113,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
       if (saved !== null) {
         setShowMeme(saved === "true");
       }
-    } catch (e) {
-      console.warn("Could not read meme toggle preference from localStorage");
-    }
+    } catch (e) {}
   }, []);
 
   const handleToggleMeme = () => {
@@ -288,9 +126,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
     });
   };
 
-  const docViewportRef = useRef<HTMLDivElement>(null);
-  const articleRef = useRef<HTMLDivElement>(null);
-
   // Fetch case data from API on mount
   useEffect(() => {
     async function fetchCase() {
@@ -299,7 +134,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
         const res = await fetch(`/api/case/${caseId}`);
         const contentType = res.headers.get("content-type") || "";
 
-        let data: any = null;
+        let data: { case?: CaseDocument; error?: string } | null = null;
         if (contentType.includes("application/json")) {
           data = await res.json();
         } else {
@@ -314,9 +149,12 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
           throw new Error(data?.error || "Failed to load case data.");
         }
 
-        setCaseData(data.case);
-      } catch (err: any) {
-        setFetchError(err.message || "Failed to load case.");
+        if (data?.case) {
+          setCaseData(data.case);
+        }
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Failed to load case.";
+        setFetchError(message);
       } finally {
         setIsLoading(false);
       }
@@ -364,25 +202,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
   const handleZoomIn = useCallback(() => setZoomLevel((prev) => Math.min(prev + 10, 150)), []);
   const handleZoomOut = useCallback(() => setZoomLevel((prev) => Math.max(prev - 10, 70)), []);
 
-  // Fetch conversation history on mount
-  useEffect(() => {
-    if (!caseId.match(/^[0-9a-fA-F]{24}$/)) return;
-    async function loadConversation() {
-      try {
-        const res = await fetch(`/api/case/${caseId}/followup`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.messages && data.messages.length > 0) {
-            setConversationMessages(data.messages);
-          }
-        }
-      } catch (err) {
-        console.warn("Could not load conversation history:", err);
-      }
-    }
-    loadConversation();
-  }, [caseId]);
-
   // Play completion chime when case processing finishes
   useEffect(() => {
     if (caseData?.status === "completed" && prevCaseStatusRef.current && prevCaseStatusRef.current !== "completed") {
@@ -394,73 +213,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
       prevCaseStatusRef.current = caseData.status;
     }
   }, [caseData?.status, soundEnabled, playCompletionSound]);
-
-  const handleExecutePrompt = async () => {
-    if (!promptText.trim() || isAnalyzing) return;
-
-    const question = promptText.trim();
-    setIsAnalyzing(true);
-    setPromptText("");
-    setFollowupError(null);
-    setLatestAiResponse(null);
-
-    // Optimistically add user message
-    const userMsg: ConversationMessage = {
-      role: "user",
-      content: question,
-      timestamp: new Date().toISOString(),
-    };
-    setConversationMessages((prev) => [...prev, userMsg]);
-
-    // Scroll AI response section into view
-    setTimeout(() => {
-      aiResponseSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 100);
-
-    try {
-      const res = await fetch(`/api/case/${caseId}/followup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to get AI response.");
-      }
-
-      if (data.success && data.response) {
-        const aiResponse: AiFollowupResponse = data.response;
-        setLatestAiResponse(aiResponse);
-
-        // Add assistant message to conversation
-        const assistantMsg: ConversationMessage = {
-          role: "assistant",
-          content: JSON.stringify(aiResponse),
-          timestamp: new Date().toISOString(),
-        };
-        setConversationMessages((prev) => [...prev, assistantMsg]);
-
-        // Play completion audio chime
-        if (soundEnabled) {
-          playCompletionSound();
-        }
-
-        // Scroll AI response section into view
-        setTimeout(() => {
-          aiResponseSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        }, 100);
-      } else {
-        throw new Error("Unexpected response from server.");
-      }
-    } catch (err: any) {
-      console.error("Follow-up error:", err);
-      setFollowupError(err.message || "Something went wrong. Please try again.");
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
 
   // Server-side PDF Export Handler via /api/export-pdf (Puppeteer)
   const handleExportPDF = useCallback(async () => {
@@ -509,67 +261,14 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
-    } catch (err: any) {
-      console.error("PDF export error:", err);
-      alert(err.message || "Failed to generate PDF. Please try again.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to generate PDF. Please try again.";
+      logger.error("PDF export error:", err);
+      alert(msg);
     } finally {
       setIsExporting(false);
     }
   }, [isExporting, documentTitle, analysis, risks, caseData]);
-
-  // Severity color helpers
-  const severityDotColor = (severity: string) => {
-    switch (severity) {
-      case "critical": return "bg-red-500";
-      case "warning": return "bg-amber-500";
-      default: return "bg-slate-400";
-    }
-  };
-
-  const severityTextColor = (severity: string) => {
-    switch (severity) {
-      case "critical": return "text-red-700 dark:text-red-400";
-      case "warning": return "text-amber-700 dark:text-amber-400";
-      default: return "text-slate-700 dark:text-slate-300";
-    }
-  };
-
-  const severityBgColor = (severity: string) => {
-    switch (severity) {
-      case "critical": return "bg-red-50/60";
-      case "warning": return "bg-amber-50/60";
-      default: return "bg-slate-50/60";
-    }
-  };
-
-  const severityActiveBg = (severity: string) => {
-    switch (severity) {
-      case "critical": return "bg-red-100/90 ring-2 ring-red-400 shadow-sm";
-      case "warning": return "bg-amber-100/80 ring-2 ring-amber-400 shadow-sm";
-      default: return "bg-indigo-50/80 ring-2 ring-indigo-300 shadow-sm";
-    }
-  };
-
-  const severityBadgeColor = (severity: string) => {
-    switch (severity) {
-      case "critical": return "text-red-800 bg-red-100 dark:bg-red-950/80 dark:text-red-300";
-      case "warning": return "text-amber-800 bg-amber-100 dark:bg-amber-950/80 dark:text-amber-300";
-      default: return "text-slate-700 bg-slate-100 dark:bg-slate-800 dark:text-slate-300";
-    }
-  };
-
-  // Risk score color
-  const riskScoreColor = (score: number) => {
-    if (score >= 70) return "text-red-700 dark:text-red-400";
-    if (score >= 40) return "text-amber-700 dark:text-amber-400";
-    return "text-emerald-700 dark:text-emerald-400";
-  };
-
-  const riskScoreLabel = (score: number) => {
-    if (score >= 70) return "High Risk";
-    if (score >= 40) return "Moderate Risk";
-    return "Low Risk";
-  };
 
   // Loading skeleton
   if (isLoading) {
@@ -644,146 +343,27 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
 
   const overallRiskScore = analysis?.overallRiskScore ?? 0;
   const confidenceScore = analysis?.confidenceScore ?? 0;
+  const riskStyles = getRiskScoreStyles(overallRiskScore);
 
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#F8FAFC] text-[#0F172A] font-sans">
       {/* Header Bar */}
-      <header className="fixed top-0 w-full z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-[0_1px_4px_rgba(0,0,0,0.03)]">
-        <div className="h-16 w-full px-4 sm:px-6 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">J</div>
-              <span className="font-bold text-lg tracking-tight text-[#0F172A] dark:text-slate-100">JurisAI</span>
-            </Link>
-
-            <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 hidden md:block"></div>
-
-            <nav aria-label="Breadcrumbs" className="hidden md:flex items-center gap-1.5 text-slate-500 text-xs font-medium">
-              <Link href="/" className="hover:text-slate-900 dark:hover:text-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded">Dashboard</Link>
-              <span className="material-symbols-outlined text-slate-400 text-[14px]" aria-hidden="true">chevron_right</span>
-              <span className="text-slate-900 dark:text-slate-100 font-semibold truncate max-w-[240px]">{documentTitle}</span>
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Risk Score Badge */}
-            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${overallRiskScore >= 70 ? 'bg-red-50 dark:bg-red-950/70 border-red-200/60 dark:border-red-800/60' : overallRiskScore >= 40 ? 'bg-amber-50 dark:bg-amber-950/70 border-amber-200/60 dark:border-amber-800/60' : 'bg-emerald-50 dark:bg-emerald-950/70 border-emerald-200/60 dark:border-emerald-800/60'}`}>
-              <span className={`w-2 h-2 rounded-full ${overallRiskScore >= 70 ? 'bg-red-500' : overallRiskScore >= 40 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`}></span>
-              <span className={`text-[11px] font-semibold ${riskScoreColor(overallRiskScore)}`}>
-                Risk: {overallRiskScore}/100
-              </span>
-            </div>
-
-            {/* Desktop Action Buttons */}
-            <div className="hidden md:flex items-center gap-1.5 flex-wrap">
-              {/* Sound Toggle Button */}
-              <button
-                onClick={handleToggleSound}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-                  soundEnabled
-                    ? "bg-emerald-50 dark:bg-emerald-950/70 text-emerald-700 dark:text-emerald-300 border-emerald-200/80 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/80"
-                    : "bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200"
-                }`}
-                type="button"
-                title={soundEnabled ? "Completion sound enabled (Click to mute)" : "Completion sound muted (Click to enable)"}
-                aria-label={soundEnabled ? "Mute completion sound" : "Enable completion sound"}
-              >
-                <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
-                  {soundEnabled ? "volume_up" : "volume_off"}
-                </span>
-                <span>{soundEnabled ? "Sound On" : "Muted"}</span>
-              </button>
-
-              {/* Executive Box Toggle Button */}
-              <button
-                onClick={handleToggleExecBox}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-                  showExecBox
-                    ? "bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/60 dark:to-purple-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-200/80 dark:border-indigo-800/60"
-                    : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
-                }`}
-                type="button"
-                title={showExecBox ? "Hide Executive Risk Assessment & Vibe Check box" : "Show Executive Risk Assessment & Vibe Check box"}
-                aria-label={showExecBox ? "Hide Executive Risk Assessment box" : "Show Executive Risk Assessment box"}
-              >
-                <span className="material-symbols-outlined text-[16px] text-indigo-600 dark:text-indigo-400" aria-hidden="true">
-                  {showExecBox ? "visibility" : "visibility_off"}
-                </span>
-                <span>Exec Box</span>
-              </button>
-
-              {/* Meme Toggle Button */}
-              <button
-                onClick={handleToggleMeme}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-                  showMeme
-                    ? "bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/60 dark:to-indigo-950/60 text-purple-700 dark:text-purple-300 border-purple-200/80 dark:border-purple-800/60"
-                    : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
-                }`}
-                type="button"
-                title={showMeme ? "Hide Legal Vibe Check meme" : "Show Legal Vibe Check meme"}
-                aria-label={showMeme ? "Hide Legal Vibe Check meme" : "Show Legal Vibe Check meme"}
-              >
-                <span className="material-symbols-outlined text-[16px] text-purple-600 dark:text-purple-400" aria-hidden="true">
-                  {showMeme ? "visibility" : "visibility_off"}
-                </span>
-                <span>Vibe Check</span>
-              </button>
-
-              <button
-                onClick={() => setShowWhatIf(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 text-xs font-semibold transition-all shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                type="button"
-              >
-                <span className="material-symbols-outlined text-[16px]" aria-hidden="true">account_tree</span>
-                <span>What-If Map</span>
-              </button>
-              <button
-                onClick={handleExportPDF}
-                disabled={isExporting}
-                aria-label="Export PDF report"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                type="button"
-              >
-                {isExporting ? (
-                  <span className="material-symbols-outlined text-[16px] animate-spin" aria-hidden="true">progress_activity</span>
-                ) : (
-                  <span className="material-symbols-outlined text-[16px]" aria-hidden="true">picture_as_pdf</span>
-                )}
-                <span>{isExporting ? "Exporting..." : "Export PDF"}</span>
-              </button>
-              <ThemeToggle />
-            </div>
-
-            {/* Desktop User Avatar */}
-            <div className="hidden md:flex w-8 h-8 rounded-full bg-indigo-600 text-white items-center justify-center font-bold text-xs shadow-sm overflow-hidden">
-              {user?.image ? (
-                <Image
-                  src={user.image}
-                  alt={user.name || "User"}
-                  width={32}
-                  height={32}
-                  className="w-full h-full object-cover"
-                  sizes="32px"
-                />
-              ) : (
-                user?.name?.[0]?.toUpperCase() || "U"
-              )}
-            </div>
-
-            {/* Mobile Hamburger Navbar Toggle Icon */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-            >
-              <span className="material-symbols-outlined text-[24px]">
-                {isMobileMenuOpen ? "close" : "menu"}
-              </span>
-            </button>
-          </div>
-        </div>
-      </header>
+      <CaseAnalysisHeader
+        documentTitle={documentTitle}
+        overallRiskScore={overallRiskScore}
+        soundEnabled={soundEnabled}
+        onToggleSound={handleToggleSound}
+        showExecBox={showExecBox}
+        onToggleExecBox={handleToggleExecBox}
+        showMeme={showMeme}
+        onToggleMeme={handleToggleMeme}
+        onOpenWhatIf={() => setShowWhatIf(true)}
+        isExporting={isExporting}
+        onExportPDF={handleExportPDF}
+        user={user}
+        isMobileMenuOpen={isMobileMenuOpen}
+        setIsMobileMenuOpen={setIsMobileMenuOpen}
+      />
 
       {/* MOBILE FULL NAVIGATION MENU DRAWER OVERLAY */}
       {isMobileMenuOpen && (
@@ -856,7 +436,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
 
             {/* View & Preference Toggles */}
             <div>
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block mb-2">Preferences & Toggles</span>
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block mb-2">Preferences &amp; Toggles</span>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={handleToggleExecBox}
@@ -1079,7 +659,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 </div>
 
                 <div className="px-6 sm:px-10 py-8 space-y-8">
-                  {/* CENTER STAGE: CRITICAL RISK SCORE & LEGAL VIBE CHECK COMMAND BLOCK WITH DYNAMIC GRADIENT THEME */}
+                  {/* CENTER STAGE: CRITICAL RISK SCORE & LEGAL VIBE CHECK COMMAND BLOCK */}
                   {(() => {
                     const theme = overallRiskScore >= 70
                       ? {
@@ -1117,7 +697,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                                 </span>
                               </h2>
                               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                                Critical Threat Score: <strong className={riskScoreColor(overallRiskScore)}>{overallRiskScore}/100</strong> ({riskScoreLabel(overallRiskScore)})
+                                Critical Threat Score: <strong className={riskStyles.textClass}>{overallRiskScore}/100</strong> ({riskStyles.label})
                               </p>
                             </div>
                           </div>
@@ -1137,12 +717,10 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
 
                     return (
                       <div className={`mb-8 rounded-2xl border p-4 sm:p-6 transition-all duration-500 relative overflow-hidden ${theme.container}`}>
-                        {/* Top Accent Line */}
                         <div className={`absolute top-0 left-0 right-0 h-1 ${
                           overallRiskScore >= 70 ? 'bg-gradient-to-r from-red-500 via-rose-500 to-amber-500' : overallRiskScore >= 40 ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500' : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-indigo-500'
                         }`} />
 
-                        {/* Block Header */}
                         <div className="flex items-center justify-between border-b border-slate-200/70 dark:border-slate-800/80 pb-3 mb-4">
                           <div className="flex items-center gap-2.5">
                             <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white ${theme.iconBg}`}>
@@ -1160,10 +738,9 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
 
                           <div className="flex items-center gap-2">
                             <span className={`text-[11px] font-mono px-3 py-1 rounded-full border font-bold ${theme.badge}`}>
-                              Critical Level: <strong className={riskScoreColor(overallRiskScore)}>{overallRiskScore}/100</strong>
+                              Critical Level: <strong className={riskStyles.textClass}>{overallRiskScore}/100</strong>
                             </span>
 
-                            {/* Hide Button */}
                             <button
                               type="button"
                               onClick={handleToggleExecBox}
@@ -1177,9 +754,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                           </div>
                         </div>
 
-                        {/* Grid Layout: Critical Level Score Card + Vibe Check */}
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-                          {/* Critical Level Score Display Card */}
                           <div className={`lg:col-span-5 flex flex-col justify-between p-5 rounded-2xl shadow-2xs ${theme.innerCard}`}>
                             <div>
                               <div className="flex items-center justify-between mb-3">
@@ -1193,19 +768,17 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                                       ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-800/60'
                                       : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-800/60'
                                 }`}>
-                                  {riskScoreLabel(overallRiskScore)}
+                                  {riskStyles.label}
                                 </span>
                               </div>
 
-                              {/* Large Score Indicator */}
                               <div className="flex items-baseline gap-3 my-2">
-                                <span className={`text-4xl sm:text-5xl font-extrabold tracking-tight ${riskScoreColor(overallRiskScore)}`}>
+                                <span className={`text-4xl sm:text-5xl font-extrabold tracking-tight ${riskStyles.textClass}`}>
                                   {overallRiskScore}
                                 </span>
                                 <span className="text-xs font-mono text-slate-500 dark:text-slate-400 font-medium">/ 100 Risk Index</span>
                               </div>
 
-                              {/* Progress Bar */}
                               <div className="w-full h-2.5 bg-slate-100/90 dark:bg-slate-800/90 rounded-full overflow-hidden mt-3 mb-4 p-0.5 border border-slate-200/60 dark:border-slate-700/60">
                                 <div
                                   className={`h-full rounded-full transition-all duration-700 ${
@@ -1216,7 +789,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                               </div>
                             </div>
 
-                            {/* Severity Breakdown Pills */}
                             <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-200/60 dark:border-slate-800/80 text-center">
                               <div className="p-2 rounded-xl bg-red-50/70 dark:bg-red-950/50 border border-red-100 dark:border-red-900/40">
                                 <div className="text-base font-bold text-red-600 dark:text-red-400">
@@ -1239,7 +811,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                             </div>
                           </div>
 
-                          {/* Legal Vibe Check (Meme) Container */}
                           <div className="lg:col-span-7">
                             <MemeVibeCheck
                               riskScore={overallRiskScore}
@@ -1297,6 +868,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   <div className="space-y-5">
                     {risks.map((risk) => {
                       const isActive = activeRiskId === risk.id;
+                      const sevStyle = getSeverityStyles(risk.severity);
 
                       const barColor =
                         risk.severity === "critical"
@@ -1324,43 +896,31 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                             ? "bg-amber-100/60 dark:bg-amber-950/60 border-amber-200/80 dark:border-amber-800/60 text-amber-950 dark:text-amber-200"
                             : "bg-white dark:bg-slate-800/80 border-slate-200/80 dark:border-slate-700/70 text-slate-900 dark:text-slate-100";
 
-                      const badgeBg =
-                        risk.severity === "critical"
-                          ? "bg-red-600 text-white shadow-xs"
-                          : risk.severity === "warning"
-                            ? "bg-amber-500 text-white shadow-xs"
-                            : "bg-slate-600 text-white shadow-xs";
-
                       return (
                         <div
                           key={risk.id}
                           id={`risk-${risk.id}`}
                           className={`flex rounded-xl border ${cardBg} transition-all duration-300 overflow-hidden`}
                         >
-                          {/* Left Straight Severity Indicator Bar */}
                           <div className={`w-1.5 shrink-0 ${barColor}`} />
 
                           <div className="flex-1 min-w-0">
-                            {/* Clause Card Header */}
                             <div className="px-5 pt-4 pb-3 border-b border-slate-100/80 dark:border-slate-800/80">
-                              {/* Row 1: Clause indicator tag + Severity pill badge */}
                               <div className="flex items-center justify-between gap-3 mb-2">
                                 <span className="font-mono text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700/70 px-2.5 py-0.5 rounded-md truncate max-w-[360px]">
                                   {risk.clause}
                                 </span>
                                 <span
-                                  className={`font-mono text-[9px] font-bold px-2.5 py-1 rounded-full leading-none uppercase tracking-wider shrink-0 ${badgeBg}`}
+                                  className={`font-mono text-[9px] font-bold px-2.5 py-1 rounded-full leading-none uppercase tracking-wider shrink-0 ${sevStyle.badgeClass}`}
                                 >
                                   {risk.severity}
                                 </span>
                               </div>
 
-                              {/* Row 2: Main Risk Title */}
                               <h4 className="font-[Plus_Jakarta_Sans] font-bold text-sm text-[#0F172A] dark:text-slate-100 leading-snug">
                                 {risk.title}
                               </h4>
 
-                              {/* Row 3: Statute Reference (if present) */}
                               {risk.statuteReference && (
                                 <div className="flex items-center gap-1.5 mt-2.5 text-[11px] text-slate-600 dark:text-slate-300 bg-white/80 dark:bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-200/70 dark:border-slate-700/70 w-full sm:w-fit">
                                   <span className="material-symbols-outlined text-[15px] text-indigo-600 dark:text-indigo-400 shrink-0" aria-hidden="true">
@@ -1373,7 +933,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                               )}
                             </div>
 
-                            {/* Source Text — Verbatim Quote */}
                             <div className="px-5 pt-3.5 pb-3">
                               <div className={`rounded-xl border px-4 py-3 ${highlightColor}`}>
                                 <div className="flex items-start gap-2.5">
@@ -1392,7 +951,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                               </div>
                             </div>
 
-                            {/* Legal Analysis Explanation */}
                             <div className="px-5 pb-4">
                               <div className="flex items-start gap-2.5 bg-white/90 dark:bg-slate-800/90 rounded-xl px-4 py-3 border border-slate-200/70 dark:border-slate-700/70">
                                 <span className="material-symbols-outlined text-[16px] text-indigo-600 dark:text-indigo-400 mt-0.5 shrink-0 select-none" aria-hidden="true">
@@ -1486,7 +1044,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
 
                     {/* Conversation Feed */}
                     <div className="space-y-4">
-                      {/* Empty State */}
                       {conversationMessages.length === 0 && !isAnalyzing && (
                         <div className="p-6 rounded-2xl bg-indigo-50/40 dark:bg-indigo-950/30 border border-indigo-100/80 dark:border-indigo-900/40 text-center">
                           <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-2">
@@ -1497,7 +1054,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                         </div>
                       )}
 
-                      {/* Messages rendering loop */}
                       {conversationMessages.map((msg, idx) => {
                         if (msg.role === "user") {
                           return (
@@ -1518,7 +1074,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                           );
                         }
 
-                        // Assistant message
                         let aiData: AiFollowupResponse | null = null;
                         try {
                           aiData = JSON.parse(msg.content);
@@ -1530,7 +1085,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
 
                         return (
                           <div key={idx} className="bg-white dark:bg-slate-800/90 border border-indigo-100/80 dark:border-indigo-900/50 rounded-2xl p-5 shadow-xs transition-all hover:border-indigo-200 dark:hover:border-indigo-700">
-                            {/* Header */}
                             <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-slate-700/60">
                               <div className="flex items-center gap-2">
                                 <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center text-[12px] shadow-xs">
@@ -1551,7 +1105,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                               )}
                             </div>
 
-                            {/* Answer Body */}
                             <div className="text-xs leading-[1.8] text-slate-700 dark:text-slate-300 space-y-2">
                               {answerText.split("\n").map((line, lIdx) => {
                                 const trimmed = line.trim();
@@ -1631,11 +1184,9 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                                     }}
                                   />
                                 );
-
                               })}
                             </div>
 
-                            {/* Key Takeaways */}
                             {keyPoints.length > 0 && (
                               <div className="mt-4 p-3.5 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-800/60">
                                 <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 mb-2">
@@ -1653,7 +1204,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                               </div>
                             )}
 
-                            {/* Related Clauses */}
                             {clauses.length > 0 && (
                               <div className="mt-3 flex items-center gap-2 flex-wrap">
                                 <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">Referenced:</span>
@@ -1665,7 +1215,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                               </div>
                             )}
 
-                            {/* Disclaimer & Actions */}
                             <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-[10px] text-slate-400">
                               <span className="flex items-center gap-1">
                                 <span className="material-symbols-outlined text-[12px] text-amber-500" aria-hidden="true">info</span>
@@ -1688,7 +1237,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                         );
                       })}
 
-                      {/* Inline Loader when isAnalyzing */}
                       {isAnalyzing && (
                         <div className="p-5 rounded-2xl bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-900 shadow-xs flex flex-col items-center gap-3">
                           <div className="flex items-center gap-2">
@@ -1700,7 +1248,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                         </div>
                       )}
 
-                      {/* Error state */}
                       {followupError && (
                         <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/60 flex items-start gap-3">
                           <span className="material-symbols-outlined text-rose-600 text-[18px] mt-0.5 shrink-0" aria-hidden="true">error</span>
@@ -1749,7 +1296,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
             </div>
 
             <div className="flex-1 overflow-y-auto p-5 space-y-5">
-              {/* Executive Summary & Quick Actions Card */}
               <section className="bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/40 dark:from-slate-800/80 dark:via-slate-900 dark:to-slate-800/90 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 shadow-xs">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 font-mono flex items-center gap-1.5">
@@ -1759,7 +1305,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
                     overallRiskScore >= 70 ? 'bg-red-100 text-red-700 dark:bg-red-950/80 dark:text-red-300' : overallRiskScore >= 40 ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300'
                   }`}>
-                    {riskScoreLabel(overallRiskScore)}
+                    {riskStyles.label}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-center text-xs mt-3">
@@ -1774,7 +1320,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 </div>
               </section>
 
-              {/* Synthesis */}
               <section>
                 <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">Synthesis</h3>
                 <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-slate-200/70 dark:border-slate-700/60 shadow-2xs font-[Inter]">
@@ -1782,7 +1327,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 </p>
               </section>
 
-              {/* Extracted Terms */}
               {analysis?.extractedTerms && analysis.extractedTerms.length > 0 && (
                 <section>
                   <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3">Extracted Terms</h3>
@@ -1797,7 +1341,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 </section>
               )}
 
-              {/* Key Recommendations */}
               {analysis?.recommendations && analysis.recommendations.length > 0 && (
                 <section>
                   <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3">Key Recommendations</h3>
@@ -1812,7 +1355,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 </section>
               )}
 
-              {/* Quick Action Tools */}
               <section className="pt-2">
                 <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2.5">Analysis Tools</h3>
                 <div className="space-y-2">
@@ -1847,7 +1389,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
 
           {/* MOBILE ONLY DEDICATED WORKSPACE VIEW */}
           <div className="lg:hidden flex-1 overflow-y-auto px-4 py-4 space-y-5 pb-28">
-            {/* View Switcher Tabs (Overview & Vibe Check vs Full Document View) */}
             <div className="flex items-center justify-center p-1 bg-slate-200/70 dark:bg-slate-800/80 rounded-2xl">
               <button
                 type="button"
@@ -1859,7 +1400,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 }`}
               >
                 <span className="material-symbols-outlined text-[16px]">overview</span>
-                <span>Overview & Vibe Check</span>
+                <span>Overview &amp; Vibe Check</span>
               </button>
               <button
                 type="button"
@@ -1877,7 +1418,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
 
             {mobileTab === "overview" ? (
               <>
-                {/* 1. EXECUTIVE RISK ASSESSMENT & LEGAL VIBE CHECK */}
                 {showExecBox && (
                   <div className={`rounded-2xl border p-4 transition-all duration-300 relative overflow-hidden ${
                     overallRiskScore >= 70
@@ -1899,11 +1439,10 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                     </div>
 
                     <div className="space-y-4">
-                      {/* Score Pill Card */}
                       <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-3.5 rounded-xl border border-white/80 dark:border-slate-800 flex items-center justify-between">
                         <div>
                           <div className="text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400 uppercase">Critical Threat Index</div>
-                          <div className={`text-3xl font-extrabold tracking-tight ${riskScoreColor(overallRiskScore)}`}>
+                          <div className={`text-3xl font-extrabold tracking-tight ${riskStyles.textClass}`}>
                             {overallRiskScore} <span className="text-xs font-normal text-slate-400">/ 100</span>
                           </div>
                         </div>
@@ -1911,13 +1450,12 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                           <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase border ${
                             overallRiskScore >= 70 ? 'bg-red-50 text-red-700 border-red-200' : overallRiskScore >= 40 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                           }`}>
-                            {riskScoreLabel(overallRiskScore)}
+                            {riskStyles.label}
                           </span>
                           <div className="text-[10px] text-slate-400 mt-1 font-mono">{risks.length} Risks Flagged</div>
                         </div>
                       </div>
 
-                      {/* MemeVibeCheck Component */}
                       <MemeVibeCheck
                         riskScore={overallRiskScore}
                         criticalCount={risks.filter((r) => r.severity === "critical").length}
@@ -1929,19 +1467,17 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   </div>
                 )}
 
-                {/* 2. FILE SUMMARY & AI SYNTHESIS */}
                 <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-4">
                   <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
                     <div className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-indigo-600 text-[20px]">auto_awesome</span>
-                      <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100">AI Synthesis & Document Summary</h2>
+                      <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100">AI Synthesis &amp; Document Summary</h2>
                     </div>
                     <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
                       {confidenceScore}% Confidence
                     </span>
                   </div>
 
-                  {/* AI Synthesis Summary Text */}
                   {analysis?.summary && (
                     <div className="relative pl-3 border-l-2 border-indigo-500">
                       <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300 font-[Inter]">
@@ -1950,7 +1486,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                     </div>
                   )}
 
-                  {/* Source Document Summary Preview */}
                   {caseData?.fileSummary && !caseData.fileSummary.startsWith("[Binary file:") && (
                     <div className="pt-2">
                       <div className="flex items-center justify-between mb-2">
@@ -1974,7 +1509,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                     </div>
                   )}
 
-                  {/* Extracted Terms Badges */}
                   {analysis?.extractedTerms && analysis.extractedTerms.length > 0 && (
                     <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
                       <div className="text-[10px] font-mono font-bold uppercase text-slate-400 mb-2">Extracted Key Terms</div>
@@ -1990,7 +1524,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   )}
                 </div>
 
-                {/* 3. CRITICAL POINTS POPUP TRIGGER BUTTON */}
                 <button
                   type="button"
                   onClick={() => setShowCriticalModal(true)}
@@ -2002,20 +1535,19 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                     </div>
                     <div>
                       <div className="text-sm font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                        Critical Points & Flagged Risks
+                        Critical Points &amp; Flagged Risks
                         <span className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-950/90 text-red-700 dark:text-red-300 font-mono text-[11px] font-bold border border-red-200 dark:border-red-800">
                           {risks.length} Items
                         </span>
                       </div>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                        Tap to inspect statutory flags, excerpts & explanations in popup
+                        Tap to inspect statutory flags, excerpts &amp; explanations in popup
                       </p>
                     </div>
                   </div>
                   <span className="material-symbols-outlined text-slate-400 text-[24px] shrink-0">open_in_new</span>
                 </button>
 
-                {/* 4. AI CONVERSATION FEED (Mobile) */}
                 {conversationMessages.length > 0 && (
                   <div className="rounded-2xl border border-indigo-200 dark:border-indigo-900 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-3">
                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
@@ -2061,7 +1593,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 )}
               </>
             ) : (
-              /* Full Document Mobile Tab */
               <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                   <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{documentTitle}</h2>
@@ -2085,101 +1616,21 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
       </main>
 
       {/* CRITICAL POINTS POPUP BOX MODAL */}
-      {showCriticalModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-2xl max-h-[85vh] bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden">
-            {/* Modal Header */}
-            <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-rose-700 text-white flex items-center justify-center shadow-md">
-                  <span className="material-symbols-outlined text-[20px]">gavel</span>
-                </div>
-                <div>
-                  <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-                    Critical Points & Risk Ledger
-                  </h2>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    {filteredRisks.length} flagged statutory items &amp; compliance risks
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setShowCriticalModal(false)}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                aria-label="Close Critical Points popup"
-              >
-                <span className="material-symbols-outlined text-[22px]">close</span>
-              </button>
-            </div>
-
-            {/* Modal Filter & Search Bar */}
-            <div className="p-3 sm:p-4 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/30 dark:bg-slate-900/30 flex items-center justify-between gap-2 flex-wrap">
-              <div className="flex-1 min-w-[140px]">
-                <input
-                  type="text"
-                  placeholder="Search critical points..."
-                  value={modalSearch}
-                  onChange={(e) => setModalSearch(e.target.value)}
-                  className="w-full bg-white dark:bg-slate-800 text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              <GlideSelect
-                options={[
-                  { value: "All", label: "All Risks", tag: `${risks.length}` },
-                  { value: "critical", label: "Critical", tag: `${risks.filter(r => r.severity === 'critical').length}` },
-                  { value: "warning", label: "Warning", tag: `${risks.filter(r => r.severity === 'warning').length}` },
-                  { value: "note", label: "Notes", tag: `${risks.filter(r => r.severity !== 'critical' && r.severity !== 'warning').length}` },
-                ]}
-                value={filterSeverity}
-                onChange={(val) => setFilterSeverity(val)}
-                ariaLabel="Filter risks by severity"
-                showTags={true}
-                accentColor="#4f46e5"
-                surfaceColor="#ffffff"
-                highlightColor="#e0e7ff"
-                textColor="#4338ca"
-                size="sm"
-                radius={10}
-                menuWidth={150}
-                placement="bottom"
-                align="right"
-              />
-            </div>
-
-            {/* Modal Risk Items List */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
-              {modalSearchFilteredRisks.map((risk) => (
-                <ModalRiskItemCard key={risk.id} risk={risk} />
-              ))}
-
-              {modalSearchFilteredRisks.length === 0 && (
-                <div className="text-center py-10 text-slate-400 text-xs">
-                  No critical points found matching the criteria.
-                </div>
-              )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setShowCriticalModal(false)}
-                className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm"
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CriticalPointsModal
+        isOpen={showCriticalModal}
+        onClose={() => setShowCriticalModal(false)}
+        risks={risks}
+        filteredRisks={filteredRisks}
+        modalSearchFilteredRisks={modalSearchFilteredRisks}
+        modalSearch={modalSearch}
+        setModalSearch={setModalSearch}
+        filterSeverity={filterSeverity}
+        setFilterSeverity={setFilterSeverity}
+      />
 
       {/* FOOTER CONTROL BAR */}
       <footer className="w-full bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-6 py-3 sticky bottom-0 z-40 shadow-lg">
         <div className="max-w-4xl mx-auto flex items-center gap-3 relative">
-          {/* Conversation History Badge */}
           {conversationMessages.filter(m => m.role === "user").length > 0 && (
             <button
               onClick={() => aiResponseSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
@@ -2224,7 +1675,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
             </div>
           </BorderGlow>
 
-          {/* EXECUTE BUTTON */}
           <button
             onClick={handleExecutePrompt}
             disabled={isAnalyzing || !promptText.trim()}

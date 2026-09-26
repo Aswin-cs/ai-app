@@ -5,6 +5,7 @@
  * Manages cached connection promises and pool configurations for serverless execution.
  */
 import mongoose from "mongoose";
+import { logger } from "@/lib/logger";
 
 const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://localhost:27017/jurisai";
 
@@ -40,7 +41,7 @@ export async function connectDB(): Promise<typeof mongoose> {
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
-      console.log("Connected to MongoDB successfully");
+      logger.log("Connected to MongoDB successfully");
       return mongooseInstance;
     });
   }

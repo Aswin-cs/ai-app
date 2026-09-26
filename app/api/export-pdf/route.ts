@@ -8,8 +8,34 @@
 import { NextRequest, NextResponse } from "next/server";
 import { escapeHtml, safeErrorMessage, sanitizeFileName } from "@/lib/security";
 import { getAuthenticatedUser } from "@/lib/authUtils";
+import { logger } from "@/lib/logger";
 
-function generatePdfHtml(data: any) {
+export interface PdfParty {
+  role?: string;
+  name?: string;
+}
+
+export interface PdfRisk {
+  clause?: string;
+  severity?: string;
+  title?: string;
+  statuteReference?: string;
+  sourceText?: string;
+  explanation?: string;
+}
+
+export interface PdfExportData {
+  documentTitle?: string;
+  documentType?: string;
+  jurisdiction?: string;
+  effectiveDate?: string;
+  summary?: string;
+  overallRiskScore?: number;
+  parties?: PdfParty[];
+  risks?: PdfRisk[];
+}
+
+function generatePdfHtml(data: PdfExportData) {
   const documentTitle = escapeHtml(data?.documentTitle || "Legal Analysis Summary");
   const documentType = escapeHtml(data?.documentType || "Legal Document");
   const jurisdiction = escapeHtml(data?.jurisdiction || "");
@@ -46,7 +72,7 @@ function generatePdfHtml(data: any) {
       <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
         ${parties
           .map(
-            (p: any, i: number) => `
+            (p: PdfParty, i: number) => `
           <div style="display: flex; align-items: center; padding: 10px 14px; ${
             i > 0 ? "border-top: 1px solid #f1f5f9;" : ""
           }">
@@ -68,7 +94,7 @@ function generatePdfHtml(data: any) {
   const risksHtml =
     risks.length > 0
       ? risks
-          .map((r: any) => {
+          .map((r: PdfRisk) => {
             const rawSeverity = String(r?.severity || "info").toLowerCase();
             const isCritical = rawSeverity === "critical";
             const isWarning = rawSeverity === "warning";
@@ -291,8 +317,20 @@ function generatePdfHtml(data: any) {
 </html>`;
 }
 
+interface PuppeteerPage {
+  setDefaultNavigationTimeout: (timeout: number) => void;
+  setContent: (html: string, options: { waitUntil: string; timeout: number }) => Promise<void>;
+  pdf: (options: Record<string, unknown>) => Promise<Uint8Array>;
+  close: () => Promise<void>;
+}
+
+interface PuppeteerBrowser {
+  newPage: () => Promise<PuppeteerPage>;
+  close: () => Promise<void>;
+}
+
 export async function POST(request: NextRequest) {
-  let browser: any = null;
+  let browser: PuppeteerBrowser | null = null;
   try {
     // 1. Authenticate user
     const { errorResponse } = await getAuthenticatedUser();
@@ -301,17 +339,15 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Parse request body safely
-    const body = await request.json();
+    const body: PdfExportData = await request.json();
 
     // 3. Launch Puppeteer browser matching server/Vercel environment
-    let puppeteer: any;
-    let launchOptions: any = {};
+    let puppeteer: { launch: (options: Record<string, unknown>) => Promise<PuppeteerBrowser> };
+    let launchOptions: Record<string, unknown> = {};
 
     if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
-      // @ts-ignore
-      const chromium: any = (await import("@sparticuz/chromium")).default;
-      // @ts-ignore
-      puppeteer = (await import("puppeteer-core")).default;
+      const chromium = (await import("@sparticuz/chromium")).default as any;
+      puppeteer = (await import("puppeteer-core")).default as unknown as { launch: (options: Record<string, unknown>) => Promise<PuppeteerBrowser> };
       launchOptions = {
         args: chromium.args,
         defaultViewport: chromium.defaultViewport,
@@ -320,7 +356,7 @@ export async function POST(request: NextRequest) {
       };
     } else {
       try {
-        puppeteer = (await import("puppeteer")).default;
+        puppeteer = (await import("puppeteer")).default as unknown as { launch: (options: Record<string, unknown>) => Promise<PuppeteerBrowser> };
 
         // Fallback search for locally installed Chrome or Edge executable on Windows/Mac/Linux
         const fs = await import("fs");
@@ -357,10 +393,8 @@ export async function POST(request: NextRequest) {
           ...(executablePath ? { executablePath } : {}),
         };
       } catch {
-        // @ts-ignore
-        const chromium: any = (await import("@sparticuz/chromium")).default;
-        // @ts-ignore
-        puppeteer = (await import("puppeteer-core")).default;
+        const chromium = (await import("@sparticuz/chromium")).default as any;
+        puppeteer = (await import("puppeteer-core")).default as unknown as { launch: (options: Record<string, unknown>) => Promise<PuppeteerBrowser> };
         launchOptions = {
           args: chromium.args,
           defaultViewport: chromium.defaultViewport,
@@ -396,7 +430,7 @@ export async function POST(request: NextRequest) {
     const safeTitle = sanitizeFileName(body?.documentTitle || "Legal_Analysis");
     const filename = `${safeTitle}_Summary.pdf`;
 
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(pdfBuffer as unknown as BodyInit, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
@@ -404,8 +438,8 @@ export async function POST(request: NextRequest) {
         "Cache-Control": "no-store, max-age=0",
       },
     });
-  } catch (error: any) {
-    console.error("❌ [/api/export-pdf] Error generating PDF:", error);
+  } catch (error: unknown) {
+    logger.error("❌ [/api/export-pdf] Error generating PDF:", error);
     return NextResponse.json(
       { error: safeErrorMessage(error, "PDF generation failed. Please try again.") },
       { status: 500 }
@@ -418,5 +452,3 @@ export async function POST(request: NextRequest) {
     }
   }
 }
-
-

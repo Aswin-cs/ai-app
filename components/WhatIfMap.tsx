@@ -15,6 +15,27 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 import type { RiskItem } from "@/types/case.types";
+import { getSeverityStyles } from "@/lib/severityStyles";
+
+export interface ConItem {
+  title: string;
+  clause?: string;
+  severity: string;
+  explanation: string;
+  impactTitle?: string;
+  impactDesc?: string;
+}
+
+export interface ProItem {
+  title: string;
+  clause?: string;
+  badge?: string;
+  explanation: string;
+  benefitTitle?: string;
+  benefitDesc?: string;
+  impactTitle?: string;
+  impactDesc?: string;
+}
 
 interface WhatIfMapProps {
   documentTitle: string;
@@ -814,37 +835,40 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
                   <span>Cons / Risks & Liabilities ({consData.length})</span>
                 </div>
 
-                {consData.map((con: any, i: number) => (
-                  <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-rose-200 dark:border-rose-900/80 p-4 shadow-sm space-y-2.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950 px-2 py-0.5 rounded border border-rose-200 dark:border-rose-800 truncate max-w-[200px]">
-                        Ref: {con.clause || "Risk Item"}
-                      </span>
-                      <span className={`text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full shrink-0 ${
-                        con.severity === "critical" ? "bg-rose-600 text-white" : "bg-amber-500 text-white"
-                      }`}>
-                        {con.severity}
-                      </span>
-                    </div>
-
-                    <h4 className="font-bold text-xs text-slate-900 dark:text-slate-100 leading-snug">
-                      {con.title}
-                    </h4>
-
-                    <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed font-[Inter]">
-                      {con.explanation}
-                    </p>
-
-                    {con.impactTitle && (
-                      <div className="p-2.5 rounded-xl bg-rose-50/70 dark:bg-rose-950/50 border border-rose-100 dark:border-rose-900/40 text-[11px]">
-                        <div className="font-bold text-rose-800 dark:text-rose-300 text-[10px] uppercase font-mono mb-0.5">
-                          {con.impactTitle}
-                        </div>
-                        <div className="text-rose-900 dark:text-rose-200">{con.impactDesc}</div>
+                {consData.map((con: ConItem, i: number) => {
+                  const styles = getSeverityStyles(con.severity);
+                  return (
+                    <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-rose-200 dark:border-rose-900/80 p-4 shadow-sm space-y-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950 px-2 py-0.5 rounded border border-rose-200 dark:border-rose-800 truncate max-w-[200px]">
+                          Ref: {con.clause || "Risk Item"}
+                        </span>
+                        <span className={`text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full shrink-0 ${
+                          styles.severity === "critical" ? "bg-rose-600 text-white" : "bg-amber-500 text-white"
+                        }`}>
+                          {con.severity}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                ))}
+
+                      <h4 className="font-bold text-xs text-slate-900 dark:text-slate-100 leading-snug">
+                        {con.title}
+                      </h4>
+
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed font-[Inter]">
+                        {con.explanation}
+                      </p>
+
+                      {con.impactTitle && (
+                        <div className="p-2.5 rounded-xl bg-rose-50/70 dark:bg-rose-950/50 border border-rose-100 dark:border-rose-900/40 text-[11px]">
+                          <div className="font-bold text-rose-800 dark:text-rose-300 text-[10px] uppercase font-mono mb-0.5">
+                            {con.impactTitle}
+                          </div>
+                          <div className="text-rose-900 dark:text-rose-200">{con.impactDesc}</div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -856,7 +880,7 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
                   <span>Pros / Protections & Value ({prosData.length})</span>
                 </div>
 
-                {prosData.map((pro: any, i: number) => (
+                {prosData.map((pro: ProItem, i: number) => (
                   <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-emerald-200 dark:border-emerald-900/80 p-4 shadow-sm space-y-2.5">
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 truncate max-w-[200px]">

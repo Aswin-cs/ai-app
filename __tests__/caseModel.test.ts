@@ -7,6 +7,11 @@ import assert from "node:assert/strict";
 import Case from "@/models/case.model";
 import User from "@/models/user.model";
 
+interface SchemaPathStatus {
+  defaultValue?: unknown;
+  enumValues?: string[];
+}
+
 describe("Mongoose Database Models", () => {
   describe("Case Model Schema", () => {
     it("should have required fields defined in schema", () => {
@@ -18,12 +23,12 @@ describe("Mongoose Database Models", () => {
     });
 
     it("should default status to 'processing'", () => {
-      const statusPath = Case.schema.paths.status as any;
+      const statusPath = Case.schema.paths.status as unknown as SchemaPathStatus;
       assert.strictEqual(statusPath.defaultValue, "processing");
     });
 
     it("should enforce enum values for status field", () => {
-      const statusPath = Case.schema.paths.status as any;
+      const statusPath = Case.schema.paths.status as unknown as SchemaPathStatus;
       assert.deepStrictEqual(statusPath.enumValues, ["processing", "completed", "failed"]);
     });
 
@@ -41,7 +46,7 @@ describe("Mongoose Database Models", () => {
       const paths = User.schema.paths;
       assert.ok(paths.email);
       assert.ok(paths.name);
-      assert.ok(paths.email.options.required);
+      assert.ok((paths.email as unknown as { options: { required: boolean } }).options.required);
     });
   });
 });
