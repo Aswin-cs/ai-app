@@ -10,17 +10,28 @@ import Case from "@/models/case.model";
 import { getAuthenticatedUser } from "@/lib/authUtils";
 import { safeErrorMessage } from "@/lib/security";
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     // 1. Authenticate user
     const { user, errorResponse } = await getAuthenticatedUser();
     if (errorResponse || !user) return errorResponse!;
 
-    // 2. Fetch user's cases with projection (excluding heavy fileSummary string)
-    const cases = await Case.find({ userId: user._id })
-      .select("_id fileName status createdAt analysis.documentTitle analysis.documentType analysis.overallRiskScore analysis.risks")
-      .sort({ createdAt: -1 })
-      .lean();
+    // Parse query params for pagination
+    const { searchParams } = new URL(request.url);
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20", 10)));
+    const skip = (page - 1) * limit;
+
+    // 2. Fetch user's cases with pagination & projection (excluding heavy fileSummary string)
+    const [cases, totalCount] = await Promise.all([
+      Case.find({ userId: user._id })
+        .select("_id fileName status createdAt analysis.documentTitle analysis.documentType analysis.overallRiskScore analysis.risks")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Case.countDocuments({ userId: user._id }),
+    ]);
 
     const formattedCases = cases.map((c: any) => ({
       _id: c._id.toString(),
@@ -33,9 +44,15 @@ export async function GET(_request: NextRequest) {
       risksCount: c.analysis?.risks?.length ?? 0,
     }));
 
+    const hasMore = skip + cases.length < totalCount;
+
     return NextResponse.json({
       success: true,
       cases: formattedCases,
+      page,
+      limit,
+      total: totalCount,
+      hasMore,
     });
   } catch (error: unknown) {
     console.error("❌ [/api/cases] Error fetching case history:", error);

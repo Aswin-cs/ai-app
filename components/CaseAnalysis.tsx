@@ -1,13 +1,142 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import dynamic from "next/dynamic";
 import BorderGlow from "./BorderGlow";
-import WhatIfMap from "./WhatIfMap";
 import GlideSelect from "./GlideSelect";
 import MemeVibeCheck from "./MemeVibeCheck";
 import ThemeToggle from "./ThemeToggle";
 import type { CaseDocument, RiskItem as RiskItemType } from "@/types/case.types";
+
+const WhatIfMap = dynamic(() => import("./WhatIfMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-fade-in">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 flex flex-col items-center gap-3">
+        <span className="material-symbols-outlined text-[32px] text-indigo-600 dark:text-indigo-400 animate-spin" aria-hidden="true">
+          refresh
+        </span>
+        <span className="text-sm font-bold text-slate-800 dark:text-slate-100">
+          Loading What-If Scenario Map...
+        </span>
+      </div>
+    </div>
+  ),
+});
+
+const RiskLedgerCard = React.memo(function RiskLedgerCard({
+  item,
+  isActive,
+  onJump,
+}: {
+  item: RiskItemType;
+  isActive: boolean;
+  onJump: (id: string) => void;
+}) {
+  const dotColor =
+    item.severity === "critical"
+      ? "bg-red-500"
+      : item.severity === "warning"
+      ? "bg-amber-500"
+      : "bg-emerald-500";
+
+  const textColor =
+    item.severity === "critical"
+      ? "text-red-600 dark:text-red-400"
+      : item.severity === "warning"
+      ? "text-amber-600 dark:text-amber-400"
+      : "text-emerald-600 dark:text-emerald-400";
+
+  return (
+    <div
+      onClick={() => onJump(item.id)}
+      className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer group ${
+        isActive
+          ? "bg-indigo-50/80 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-800/80 shadow-xs"
+          : "bg-white dark:bg-slate-800/80 border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
+      }`}
+    >
+      <span className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${dotColor}`}></span>
+      <div className="min-w-0 flex-1">
+        <div className={`text-xs font-medium leading-snug transition-colors ${
+          isActive
+            ? "text-indigo-900 dark:text-indigo-200 font-semibold"
+            : "text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"
+        }`}>
+          {item.title}
+        </div>
+        <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-mono flex-wrap">
+          <span className={`font-semibold capitalize ${textColor}`}>
+            {item.severity}
+          </span>
+          <span className="text-slate-300 dark:text-slate-600">·</span>
+          <span className="text-slate-500 dark:text-slate-400 truncate max-w-[120px]">{item.clause}</span>
+          {item.statuteReference && (
+            <>
+              <span className="text-slate-300 dark:text-slate-600">·</span>
+              <span className="text-indigo-600 dark:text-indigo-400 text-[10px] truncate max-w-[130px]" title={item.statuteReference}>
+                {item.statuteReference}
+              </span>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+const ModalRiskItemCard = React.memo(function ModalRiskItemCard({
+  risk,
+}: {
+  risk: RiskItemType;
+}) {
+  return (
+    <div
+      className={`rounded-2xl border p-4 transition-all ${
+        risk.severity === "critical"
+          ? "bg-red-50/40 dark:bg-red-950/30 border-red-200 dark:border-red-900/60"
+          : risk.severity === "warning"
+            ? "bg-amber-50/40 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/60"
+            : "bg-slate-50/50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800"
+      }`}
+    >
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <span className="font-mono text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-0.5 rounded-md truncate max-w-[260px]">
+          {risk.clause}
+        </span>
+        <span className={`font-mono text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
+          risk.severity === "critical" ? "bg-red-600 text-white" : risk.severity === "warning" ? "bg-amber-500 text-white" : "bg-slate-600 text-white"
+        }`}>
+          {risk.severity}
+        </span>
+      </div>
+
+      <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-2">
+        {risk.title}
+      </h4>
+
+      {risk.statuteReference && (
+        <div className="flex items-center gap-1 text-[11px] text-indigo-600 dark:text-indigo-400 font-mono mb-3">
+          <span className="material-symbols-outlined text-[14px]">gavel</span>
+          <span>{risk.statuteReference}</span>
+        </div>
+      )}
+
+      {/* Excerpt */}
+      <div className="p-3 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 mb-3 text-xs italic font-serif text-slate-700 dark:text-slate-300">
+        &ldquo;{risk.sourceText}&rdquo;
+      </div>
+
+      {/* Explanation */}
+      <div className="p-3 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 text-xs text-slate-700 dark:text-slate-300">
+        <div className="text-[10px] font-mono font-bold uppercase text-indigo-600 dark:text-indigo-400 mb-1">Statutory Explanation</div>
+        <p>{risk.explanation}</p>
+      </div>
+    </div>
+  );
+});
 
 interface AiFollowupResponse {
   answer: string;
@@ -203,24 +332,37 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
   }, [caseId]);
 
   const analysis = caseData?.analysis;
-  const risks: RiskItemType[] = analysis?.risks || [];
+  const risks: RiskItemType[] = useMemo(() => analysis?.risks || [], [analysis?.risks]);
   const documentTitle = analysis?.documentTitle || caseData?.fileName || "Document Analysis";
 
-  const filteredRisks = risks.filter((r) => {
-    if (filterSeverity === "All") return true;
-    return r.severity.toLowerCase() === filterSeverity.toLowerCase();
-  });
+  const filteredRisks = useMemo(() => {
+    return risks.filter((r) => {
+      if (filterSeverity === "All") return true;
+      return r.severity.toLowerCase() === filterSeverity.toLowerCase();
+    });
+  }, [risks, filterSeverity]);
 
-  const jumpToRisk = (riskId: string) => {
+  const modalSearchFilteredRisks = useMemo(() => {
+    if (!modalSearch.trim()) return filteredRisks;
+    const query = modalSearch.toLowerCase();
+    return filteredRisks.filter(
+      (r) =>
+        r.title.toLowerCase().includes(query) ||
+        r.clause.toLowerCase().includes(query) ||
+        (r.statuteReference && r.statuteReference.toLowerCase().includes(query))
+    );
+  }, [filteredRisks, modalSearch]);
+
+  const jumpToRisk = useCallback((riskId: string) => {
     setActiveRiskId(riskId);
     const el = document.getElementById(`risk-${riskId}`);
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
-  };
+  }, []);
 
-  const handleZoomIn = () => setZoomLevel((prev) => Math.min(prev + 10, 150));
-  const handleZoomOut = () => setZoomLevel((prev) => Math.max(prev - 10, 70));
+  const handleZoomIn = useCallback(() => setZoomLevel((prev) => Math.min(prev + 10, 150)), []);
+  const handleZoomOut = useCallback(() => setZoomLevel((prev) => Math.max(prev - 10, 70)), []);
 
   // Fetch conversation history on mount
   useEffect(() => {
@@ -616,8 +758,14 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
             {/* Desktop User Avatar */}
             <div className="hidden md:flex w-8 h-8 rounded-full bg-indigo-600 text-white items-center justify-center font-bold text-xs shadow-sm overflow-hidden">
               {user?.image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={user.image} alt={user.name || "User"} className="w-full h-full object-cover" />
+                <Image
+                  src={user.image}
+                  alt={user.name || "User"}
+                  width={32}
+                  height={32}
+                  className="w-full h-full object-cover"
+                  sizes="32px"
+                />
               ) : (
                 user?.name?.[0]?.toUpperCase() || "U"
               )}
@@ -829,41 +977,14 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   No risks found in this category.
                 </div>
               )}
-              {filteredRisks.map((item) => {
-                const isActive = activeRiskId === item.id;
-                return (
-                  <div
-                    key={item.id}
-                    onClick={() => jumpToRisk(item.id)}
-                    className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer group ${isActive
-                      ? "bg-indigo-50/80 dark:bg-indigo-950/60 border-indigo-300 dark:border-indigo-800/80 shadow-xs"
-                      : "bg-white dark:bg-slate-800/80 border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700"
-                      }`}
-                  >
-                    <span className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${severityDotColor(item.severity)}`}></span>
-                    <div className="min-w-0 flex-1">
-                      <div className={`text-xs font-medium leading-snug transition-colors ${isActive ? "text-indigo-900 dark:text-indigo-200 font-semibold" : "text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400"}`}>
-                        {item.title}
-                      </div>
-                      <div className="flex items-center gap-1.5 mt-1.5 text-[11px] font-mono flex-wrap">
-                        <span className={`font-semibold capitalize ${severityTextColor(item.severity)}`}>
-                          {item.severity}
-                        </span>
-                        <span className="text-slate-300 dark:text-slate-600">·</span>
-                        <span className="text-slate-500 dark:text-slate-400 truncate max-w-[120px]">{item.clause}</span>
-                        {item.statuteReference && (
-                          <>
-                            <span className="text-slate-300 dark:text-slate-600">·</span>
-                            <span className="text-indigo-600 dark:text-indigo-400 text-[10px] truncate max-w-[130px]" title={item.statuteReference}>
-                              {item.statuteReference}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              {filteredRisks.map((item) => (
+                <RiskLedgerCard
+                  key={item.id}
+                  item={item}
+                  isActive={activeRiskId === item.id}
+                  onJump={jumpToRisk}
+                />
+              ))}
             </div>
           </aside>
 
@@ -2030,55 +2151,11 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
 
             {/* Modal Risk Items List */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
-              {filteredRisks
-                .filter((r) => !modalSearch.trim() || r.title.toLowerCase().includes(modalSearch.toLowerCase()) || r.clause.toLowerCase().includes(modalSearch.toLowerCase()))
-                .map((risk) => (
-                  <div
-                    key={risk.id}
-                    className={`rounded-2xl border p-4 transition-all ${
-                      risk.severity === "critical"
-                        ? "bg-red-50/40 dark:bg-red-950/30 border-red-200 dark:border-red-900/60"
-                        : risk.severity === "warning"
-                          ? "bg-amber-50/40 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/60"
-                          : "bg-slate-50/50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className="font-mono text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-0.5 rounded-md truncate max-w-[260px]">
-                        {risk.clause}
-                      </span>
-                      <span className={`font-mono text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
-                        risk.severity === "critical" ? "bg-red-600 text-white" : risk.severity === "warning" ? "bg-amber-500 text-white" : "bg-slate-600 text-white"
-                      }`}>
-                        {risk.severity}
-                      </span>
-                    </div>
+              {modalSearchFilteredRisks.map((risk) => (
+                <ModalRiskItemCard key={risk.id} risk={risk} />
+              ))}
 
-                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-2">
-                      {risk.title}
-                    </h4>
-
-                    {risk.statuteReference && (
-                      <div className="flex items-center gap-1 text-[11px] text-indigo-600 dark:text-indigo-400 font-mono mb-3">
-                        <span className="material-symbols-outlined text-[14px]">gavel</span>
-                        <span>{risk.statuteReference}</span>
-                      </div>
-                    )}
-
-                    {/* Excerpt */}
-                    <div className="p-3 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 mb-3 text-xs italic font-serif text-slate-700 dark:text-slate-300">
-                      &ldquo;{risk.sourceText}&rdquo;
-                    </div>
-
-                    {/* Explanation */}
-                    <div className="p-3 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 text-xs text-slate-700 dark:text-slate-300">
-                      <div className="text-[10px] font-mono font-bold uppercase text-indigo-600 dark:text-indigo-400 mb-1">Statutory Explanation</div>
-                      <p>{risk.explanation}</p>
-                    </div>
-                  </div>
-                ))}
-
-              {filteredRisks.length === 0 && (
+              {modalSearchFilteredRisks.length === 0 && (
                 <div className="text-center py-10 text-slate-400 text-xs">
                   No critical points found matching the criteria.
                 </div>

@@ -1,14 +1,17 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import BorderGlow from "./BorderGlow";
-import AiLoadingModal from "./AiLoadingModal";
-import DeleteConfirmModal from "./DeleteConfirmModal";
 import LatticeLoader from "./LatticeLoader";
 import ThemeToggle from "./ThemeToggle";
+
+const AiLoadingModal = dynamic(() => import("./AiLoadingModal"), { ssr: false });
+const DeleteConfirmModal = dynamic(() => import("./DeleteConfirmModal"), { ssr: false });
 
 interface DashboardProps {
   user: {
@@ -28,6 +31,47 @@ interface CaseHistoryItem {
   createdAt: string;
   risksCount: number;
 }
+
+interface SidebarCaseItemProps {
+  item: CaseHistoryItem;
+  iconColorClass: string;
+  onDelete: (item: CaseHistoryItem) => void;
+  getDocIcon: (type?: string) => string;
+}
+
+const SidebarCaseItem = React.memo(function SidebarCaseItem({
+  item,
+  iconColorClass,
+  onDelete,
+  getDocIcon,
+}: SidebarCaseItemProps) {
+  return (
+    <div className="flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/70 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors group">
+      <Link
+        className="flex items-center gap-2.5 min-w-0 flex-1"
+        href={`/case/${item._id}`}
+      >
+        <span className={`material-symbols-outlined text-[16px] shrink-0 ${iconColorClass}`}>
+          {getDocIcon(item.documentType || item.fileName)}
+        </span>
+        <span className="truncate font-medium">{item.documentTitle || item.fileName}</span>
+      </Link>
+
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onDelete(item);
+        }}
+        className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 hover:bg-rose-100/70 transition-all shrink-0"
+        title="Delete consultation"
+      >
+        <span className="material-symbols-outlined text-[16px]">delete</span>
+      </button>
+    </div>
+  );
+});
 
 export default function Dashboard({ user }: DashboardProps) {
   const router = useRouter();
@@ -161,31 +205,31 @@ export default function Dashboard({ user }: DashboardProps) {
     return { today, yesterday, past7Days, older };
   }, [historyCases]);
 
-  const getDocIcon = (type?: string) => {
+  const getDocIcon = useCallback((type?: string) => {
     const lower = (type || "").toLowerCase();
     if (lower.includes("lease") || lower.includes("rent")) return "description";
     if (lower.includes("notice") || lower.includes("dispute")) return "gavel";
     if (lower.includes("severance") || lower.includes("employment")) return "assignment_turned_in";
     if (lower.includes("nda") || lower.includes("agreement")) return "article";
     return "description";
-  };
+  }, []);
 
-  const handleChipClick = (text: string) => {
+  const handleChipClick = useCallback((text: string) => {
     setPromptText(text);
-  };
+  }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setAttachedFile(e.target.files[0]);
     }
-  };
+  }, []);
 
-  const handleRemoveFile = () => {
+  const handleRemoveFile = useCallback(() => {
     setAttachedFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  };
+  }, []);
 
   const handleAnalyze = async () => {
     if (!promptText.trim() && !attachedFile) return;
@@ -250,7 +294,7 @@ export default function Dashboard({ user }: DashboardProps) {
   const userName = user.name ? user.name.split(" ")[0] : "there";
 
   return (
-    <div className="bg-[#F8FAFC] font-sans text-slate-800 antialiased min-h-screen pb-20 md:pb-0">
+    <div className="bg-[#F8FAFC] dark:bg-[#0F172A] font-sans text-slate-800 dark:text-slate-100 antialiased min-h-screen pb-20 md:pb-0 w-full max-w-full overflow-x-hidden">
       {/* Error Toast */}
       {errorMessage && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[60] max-w-md w-full px-4 animate-fade-in">
@@ -295,8 +339,8 @@ export default function Dashboard({ user }: DashboardProps) {
       />
 
       {/* HEADER (DESKTOP & MOBILE RESPONSIVE) */}
-      <header className="fixed top-0 left-0 right-0 h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl z-50 shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-slate-200/60 dark:border-slate-800">
-        <div className="h-16 w-full px-3 sm:px-6 flex items-center justify-between gap-2">
+      <header className="fixed top-0 left-0 right-0 h-16 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl z-50 shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-b border-slate-200/60 dark:border-slate-800 w-full max-w-full">
+        <div className="h-16 w-full max-w-full px-3 sm:px-6 flex items-center justify-between gap-2">
           {/* Left Actions & Logo */}
           <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
             {/* Mobile Menu Drawer Toggle Button */}
@@ -332,11 +376,13 @@ export default function Dashboard({ user }: DashboardProps) {
                 className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center ring-2 ring-indigo-200 dark:ring-indigo-900 overflow-hidden shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 shrink-0"
               >
                 {user.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={user.image}
                     alt={user.name || "User"}
+                    width={32}
+                    height={32}
                     className="w-full h-full object-cover"
+                    sizes="32px"
                   />
                 ) : (
                   <span className="text-xs font-bold">{user.name?.charAt(0) || "U"}</span>
@@ -589,33 +635,13 @@ export default function Dashboard({ user }: DashboardProps) {
                     </span>
                     <div className="space-y-1">
                       {groupedHistory.today.map((c) => (
-                        <div
+                        <SidebarCaseItem
                           key={c._id}
-                          className="flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/70 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors group"
-                        >
-                          <Link
-                            className="flex items-center gap-2.5 min-w-0 flex-1"
-                            href={`/case/${c._id}`}
-                          >
-                            <span className="material-symbols-outlined text-[16px] text-indigo-600 dark:text-indigo-400 shrink-0">
-                              {getDocIcon(c.documentType || c.fileName)}
-                            </span>
-                            <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
-                          </Link>
-
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setCaseToDelete(c);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 hover:bg-rose-100/70 transition-all shrink-0"
-                            title="Delete consultation"
-                          >
-                            <span className="material-symbols-outlined text-[16px]">delete</span>
-                          </button>
-                        </div>
+                          item={c}
+                          iconColorClass="text-indigo-600 dark:text-indigo-400"
+                          onDelete={setCaseToDelete}
+                          getDocIcon={getDocIcon}
+                        />
                       ))}
                     </div>
                   </div>
@@ -628,33 +654,13 @@ export default function Dashboard({ user }: DashboardProps) {
                     </span>
                     <div className="space-y-1">
                       {groupedHistory.yesterday.map((c) => (
-                        <div
+                        <SidebarCaseItem
                           key={c._id}
-                          className="flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/70 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors group"
-                        >
-                          <Link
-                            className="flex items-center gap-2.5 min-w-0 flex-1"
-                            href={`/case/${c._id}`}
-                          >
-                            <span className="material-symbols-outlined text-[16px] text-blue-600 dark:text-blue-400 shrink-0">
-                              {getDocIcon(c.documentType || c.fileName)}
-                            </span>
-                            <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
-                          </Link>
-
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setCaseToDelete(c);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 hover:bg-rose-100/70 transition-all shrink-0"
-                            title="Delete consultation"
-                          >
-                            <span className="material-symbols-outlined text-[16px]">delete</span>
-                          </button>
-                        </div>
+                          item={c}
+                          iconColorClass="text-blue-600 dark:text-blue-400"
+                          onDelete={setCaseToDelete}
+                          getDocIcon={getDocIcon}
+                        />
                       ))}
                     </div>
                   </div>
@@ -667,33 +673,13 @@ export default function Dashboard({ user }: DashboardProps) {
                     </span>
                     <div className="space-y-1">
                       {groupedHistory.past7Days.map((c) => (
-                        <div
+                        <SidebarCaseItem
                           key={c._id}
-                          className="flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/70 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors group"
-                        >
-                          <Link
-                            className="flex items-center gap-2.5 min-w-0 flex-1"
-                            href={`/case/${c._id}`}
-                          >
-                            <span className="material-symbols-outlined text-[16px] text-slate-600 dark:text-slate-400 shrink-0">
-                              {getDocIcon(c.documentType || c.fileName)}
-                            </span>
-                            <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
-                          </Link>
-
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setCaseToDelete(c);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 hover:bg-rose-100/70 transition-all shrink-0"
-                            title="Delete consultation"
-                          >
-                            <span className="material-symbols-outlined text-[16px]">delete</span>
-                          </button>
-                        </div>
+                          item={c}
+                          iconColorClass="text-slate-600 dark:text-slate-400"
+                          onDelete={setCaseToDelete}
+                          getDocIcon={getDocIcon}
+                        />
                       ))}
                     </div>
                   </div>
@@ -706,33 +692,13 @@ export default function Dashboard({ user }: DashboardProps) {
                     </span>
                     <div className="space-y-1">
                       {groupedHistory.older.map((c) => (
-                        <div
+                        <SidebarCaseItem
                           key={c._id}
-                          className="flex items-center justify-between gap-1 px-2.5 py-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/70 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors group"
-                        >
-                          <Link
-                            className="flex items-center gap-2.5 min-w-0 flex-1"
-                            href={`/case/${c._id}`}
-                          >
-                            <span className="material-symbols-outlined text-[16px] text-slate-600 dark:text-slate-400 shrink-0">
-                              {getDocIcon(c.documentType || c.fileName)}
-                            </span>
-                            <span className="truncate font-medium">{c.documentTitle || c.fileName}</span>
-                          </Link>
-
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setCaseToDelete(c);
-                            }}
-                            className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 hover:bg-rose-100/70 transition-all shrink-0"
-                            title="Delete consultation"
-                          >
-                            <span className="material-symbols-outlined text-[16px]">delete</span>
-                          </button>
-                        </div>
+                          item={c}
+                          iconColorClass="text-slate-600 dark:text-slate-400"
+                          onDelete={setCaseToDelete}
+                          getDocIcon={getDocIcon}
+                        />
                       ))}
                     </div>
                   </div>
@@ -745,11 +711,11 @@ export default function Dashboard({ user }: DashboardProps) {
 
       {/* MAIN CONTENT WORKSPACE */}
       <div
-        className={`pt-16 min-h-screen transition-all duration-300 ease-in-out ${
+        className={`pt-16 min-h-screen transition-all duration-300 ease-in-out w-full max-w-full overflow-x-hidden ${
           isSidebarOpen ? "md:pl-72" : "md:pl-6"
         }`}
       >
-        <main className="w-full bg-[#F8FAFC] dark:bg-[#0F172A] min-h-[calc(100vh-4rem)] p-4 sm:p-8 flex flex-col items-center justify-center relative">
+        <main className="w-full max-w-full bg-[#F8FAFC] dark:bg-[#0F172A] min-h-[calc(100vh-4rem)] p-4 sm:p-8 flex flex-col items-center justify-center relative overflow-x-hidden">
           {/* Subtle Ambient Glow for Mobile */}
           <div className="absolute top-4 left-1/2 -translate-x-1/2 w-64 h-32 bg-gradient-to-b from-indigo-500/10 via-slate-100 dark:via-slate-900/20 to-transparent rounded-full blur-3xl pointer-events-none sm:hidden" />
 

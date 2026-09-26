@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { signIn, signOut, useSession } from "next-auth/react";
 
 export default function LoginPage() {
@@ -138,11 +139,13 @@ export default function LoginPage() {
                   <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-100 text-left">
                     <div className="flex items-center gap-3">
                       {session.user.image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={session.user.image}
                           alt={session.user.name || "User Avatar"}
+                          width={40}
+                          height={40}
                           className="w-10 h-10 rounded-full ring-2 ring-indigo-500 object-cover"
+                          sizes="40px"
                         />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center">

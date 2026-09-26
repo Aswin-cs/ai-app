@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 
 interface MemeVibeCheckProps {
   riskScore: number;
@@ -162,14 +163,15 @@ export default function MemeVibeCheck({
         {layout === "wide" ? (
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
             {/* Meme Image Frame */}
-            <div className="sm:col-span-5 relative rounded-xl overflow-hidden border border-slate-200/90 dark:border-slate-700/80 shadow-xs bg-slate-900">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+            <div className="sm:col-span-5 relative h-40 sm:h-44 rounded-xl overflow-hidden border border-slate-200/90 dark:border-slate-700/80 shadow-xs bg-slate-900">
+              <Image
                 src={currentPhase.image}
                 alt={currentPhase.title}
-                className="w-full h-40 sm:h-44 object-cover object-center"
+                fill
+                className="object-cover object-center"
+                sizes="(max-width: 640px) 100vw, 300px"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex flex-col justify-end p-2.5 pointer-events-none">
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex flex-col justify-end p-2.5 pointer-events-none z-10">
                 <span className="text-[11px] font-bold text-white drop-shadow-md">
                   {currentPhase.vibeText}
                 </span>
@@ -222,15 +224,16 @@ export default function MemeVibeCheck({
             </div>
 
             {/* Meme Image Frame */}
-            <div className="relative rounded-xl overflow-hidden border border-slate-200/90 dark:border-slate-700/80 shadow-xs bg-slate-900">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+            <div className="relative h-48 sm:h-52 rounded-xl overflow-hidden border border-slate-200/90 dark:border-slate-700/80 shadow-xs bg-slate-900">
+              <Image
                 src={currentPhase.image}
                 alt={currentPhase.title}
-                className="w-full h-48 sm:h-52 object-cover object-center"
+                fill
+                className="object-cover object-center"
+                sizes="(max-width: 640px) 100vw, 400px"
               />
 
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex flex-col justify-end p-3 pointer-events-none">
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex flex-col justify-end p-3 pointer-events-none z-10">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-white drop-shadow-md">
                     {currentPhase.vibeText}
