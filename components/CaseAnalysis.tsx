@@ -350,8 +350,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
         showMeme={showMeme}
         onToggleMeme={handleToggleMeme}
         onOpenWhatIf={() => setShowWhatIf(true)}
-        isExporting={isExporting}
-        onExportPDF={handleExportPDF}
         user={user}
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
@@ -409,21 +407,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                     <span>Simulate What-If Scenarios</span>
                   </div>
                   <span className="material-symbols-outlined text-[18px]" aria-hidden="true">chevron_right</span>
-                </button>
-
-                <button
-                  onClick={() => {
-                    handleExportPDF();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  disabled={isExporting}
-                  className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold disabled:opacity-50 transition-all"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[20px] text-rose-500" aria-hidden="true">picture_as_pdf</span>
-                    <span>{isExporting ? "Exporting PDF..." : "Export Full PDF Report"}</span>
-                  </div>
-                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">download</span>
                 </button>
               </div>
             </div>
@@ -1123,8 +1106,6 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
             confidenceScore={confidenceScore}
             risks={risks}
             onOpenWhatIf={() => setShowWhatIf(true)}
-            onExportPDF={handleExportPDF}
-            isExporting={isExporting}
           />
 
           {/* MOBILE ONLY DEDICATED WORKSPACE VIEW */}

@@ -16,8 +16,6 @@ export interface CaseAnalysisHeaderProps {
   showMeme: boolean;
   onToggleMeme: () => void;
   onOpenWhatIf: () => void;
-  isExporting: boolean;
-  onExportPDF: () => void;
   user?: {
     name?: string | null;
     email?: string | null;
@@ -37,8 +35,6 @@ export const CaseAnalysisHeader = React.memo(function CaseAnalysisHeader({
   showMeme,
   onToggleMeme,
   onOpenWhatIf,
-  isExporting,
-  onExportPDF,
   user,
   isMobileMenuOpen,
   setIsMobileMenuOpen,
@@ -145,19 +141,6 @@ export const CaseAnalysisHeader = React.memo(function CaseAnalysisHeader({
             >
               <span className="material-symbols-outlined text-[16px]" aria-hidden="true">account_tree</span>
               <span>What-If Map</span>
-            </button>
-            <button
-              onClick={onExportPDF}
-              disabled={isExporting}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#4f46e5] hover:bg-indigo-700 text-white text-xs font-semibold transition-all shadow-xs disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-              type="button"
-            >
-              {isExporting ? (
-                <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-              ) : (
-                <span className="material-symbols-outlined text-[16px]" aria-hidden="true">download</span>
-              )}
-              <span>{isExporting ? "Exporting..." : "Export PDF"}</span>
             </button>
             <ThemeToggle />
           </div>

@@ -10,8 +10,6 @@ interface CaseAnalysisSidebarProps {
   confidenceScore: number;
   risks: RiskItem[];
   onOpenWhatIf: () => void;
-  onExportPDF: () => void;
-  isExporting: boolean;
 }
 
 export const CaseAnalysisSidebar = React.memo(function CaseAnalysisSidebar({
@@ -20,8 +18,6 @@ export const CaseAnalysisSidebar = React.memo(function CaseAnalysisSidebar({
   confidenceScore,
   risks,
   onOpenWhatIf,
-  onExportPDF,
-  isExporting,
 }: CaseAnalysisSidebarProps) {
   const analysis = caseData?.analysis;
   const riskStyles = getRiskScoreStyles(overallRiskScore);
@@ -117,19 +113,6 @@ export const CaseAnalysisSidebar = React.memo(function CaseAnalysisSidebar({
                 <span>Simulate What-If Scenarios</span>
               </div>
               <span className="material-symbols-outlined text-[16px] text-indigo-400 group-hover:translate-x-0.5 transition-transform" aria-hidden="true">arrow_forward</span>
-            </button>
-
-            <button
-              onClick={onExportPDF}
-              disabled={isExporting}
-              className="w-full flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all shadow-2xs disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-              type="button"
-            >
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[18px] text-rose-500" aria-hidden="true">picture_as_pdf</span>
-                <span>{isExporting ? "Exporting PDF Report..." : "Download Full PDF Report"}</span>
-              </div>
-              <span className="material-symbols-outlined text-[16px] text-slate-400" aria-hidden="true">download</span>
             </button>
           </div>
         </section>
