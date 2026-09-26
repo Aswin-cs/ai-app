@@ -16,11 +16,20 @@ export interface AuthUserResult {
 }
 
 
+declare global {
+  // eslint-disable-next-line no-var
+  var __mockAuthResult: AuthUserResult | undefined;
+}
+
 /**
  * Authenticates the current server request and retrieves the corresponding database user.
  * Returns either `{ user, errorResponse: null }` on success or `{ user: null, errorResponse }` on failure.
  */
 export async function getAuthenticatedUser(): Promise<AuthUserResult> {
+  if (globalThis.__mockAuthResult !== undefined) {
+    return globalThis.__mockAuthResult;
+  }
+
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {

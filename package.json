@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test __tests__/security.test.ts __tests__/legalPrompt.test.ts __tests__/authUtils.test.ts __tests__/caseModel.test.ts __tests__/geminiOptimization.test.ts"
+    "test": "tsx --test __tests__/security.test.ts __tests__/legalPrompt.test.ts __tests__/authUtils.test.ts __tests__/caseModel.test.ts __tests__/geminiOptimization.test.ts __tests__/lib/severityStyles.test.ts __tests__/api/analyze.test.ts __tests__/api/cases.test.ts __tests__/api/caseId.test.ts __tests__/api/exportPdf.test.ts __tests__/api/followup.test.ts __tests__/hooks/useCaseList.test.ts __tests__/hooks/useCaseFollowup.test.ts __tests__/components/DeleteConfirmModal.test.tsx",
+    "test:coverage": "node --experimental-test-coverage --import tsx --test __tests__/security.test.ts __tests__/legalPrompt.test.ts __tests__/authUtils.test.ts __tests__/caseModel.test.ts __tests__/geminiOptimization.test.ts __tests__/lib/severityStyles.test.ts __tests__/api/analyze.test.ts __tests__/api/cases.test.ts __tests__/api/caseId.test.ts __tests__/api/exportPdf.test.ts __tests__/api/followup.test.ts __tests__/hooks/useCaseList.test.ts __tests__/hooks/useCaseFollowup.test.ts __tests__/components/DeleteConfirmModal.test.tsx"
   },
   "dependencies": {
     "@google/genai": "^2.23.0",
@@ -28,13 +29,18 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@testing-library/react": "^16.3.3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^2.1.8",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
+    "jsdom": "^24.1.3",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite": "^5.4.11",
+    "vitest": "^2.1.8"
   }
 }
