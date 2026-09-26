@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 import "./ThemeToggle.css";
+
+const emptySubscribe = () => () => {};
 
 /**
  * Premium animated Day/Night theme toggle button.
@@ -11,12 +13,11 @@ import "./ThemeToggle.css";
  */
 export default function ThemeToggle() {
   const { setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  // Prevent hydration mismatch
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
 
   if (!mounted) {
     // Render a placeholder with same dimensions to prevent layout shift

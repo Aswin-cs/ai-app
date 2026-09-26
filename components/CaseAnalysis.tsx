@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import dynamic from "next/dynamic";
 import BorderGlow from "./BorderGlow";
 import GlideSelect from "./GlideSelect";
@@ -12,8 +11,7 @@ import type { CaseDocument, RiskItem as RiskItemType } from "@/types/case.types"
 import { CaseAnalysisHeader } from "./CaseAnalysisHeader";
 import { CriticalPointsModal } from "./CriticalPointsModal";
 import { RiskLedgerCard } from "./RiskLedgerCard";
-import { ModalRiskItemCard } from "./ModalRiskItemCard";
-import { useCaseFollowup, AiFollowupResponse, ConversationMessage } from "@/hooks/useCaseFollowup";
+import { useCaseFollowup, AiFollowupResponse } from "@/hooks/useCaseFollowup";
 import { useAudioChime } from "@/hooks/useAudioChime";
 import { getSeverityStyles, getRiskScoreStyles } from "@/lib/severityStyles";
 import { logger } from "@/lib/logger";
@@ -45,7 +43,7 @@ interface CaseAnalysisProps {
 
 export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
   const [caseData, setCaseData] = useState<CaseDocument | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(() => Boolean(caseId.match(/^[0-9a-fA-F]{24}$/)));
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   const [activeRiskId, setActiveRiskId] = useState<string | null>(null);
@@ -55,8 +53,24 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
   const [documentSearch, setDocumentSearch] = useState<string>("");
   const [showSearchBox, setShowSearchBox] = useState<boolean>(false);
   const [isExporting, setIsExporting] = useState<boolean>(false);
-  const [showMeme, setShowMeme] = useState<boolean>(true);
-  const [showExecBox, setShowExecBox] = useState<boolean>(true);
+  const [showMeme, setShowMeme] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      const saved = localStorage.getItem("jurisai_show_meme");
+      return saved !== null ? saved === "true" : true;
+    } catch {
+      return true;
+    }
+  });
+  const [showExecBox, setShowExecBox] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    try {
+      const saved = localStorage.getItem("jurisai_show_exec_box");
+      return saved !== null ? saved === "true" : true;
+    } catch {
+      return true;
+    }
+  });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const [showCriticalModal, setShowCriticalModal] = useState<boolean>(false);
   const [mobileTab, setMobileTab] = useState<"overview" | "document">("overview");
@@ -86,42 +100,22 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
     aiResponseSectionRef,
   });
 
-  // Sync showExecBox with localStorage on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("jurisai_show_exec_box");
-      if (saved !== null) {
-        setShowExecBox(saved === "true");
-      }
-    } catch (e) {}
-  }, []);
-
   const handleToggleExecBox = () => {
     setShowExecBox((prev) => {
       const next = !prev;
       try {
         localStorage.setItem("jurisai_show_exec_box", String(next));
-      } catch (e) {}
+      } catch {}
       return next;
     });
   };
-
-  // Sync showMeme with localStorage on client mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("jurisai_show_meme");
-      if (saved !== null) {
-        setShowMeme(saved === "true");
-      }
-    } catch (e) {}
-  }, []);
 
   const handleToggleMeme = () => {
     setShowMeme((prev) => {
       const next = !prev;
       try {
         localStorage.setItem("jurisai_show_meme", String(next));
-      } catch (e) {}
+      } catch {}
       return next;
     });
   };
@@ -138,7 +132,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
         if (contentType.includes("application/json")) {
           data = await res.json();
         } else {
-          const text = await res.text();
+          await res.text();
           if (!res.ok) {
             throw new Error(`Server error (${res.status}): ${res.statusText || "Unable to load case"}`);
           }
@@ -160,12 +154,8 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
       }
     }
 
-    // Only fetch if caseId looks like a MongoDB ObjectId
     if (caseId.match(/^[0-9a-fA-F]{24}$/)) {
       fetchCase();
-    } else {
-      setIsLoading(false);
-      setFetchError(null);
     }
   }, [caseId]);
 
@@ -1077,7 +1067,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                         let aiData: AiFollowupResponse | null = null;
                         try {
                           aiData = JSON.parse(msg.content);
-                        } catch (e) {}
+                        } catch {}
 
                         const answerText = aiData ? aiData.answer : msg.content;
                         const keyPoints: string[] = aiData?.keyPoints || [];
@@ -1579,7 +1569,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                                   try {
                                     const parsed = JSON.parse(msg.content);
                                     return parsed.answer || msg.content;
-                                  } catch (e) {
+                                  } catch {
                                     return msg.content;
                                   }
                                 })()}

@@ -12,7 +12,9 @@ import { ai } from "@/config/gemini";
 import { MAX_FILE_SIZE } from "@/config/legalSystemPrompt";
 import mongoose from "mongoose";
 
-(global as any).mongooseCache = { conn: mongoose, promise: Promise.resolve(mongoose) };
+import { IUser } from "@/models/user.model";
+
+(globalThis as unknown as Record<string, unknown>).mongooseCache = { conn: mongoose, promise: Promise.resolve(mongoose) };
 
 describe("API Route: /api/analyze", () => {
   const mockUserId = "650000000000000000000001";
@@ -33,9 +35,9 @@ describe("API Route: /api/analyze", () => {
 
   beforeEach(() => {
     mock.restoreAll();
-    globalThis.__mockAuthResult = { user: mockUser as any, errorResponse: null };
+    globalThis.__mockAuthResult = { user: mockUser as unknown as IUser, errorResponse: null };
 
-    mock.method(Case, "create", async (data: any) => ({
+    mock.method(Case, "create", async (data: Record<string, unknown>) => ({
       _id: { toString: () => "650000000000000000000010" },
       ...data,
     }));
@@ -147,7 +149,7 @@ describe("API Route: /api/analyze", () => {
 
   it("should update case status to 'failed' and return 500 when Gemini analysis fails", async () => {
     let updatedStatus: string | undefined = undefined;
-    mock.method(Case, "findByIdAndUpdate", async (_id: any, update: any) => {
+    mock.method(Case, "findByIdAndUpdate", async (_id: unknown, update: { status?: string }) => {
       updatedStatus = update.status;
     });
 

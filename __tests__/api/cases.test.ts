@@ -9,7 +9,9 @@ import { NextRequest, NextResponse } from "next/server";
 import Case from "@/models/case.model";
 import mongoose from "mongoose";
 
-(global as any).mongooseCache = { conn: mongoose, promise: Promise.resolve(mongoose) };
+import { IUser } from "@/models/user.model";
+
+(globalThis as unknown as Record<string, unknown>).mongooseCache = { conn: mongoose, promise: Promise.resolve(mongoose) };
 
 describe("API Route: /api/cases", () => {
   const mockUserId = "650000000000000000000001";
@@ -21,7 +23,7 @@ describe("API Route: /api/cases", () => {
 
   beforeEach(() => {
     mock.restoreAll();
-    globalThis.__mockAuthResult = { user: mockUser as any, errorResponse: null };
+    globalThis.__mockAuthResult = { user: mockUser as unknown as IUser, errorResponse: null };
   });
 
   afterEach(() => {
@@ -58,7 +60,7 @@ describe("API Route: /api/cases", () => {
       },
     ];
 
-    mock.method(Case, "find", (query: any) => {
+    mock.method(Case, "find", (query: Record<string, unknown>) => {
       assert.strictEqual(query.userId, mockUser._id);
       return {
         select: () => ({
@@ -73,7 +75,7 @@ describe("API Route: /api/cases", () => {
       };
     });
 
-    mock.method(Case, "countDocuments", async (query: any) => {
+    mock.method(Case, "countDocuments", async (query: Record<string, unknown>) => {
       assert.strictEqual(query.userId, mockUser._id);
       return 15;
     });

@@ -19,7 +19,7 @@ describe("useCaseFollowup hook", () => {
 
   it("does not fetch conversation history on mount if caseId is invalid", () => {
     const fetchMock = mock.fn();
-    globalThis.fetch = fetchMock as any;
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
 
     renderHook(() =>
       useCaseFollowup({
@@ -40,7 +40,7 @@ describe("useCaseFollowup hook", () => {
     globalThis.fetch = mock.fn(async () => ({
       ok: true,
       json: async () => ({ messages: mockMessages }),
-    })) as any;
+    })) as unknown as typeof fetch;
 
     const { result } = renderHook(() =>
       useCaseFollowup({
@@ -63,7 +63,7 @@ describe("useCaseFollowup hook", () => {
       completionSoundCalled = true;
     };
 
-    globalThis.fetch = mock.fn(async (url: string, opts?: any) => {
+    globalThis.fetch = mock.fn(async (url: string | URL | Request, opts?: RequestInit) => {
       if (opts?.method === "POST") {
         return {
           ok: true,
@@ -83,7 +83,7 @@ describe("useCaseFollowup hook", () => {
         ok: true,
         json: async () => ({ messages: [] }),
       };
-    }) as any;
+    }) as unknown as typeof fetch;
 
     const { result } = renderHook(() =>
       useCaseFollowup({
@@ -115,7 +115,7 @@ describe("useCaseFollowup hook", () => {
   });
 
   it("handles prompt execution failure", async () => {
-    globalThis.fetch = mock.fn(async (url: string, opts?: any) => {
+    globalThis.fetch = mock.fn(async (url: string | URL | Request, opts?: RequestInit) => {
       if (opts?.method === "POST") {
         return {
           ok: false,
@@ -126,7 +126,7 @@ describe("useCaseFollowup hook", () => {
         ok: true,
         json: async () => ({ messages: [] }),
       };
-    }) as any;
+    }) as unknown as typeof fetch;
 
     const { result } = renderHook(() =>
       useCaseFollowup({

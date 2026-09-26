@@ -9,7 +9,9 @@ import { NextRequest, NextResponse } from "next/server";
 import Case from "@/models/case.model";
 import mongoose from "mongoose";
 
-(global as any).mongooseCache = { conn: mongoose, promise: Promise.resolve(mongoose) };
+import { IUser } from "@/models/user.model";
+
+(globalThis as unknown as Record<string, unknown>).mongooseCache = { conn: mongoose, promise: Promise.resolve(mongoose) };
 
 describe("API Route: /api/case/[id]", () => {
   const mockUserId = "650000000000000000000001";
@@ -38,7 +40,7 @@ describe("API Route: /api/case/[id]", () => {
 
   beforeEach(() => {
     mock.restoreAll();
-    globalThis.__mockAuthResult = { user: mockUser as any, errorResponse: null };
+    globalThis.__mockAuthResult = { user: mockUser as unknown as IUser, errorResponse: null };
   });
 
   afterEach(() => {

@@ -59,7 +59,7 @@ describe("useCaseList hook", () => {
       status: 200,
       headers: { get: () => "application/json" },
       json: async () => ({ success: true, cases: mockCases }),
-    })) as any;
+    })) as unknown as typeof fetch;
 
     const { result } = renderHook(() => useCaseList());
 
@@ -83,7 +83,7 @@ describe("useCaseList hook", () => {
   });
 
   it("handles case deletion success flow", async () => {
-    globalThis.fetch = mock.fn(async (url: string, opts?: any) => {
+    globalThis.fetch = mock.fn(async (url: string | URL | Request, opts?: RequestInit) => {
       if (opts?.method === "DELETE") {
         return {
           ok: true,
@@ -109,7 +109,7 @@ describe("useCaseList hook", () => {
           ],
         }),
       };
-    }) as any;
+    }) as unknown as typeof fetch;
 
     const { result } = renderHook(() => useCaseList());
 
@@ -131,7 +131,7 @@ describe("useCaseList hook", () => {
   });
 
   it("handles case deletion failure flow", async () => {
-    globalThis.fetch = mock.fn(async (url: string, opts?: any) => {
+    globalThis.fetch = mock.fn(async (url: string | URL | Request, opts?: RequestInit) => {
       if (opts?.method === "DELETE") {
         return {
           ok: false,
@@ -157,7 +157,7 @@ describe("useCaseList hook", () => {
           ],
         }),
       };
-    }) as any;
+    }) as unknown as typeof fetch;
 
     const { result } = renderHook(() => useCaseList());
 

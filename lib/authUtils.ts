@@ -17,7 +17,6 @@ export interface AuthUserResult {
 
 
 declare global {
-  // eslint-disable-next-line no-var
   var __mockAuthResult: AuthUserResult | undefined;
 }
 

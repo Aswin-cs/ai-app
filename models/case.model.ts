@@ -8,7 +8,7 @@ export interface ICase extends Document {
   fileSummary?: string;
   prompt?: string;
   status: "processing" | "completed" | "failed";
-  analysis: Record<string, any> | null;
+  analysis: Record<string, unknown> | null;
   errorMessage?: string;
   createdAt: Date;
   updatedAt: Date;

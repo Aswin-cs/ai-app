@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Image from "next/image";
 
 interface MemeVibeCheckProps {
@@ -90,7 +90,6 @@ export function getMemePhase(score: number): typeof PHASE_DETAILS[number] {
 
 export default function MemeVibeCheck({
   riskScore,
-  criticalCount = 0,
   isVisible,
   onToggleVisible,
   layout = "wide",

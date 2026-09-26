@@ -161,7 +161,7 @@ export default function GlideSelect({
     setPhase("open");
   };
 
-  const close = (mode: "instant" | "pop") => {
+  const close = useCallback((mode: "instant" | "pop") => {
     setActive(null);
     clearTimeout(closeTimer.current);
     const el = menuRef.current;
@@ -173,7 +173,12 @@ export default function GlideSelect({
     el.dataset.state = "closed";
     setPhase("closing");
     closeTimer.current = setTimeout(() => setPhase("closed"), popOut + 20);
-  };
+  }, [popOut]);
+
+  if (disabled && phase !== "closed") {
+    setPhase("closed");
+    setActive(null);
+  }
 
   const pick = (i: number, viaKey: boolean) => {
     const it = items[i];
@@ -224,11 +229,7 @@ export default function GlideSelect({
     };
     document.addEventListener("pointerdown", onDown, true);
     return () => document.removeEventListener("pointerdown", onDown, true);
-  }, [phase]);
-
-  useEffect(() => {
-    if (disabled && phase !== "closed") close("instant");
-  }, [disabled, phase]);
+  }, [phase, close]);
 
   useEffect(() => () => clearTimeout(closeTimer.current), []);
 

@@ -346,7 +346,12 @@ export async function POST(request: NextRequest) {
     let launchOptions: Record<string, unknown> = {};
 
     if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
-      const chromium = (await import("@sparticuz/chromium")).default as any;
+      const chromium = (await import("@sparticuz/chromium")).default as unknown as {
+        args: string[];
+        defaultViewport: unknown;
+        executablePath: () => Promise<string>;
+        headless: boolean;
+      };
       puppeteer = (await import("puppeteer-core")).default as unknown as { launch: (options: Record<string, unknown>) => Promise<PuppeteerBrowser> };
       launchOptions = {
         args: chromium.args,
@@ -393,7 +398,12 @@ export async function POST(request: NextRequest) {
           ...(executablePath ? { executablePath } : {}),
         };
       } catch {
-        const chromium = (await import("@sparticuz/chromium")).default as any;
+        const chromium = (await import("@sparticuz/chromium")).default as unknown as {
+          args: string[];
+          defaultViewport: unknown;
+          executablePath: () => Promise<string>;
+          headless: boolean;
+        };
         puppeteer = (await import("puppeteer-core")).default as unknown as { launch: (options: Record<string, unknown>) => Promise<PuppeteerBrowser> };
         launchOptions = {
           args: chromium.args,

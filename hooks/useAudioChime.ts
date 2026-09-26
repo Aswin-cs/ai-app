@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { logger } from "@/lib/logger";
 
 export interface UseAudioChimeResult {
@@ -11,19 +11,18 @@ export interface UseAudioChimeResult {
 }
 
 export function useAudioChime(): UseAudioChimeResult {
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
-
-  // Sync sound preference from localStorage
-  useEffect(() => {
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
     try {
       const saved = localStorage.getItem("jurisai_sound_enabled");
       if (saved !== null) {
-        setSoundEnabled(saved === "true");
+        return saved === "true";
       }
     } catch (e: unknown) {
       logger.warn("Could not read sound preference from localStorage:", e);
     }
-  }, []);
+    return true;
+  });
 
   // Web Audio API Synthesized Completion Chime (C5 -> E5 -> G5)
   const playCompletionSound = useCallback(() => {

@@ -10,8 +10,7 @@ import BorderGlow from "./BorderGlow";
 import LatticeLoader from "./LatticeLoader";
 import ThemeToggle from "./ThemeToggle";
 import { SidebarCaseItem } from "./SidebarCaseItem";
-import { useCaseList, CaseHistoryItem } from "@/hooks/useCaseList";
-import { logger } from "@/lib/logger";
+import { useCaseList } from "@/hooks/useCaseList";
 
 const AiLoadingModal = dynamic(() => import("./AiLoadingModal"), { ssr: false });
 const DeleteConfirmModal = dynamic(() => import("./DeleteConfirmModal"), { ssr: false });
@@ -32,7 +31,6 @@ export default function Dashboard({ user }: DashboardProps) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [activeTab, setActiveTab] = useState<"home" | "profile">("home");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [isMobileDrawerMounted, setIsMobileDrawerMounted] = useState(false);
   const [isMobileDrawerAnimating, setIsMobileDrawerAnimating] = useState(false);
   const [desktopSidebarAnimClass, setDesktopSidebarAnimClass] = useState("");
@@ -75,12 +73,13 @@ export default function Dashboard({ user }: DashboardProps) {
 
   // Desktop sidebar content animation
   useEffect(() => {
+    let t: ReturnType<typeof setTimeout>;
     if (isSidebarOpen) {
-      const t = setTimeout(() => setDesktopSidebarAnimClass("sidebar-content-visible"), 80);
-      return () => clearTimeout(t);
+      t = setTimeout(() => setDesktopSidebarAnimClass("sidebar-content-visible"), 80);
     } else {
-      setDesktopSidebarAnimClass("");
+      t = setTimeout(() => setDesktopSidebarAnimClass(""), 0);
     }
+    return () => clearTimeout(t);
   }, [isSidebarOpen]);
 
   const handleChipClick = useCallback((text: string) => {
@@ -145,9 +144,10 @@ export default function Dashboard({ user }: DashboardProps) {
       } else {
         throw new Error("Unexpected response from server.");
       }
-    } catch (error: any) {
-      console.error("Analysis error:", error);
-      setErrorMessage(error.message || "Something went wrong. Please try again.");
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error("Analysis error:", err);
+      setErrorMessage(err.message || "Something went wrong. Please try again.");
       setTimeout(() => setErrorMessage(null), 6000);
       setIsAnalyzing(false);
       setAnalysisProgress("");

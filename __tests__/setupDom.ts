@@ -7,20 +7,22 @@ const dom = new JSDOM("<!DOCTYPE html><html><body></body></html>", {
   url: "http://localhost:3000",
 });
 
-(globalThis as any).window = dom.window;
-(globalThis as any).document = dom.window.document;
-(globalThis as any).navigator = dom.window.navigator;
-(globalThis as any).HTMLElement = dom.window.HTMLElement;
-(globalThis as any).HTMLButtonElement = dom.window.HTMLButtonElement;
-(globalThis as any).KeyboardEvent = dom.window.KeyboardEvent;
+const globalTarget = globalThis as unknown as Record<string, unknown>;
+
+globalTarget.window = dom.window;
+globalTarget.document = dom.window.document;
+globalTarget.navigator = dom.window.navigator;
+globalTarget.HTMLElement = dom.window.HTMLElement;
+globalTarget.HTMLButtonElement = dom.window.HTMLButtonElement;
+globalTarget.KeyboardEvent = dom.window.KeyboardEvent;
 
 // Intercept relative fetch URLs in node environment to prevent undici URL parse errors
 const origFetch = globalThis.fetch;
 if (origFetch) {
-  globalThis.fetch = function (input: any, init?: any) {
+  globalThis.fetch = function (input: RequestInfo | URL, init?: RequestInit) {
     if (typeof input === "string" && input.startsWith("/")) {
       input = "http://localhost:3000" + input;
     }
     return origFetch(input, init);
-  } as any;
+  } as typeof fetch;
 }

@@ -12,7 +12,9 @@ import Conversation from "@/models/conversation.model";
 import { ai } from "@/config/gemini";
 import mongoose from "mongoose";
 
-(global as any).mongooseCache = { conn: mongoose, promise: Promise.resolve(mongoose) };
+import { IUser } from "@/models/user.model";
+
+(globalThis as unknown as Record<string, unknown>).mongooseCache = { conn: mongoose, promise: Promise.resolve(mongoose) };
 
 describe("API Route: /api/case/[id]/followup", () => {
   const mockUserId = "650000000000000000000001";
@@ -56,7 +58,7 @@ describe("API Route: /api/case/[id]/followup", () => {
 
   beforeEach(() => {
     mock.restoreAll();
-    globalThis.__mockAuthResult = { user: mockUser as any, errorResponse: null };
+    globalThis.__mockAuthResult = { user: mockUser as unknown as IUser, errorResponse: null };
   });
 
   afterEach(() => {
@@ -131,7 +133,7 @@ describe("API Route: /api/case/[id]/followup", () => {
       save: async () => {},
     }));
 
-    (ai as any).caches = {
+    (ai as unknown as Record<string, unknown>).caches = {
       create: async () => ({ name: "cachedContents/case-123-cache" }),
     };
 

@@ -8,7 +8,9 @@ import { POST } from "@/app/api/export-pdf/route";
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 
-(global as any).mongooseCache = { conn: mongoose, promise: Promise.resolve(mongoose) };
+import { IUser } from "@/models/user.model";
+
+(globalThis as unknown as Record<string, unknown>).mongooseCache = { conn: mongoose, promise: Promise.resolve(mongoose) };
 
 describe("API Route: /api/export-pdf", () => {
   const mockUser = {
@@ -19,7 +21,7 @@ describe("API Route: /api/export-pdf", () => {
 
   beforeEach(() => {
     mock.restoreAll();
-    globalThis.__mockAuthResult = { user: mockUser as any, errorResponse: null };
+    globalThis.__mockAuthResult = { user: mockUser as unknown as IUser, errorResponse: null };
   });
 
   afterEach(() => {
