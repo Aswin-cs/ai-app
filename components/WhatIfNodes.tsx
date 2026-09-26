@@ -239,6 +239,7 @@ export const ProBenefitNode = ({ data }: { data: ProBenefitNodeData }) => (
 );
 
 export const whatIfNodeTypes = {
+  centerDecision: CenterDecisionNode,
   centerNode: CenterDecisionNode,
   conNode: ConNode,
   conImpactNode: ConImpactNode,
