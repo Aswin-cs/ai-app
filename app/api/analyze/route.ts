@@ -6,7 +6,7 @@
  * [AI FEATURE: Schema-Guided Generative Legal Risk Scoring]
  * [SECURITY FEATURE: Input Clamping & Error Masking]
  */
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import Case from "@/models/case.model";
 import {
   generateGeminiContent,
@@ -21,7 +21,7 @@ import {
 } from "@/config/legalSystemPrompt";
 import { GEMINI_RESPONSE_SCHEMA } from "@/types/case.types";
 import { sanitizeString, sanitizeFileName, safeErrorMessage } from "@/lib/security";
-import { getAuthenticatedUser } from "@/lib/authUtils";
+import { withAuth } from "@/lib/authUtils";
 import { logger } from "@/lib/logger";
 
 /**
@@ -106,14 +106,9 @@ async function buildContentParts(
   return { parts, uploadedFileRef };
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { user }) => {
   let uploadedFileRef: string | undefined = undefined;
   try {
-    // 1. Authenticate the user & connect to DB
-    const { user, errorResponse } = await getAuthenticatedUser();
-    if (errorResponse || !user) {
-      return errorResponse || NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     // 3. Parse the FormData
     const formData = await request.formData();
@@ -262,4 +257,4 @@ export async function POST(request: NextRequest) {
       await deleteGeminiFile(uploadedFileRef);
     }
   }
-}
+});

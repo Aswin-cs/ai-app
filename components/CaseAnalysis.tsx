@@ -5,12 +5,14 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import BorderGlow from "./BorderGlow";
 import GlideSelect from "./GlideSelect";
-import MemeVibeCheck from "./MemeVibeCheck";
 import ThemeToggle from "./ThemeToggle";
 import type { CaseDocument, RiskItem as RiskItemType } from "@/types/case.types";
 import { CaseAnalysisHeader } from "./CaseAnalysisHeader";
 import { CriticalPointsModal } from "./CriticalPointsModal";
 import { RiskLedgerCard } from "./RiskLedgerCard";
+import { CaseAnalysisSidebar } from "./CaseAnalysisSidebar";
+import { CaseAnalysisExecSummary } from "./CaseAnalysisExecSummary";
+import { CaseAnalysisMobileWorkspace } from "./CaseAnalysisMobileWorkspace";
 import { useCaseFollowup, AiFollowupResponse } from "@/hooks/useCaseFollowup";
 import { useAudioChime } from "@/hooks/useAudioChime";
 import { getSeverityStyles, getRiskScoreStyles } from "@/lib/severityStyles";
@@ -652,170 +654,15 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
 
                 <div className="px-6 sm:px-10 py-8 space-y-8">
                   {/* CENTER STAGE: CRITICAL RISK SCORE & LEGAL VIBE CHECK COMMAND BLOCK */}
-                  {(() => {
-                    const theme = overallRiskScore >= 70
-                      ? {
-                          container: "bg-gradient-to-br from-red-500/20 via-rose-500/15 to-amber-500/20 dark:from-red-950/85 dark:via-rose-950/70 dark:to-amber-950/80 border-2 border-red-300 dark:border-red-700/80 shadow-[0_10px_35px_rgba(239,68,68,0.2)]",
-                          iconBg: "bg-gradient-to-br from-red-600 to-rose-700 text-white shadow-md shadow-red-500/20",
-                          badge: "bg-red-100 text-red-800 border-red-300 dark:bg-red-950/90 dark:text-red-300 dark:border-red-800",
-                          innerCard: "bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-white/80 dark:border-slate-800",
-                        }
-                      : overallRiskScore >= 40
-                        ? {
-                            container: "bg-gradient-to-br from-amber-500/20 via-orange-500/15 to-yellow-500/20 dark:from-amber-950/85 dark:via-orange-950/70 dark:to-yellow-950/80 border-2 border-amber-300 dark:border-amber-700/80 shadow-[0_10px_35px_rgba(245,158,11,0.2)]",
-                            iconBg: "bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/20",
-                            badge: "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/90 dark:text-amber-300 dark:border-amber-800",
-                            innerCard: "bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-white/80 dark:border-slate-800",
-                          }
-                        : {
-                            container: "bg-gradient-to-br from-emerald-500/20 via-teal-500/15 to-indigo-500/20 dark:from-emerald-950/85 dark:via-teal-950/70 dark:to-indigo-950/80 border-2 border-emerald-300 dark:border-emerald-700/80 shadow-[0_10px_35px_rgba(16,185,129,0.2)]",
-                            iconBg: "bg-gradient-to-br from-emerald-600 to-teal-700 text-white shadow-md shadow-emerald-500/20",
-                            badge: "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/90 dark:text-emerald-300 dark:border-emerald-800",
-                            innerCard: "bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-white/80 dark:border-slate-800",
-                          };
-
-                    if (!showExecBox) {
-                      return (
-                        <div className={`mb-8 rounded-2xl border p-4 transition-all duration-500 relative overflow-hidden flex items-center justify-between gap-4 ${theme.container}`}>
-                          <div className="flex items-center gap-3">
-                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white ${theme.iconBg}`}>
-                              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">analytics</span>
-                            </div>
-                            <div>
-                              <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
-                                Executive Risk Assessment &amp; Vibe Check
-                                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold">
-                                  Hidden
-                                </span>
-                              </h2>
-                              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                                Critical Threat Score: <strong className={riskStyles.textClass}>{overallRiskScore}/100</strong> ({riskStyles.label})
-                              </p>
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={handleToggleExecBox}
-                            aria-label="Show Executive Risk Assessment and Vibe Check section"
-                            className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-all flex items-center gap-1.5 shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                          >
-                            <span className="material-symbols-outlined text-[16px]" aria-hidden="true">visibility</span>
-                            <span>Show Executive Assessment</span>
-                          </button>
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div className={`mb-8 rounded-2xl border p-4 sm:p-6 transition-all duration-500 relative overflow-hidden ${theme.container}`}>
-                        <div className={`absolute top-0 left-0 right-0 h-1 ${
-                          overallRiskScore >= 70 ? 'bg-gradient-to-r from-red-500 via-rose-500 to-amber-500' : overallRiskScore >= 40 ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500' : 'bg-gradient-to-r from-emerald-500 via-teal-500 to-indigo-500'
-                        }`} />
-
-                        <div className="flex items-center justify-between border-b border-slate-200/70 dark:border-slate-800/80 pb-3 mb-4">
-                          <div className="flex items-center gap-2.5">
-                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white ${theme.iconBg}`}>
-                              <span className="material-symbols-outlined text-[18px]" aria-hidden="true">analytics</span>
-                            </div>
-                            <div>
-                              <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-2">
-                                Executive Risk Assessment &amp; Vibe Check
-                              </h2>
-                              <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                                AI-calculated critical threat index &amp; contextual legal vibe check
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            <span className={`text-[11px] font-mono px-3 py-1 rounded-full border font-bold ${theme.badge}`}>
-                              Critical Level: <strong className={riskStyles.textClass}>{overallRiskScore}/100</strong>
-                            </span>
-
-                            <button
-                              type="button"
-                              onClick={handleToggleExecBox}
-                              aria-label="Hide Executive Risk Assessment and Vibe Check section"
-                              className="p-1.5 rounded-lg text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700 transition-colors flex items-center gap-1 text-[11px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                              title="Hide Executive Risk Assessment & Vibe Check section"
-                            >
-                              <span className="material-symbols-outlined text-[15px]" aria-hidden="true">visibility_off</span>
-                              <span className="hidden sm:inline">Hide Box</span>
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-                          <div className={`lg:col-span-5 flex flex-col justify-between p-5 rounded-2xl shadow-2xs ${theme.innerCard}`}>
-                            <div>
-                              <div className="flex items-center justify-between mb-3">
-                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 font-mono">
-                                  Critical Threat Level
-                                </span>
-                                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider border ${
-                                  overallRiskScore >= 70
-                                    ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-950/70 dark:text-red-300 dark:border-red-800/60'
-                                    : overallRiskScore >= 40
-                                      ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-800/60'
-                                      : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-800/60'
-                                }`}>
-                                  {riskStyles.label}
-                                </span>
-                              </div>
-
-                              <div className="flex items-baseline gap-3 my-2">
-                                <span className={`text-4xl sm:text-5xl font-extrabold tracking-tight ${riskStyles.textClass}`}>
-                                  {overallRiskScore}
-                                </span>
-                                <span className="text-xs font-mono text-slate-500 dark:text-slate-400 font-medium">/ 100 Risk Index</span>
-                              </div>
-
-                              <div className="w-full h-2.5 bg-slate-100/90 dark:bg-slate-800/90 rounded-full overflow-hidden mt-3 mb-4 p-0.5 border border-slate-200/60 dark:border-slate-700/60">
-                                <div
-                                  className={`h-full rounded-full transition-all duration-700 ${
-                                    overallRiskScore >= 70 ? 'bg-red-500' : overallRiskScore >= 40 ? 'bg-amber-500' : 'bg-emerald-500'
-                                  }`}
-                                  style={{ width: `${Math.max(4, overallRiskScore)}%` }}
-                                />
-                              </div>
-                            </div>
-
-                            <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-200/60 dark:border-slate-800/80 text-center">
-                              <div className="p-2 rounded-xl bg-red-50/70 dark:bg-red-950/50 border border-red-100 dark:border-red-900/40">
-                                <div className="text-base font-bold text-red-600 dark:text-red-400">
-                                  {risks.filter(r => r.severity === 'critical').length}
-                                </div>
-                                <div className="text-[9px] font-semibold text-red-700 dark:text-red-300 uppercase tracking-wider font-mono">Critical</div>
-                              </div>
-                              <div className="p-2 rounded-xl bg-amber-50/70 dark:bg-amber-950/50 border border-amber-100 dark:border-amber-900/40">
-                                <div className="text-base font-bold text-amber-600 dark:text-amber-400">
-                                  {risks.filter(r => r.severity === 'warning').length}
-                                </div>
-                                <div className="text-[9px] font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider font-mono">Warnings</div>
-                              </div>
-                              <div className="p-2 rounded-xl bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/60">
-                                <div className="text-base font-bold text-slate-700 dark:text-slate-300">
-                                  {risks.filter(r => r.severity !== 'critical' && r.severity !== 'warning').length}
-                                </div>
-                                <div className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider font-mono">Notes</div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="lg:col-span-7">
-                            <MemeVibeCheck
-                              riskScore={overallRiskScore}
-                              criticalCount={risks.filter((r) => r.severity === "critical").length}
-                              isVisible={showMeme}
-                              onToggleVisible={handleToggleMeme}
-                              layout="wide"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
+                  <CaseAnalysisExecSummary
+                    overallRiskScore={overallRiskScore}
+                    riskStyles={riskStyles}
+                    showExecBox={showExecBox}
+                    handleToggleExecBox={handleToggleExecBox}
+                    risks={risks}
+                    showMeme={showMeme}
+                    handleToggleMeme={handleToggleMeme}
+                  />
 
                   {/* Parties Table */}
                   {analysis?.parties && analysis.parties.length > 0 && (
@@ -1270,340 +1117,38 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
           </section>
 
           {/* RIGHT COLUMN: Summary & Extracted Terms */}
-          <aside className="hidden lg:flex lg:col-span-3 h-full flex-col bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-hidden">
-            <div className="p-5 pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="font-semibold text-sm text-slate-900 dark:text-slate-100 tracking-tight">Summary</h2>
-                <span className={`font-mono text-xs font-semibold flex items-center gap-1.5 px-2 py-0.5 rounded-full border ${confidenceScore >= 80
-                  ? "text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/70 border-emerald-200/60 dark:border-emerald-800/60"
-                  : confidenceScore >= 50
-                    ? "text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/70 border-amber-200/60 dark:border-amber-800/60"
-                    : "text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-950/70 border-red-200/60 dark:border-red-800/60"
-                  }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${confidenceScore >= 80 ? 'bg-emerald-500' : confidenceScore >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}></span>
-                  {confidenceScore}% Confidence
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-mono truncate">{caseData?.fileName}</p>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-5 space-y-5">
-              <section className="bg-gradient-to-br from-indigo-50/50 via-white to-purple-50/40 dark:from-slate-800/80 dark:via-slate-900 dark:to-slate-800/90 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/50 shadow-xs">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 font-mono flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-[15px] text-indigo-600 dark:text-indigo-400" aria-hidden="true">overview</span>
-                    Document Quick Stats
-                  </h3>
-                  <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
-                    overallRiskScore >= 70 ? 'bg-red-100 text-red-700 dark:bg-red-950/80 dark:text-red-300' : overallRiskScore >= 40 ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300'
-                  }`}>
-                    {riskStyles.label}
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-center text-xs mt-3">
-                  <div className="p-2 bg-white/80 dark:bg-slate-800/80 rounded-xl border border-slate-200/70 dark:border-slate-700/60">
-                    <div className="font-extrabold text-slate-900 dark:text-slate-100 text-base">{risks.length}</div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400">Risks Flagged</div>
-                  </div>
-                  <div className="p-2 bg-white/80 dark:bg-slate-800/80 rounded-xl border border-slate-200/70 dark:border-slate-700/60">
-                    <div className="font-extrabold text-emerald-600 dark:text-emerald-400 text-base">{confidenceScore}%</div>
-                    <div className="text-[10px] text-slate-500 dark:text-slate-400">Confidence</div>
-                  </div>
-                </div>
-              </section>
-
-              <section>
-                <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">Synthesis</h3>
-                <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-slate-200/70 dark:border-slate-700/60 shadow-2xs font-[Inter]">
-                  {analysis?.summary || "No summary available."}
-                </p>
-              </section>
-
-              {analysis?.extractedTerms && analysis.extractedTerms.length > 0 && (
-                <section>
-                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3">Extracted Terms</h3>
-                  <div className="grid grid-cols-2 gap-2.5">
-                    {analysis.extractedTerms.map((term, i) => (
-                      <div key={i} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700/60">
-                        <div className="text-[10px] font-medium text-slate-600 dark:text-slate-400">{term.label}</div>
-                        <div className="font-semibold text-xs text-slate-900 dark:text-slate-100 mt-0.5">{term.value}</div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {analysis?.recommendations && analysis.recommendations.length > 0 && (
-                <section>
-                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-3">Key Recommendations</h3>
-                  <ul className="space-y-2 text-xs text-slate-700 dark:text-slate-300">
-                    {analysis.recommendations.map((rec, i) => (
-                      <li key={i} className="flex items-start gap-2 bg-indigo-50/50 dark:bg-indigo-950/40 p-2.5 rounded-xl border border-indigo-100 dark:border-indigo-800/60">
-                        <span className="material-symbols-outlined text-[16px] text-indigo-600 dark:text-indigo-400 mt-0.5 shrink-0" aria-hidden="true">check_circle</span>
-                        <span>{rec}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
-
-              <section className="pt-2">
-                <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2.5">Analysis Tools</h3>
-                <div className="space-y-2">
-                  <button
-                    onClick={() => setShowWhatIf(true)}
-                    className="w-full flex items-center justify-between p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold transition-all shadow-2xs group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                    type="button"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[18px]" aria-hidden="true">account_tree</span>
-                      <span>Simulate What-If Scenarios</span>
-                    </div>
-                    <span className="material-symbols-outlined text-[16px] text-indigo-400 group-hover:translate-x-0.5 transition-transform" aria-hidden="true">arrow_forward</span>
-                  </button>
-
-                  <button
-                    onClick={handleExportPDF}
-                    disabled={isExporting}
-                    className="w-full flex items-center justify-between p-3 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all shadow-2xs disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                    type="button"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[18px] text-rose-500" aria-hidden="true">picture_as_pdf</span>
-                      <span>{isExporting ? "Exporting PDF Report..." : "Download Full PDF Report"}</span>
-                    </div>
-                    <span className="material-symbols-outlined text-[16px] text-slate-400" aria-hidden="true">download</span>
-                  </button>
-                </div>
-              </section>
-            </div>
-          </aside>
+          <CaseAnalysisSidebar
+            caseData={caseData}
+            overallRiskScore={overallRiskScore}
+            confidenceScore={confidenceScore}
+            risks={risks}
+            onOpenWhatIf={() => setShowWhatIf(true)}
+            onExportPDF={handleExportPDF}
+            isExporting={isExporting}
+          />
 
           {/* MOBILE ONLY DEDICATED WORKSPACE VIEW */}
-          <div className="lg:hidden flex-1 overflow-y-auto px-4 py-4 space-y-5 pb-28">
-            <div className="flex items-center justify-center p-1 bg-slate-200/70 dark:bg-slate-800/80 rounded-2xl">
-              <button
-                type="button"
-                onClick={() => setMobileTab("overview")}
-                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                  mobileTab === "overview"
-                    ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[16px]" aria-hidden="true">overview</span>
-                <span>Overview &amp; Vibe Check</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setMobileTab("document")}
-                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-                  mobileTab === "document"
-                    ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[16px]" aria-hidden="true">description</span>
-                <span>Full Document View</span>
-              </button>
-            </div>
-
-            {mobileTab === "overview" ? (
-              <>
-                {showExecBox && (
-                  <div className={`rounded-2xl border p-4 transition-all duration-300 relative overflow-hidden ${
-                    overallRiskScore >= 70
-                      ? "bg-gradient-to-br from-red-500/15 via-rose-500/10 to-amber-500/15 border-red-200 dark:border-red-900/80"
-                      : overallRiskScore >= 40
-                        ? "bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-yellow-500/15 border-amber-200 dark:border-amber-900/80"
-                        : "bg-gradient-to-br from-emerald-500/15 via-teal-500/10 to-indigo-500/15 border-emerald-200 dark:border-emerald-900/80"
-                  }`}>
-                    <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-200/60 dark:border-slate-800">
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-indigo-600 text-[20px]" aria-hidden="true">analytics</span>
-                        <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100">Executive Risk Assessment</h2>
-                      </div>
-                      <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${
-                        overallRiskScore >= 70 ? 'bg-red-100 text-red-800 border-red-300 dark:bg-red-950 dark:text-red-300' : overallRiskScore >= 40 ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-300' : 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
-                      }`}>
-                        Score: {overallRiskScore}/100
-                      </span>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-3.5 rounded-xl border border-white/80 dark:border-slate-800 flex items-center justify-between">
-                        <div>
-                          <div className="text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400 uppercase">Critical Threat Index</div>
-                          <div className={`text-3xl font-extrabold tracking-tight ${riskStyles.textClass}`}>
-                            {overallRiskScore} <span className="text-xs font-normal text-slate-400">/ 100</span>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase border ${
-                            overallRiskScore >= 70 ? 'bg-red-50 text-red-700 border-red-200' : overallRiskScore >= 40 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                          }`}>
-                            {riskStyles.label}
-                          </span>
-                          <div className="text-[10px] text-slate-400 mt-1 font-mono">{risks.length} Risks Flagged</div>
-                        </div>
-                      </div>
-
-                      <MemeVibeCheck
-                        riskScore={overallRiskScore}
-                        criticalCount={risks.filter((r) => r.severity === "critical").length}
-                        isVisible={showMeme}
-                        onToggleVisible={handleToggleMeme}
-                        layout="compact"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-indigo-600 text-[20px]" aria-hidden="true">auto_awesome</span>
-                      <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100">AI Synthesis &amp; Document Summary</h2>
-                    </div>
-                    <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
-                      {confidenceScore}% Confidence
-                    </span>
-                  </div>
-
-                  {analysis?.summary && (
-                    <div className="relative pl-3 border-l-2 border-indigo-500">
-                      <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300 font-[Inter]">
-                        {analysis.summary}
-                      </p>
-                    </div>
-                  )}
-
-                  {caseData?.fileSummary && !caseData.fileSummary.startsWith("[Binary file:") && (
-                    <div className="pt-2">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-mono font-bold uppercase text-slate-400">Source Text Context</span>
-                        <button
-                          type="button"
-                          onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
-                          className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1"
-                        >
-                          <span>{isSummaryExpanded ? "Show Less" : "Expand Summary"}</span>
-                          <span className="material-symbols-outlined text-[14px]" aria-hidden="true">
-                            {isSummaryExpanded ? "expand_less" : "expand_more"}
-                          </span>
-                        </button>
-                      </div>
-                      <div className={`text-[11px] leading-relaxed text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200/70 dark:border-slate-700/60 font-serif ${
-                        isSummaryExpanded ? "" : "line-clamp-4"
-                      }`}>
-                        {caseData.fileSummary}
-                      </div>
-                    </div>
-                  )}
-
-                  {analysis?.extractedTerms && analysis.extractedTerms.length > 0 && (
-                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                      <div className="text-[10px] font-mono font-bold uppercase text-slate-400 mb-2">Extracted Key Terms</div>
-                      <div className="grid grid-cols-2 gap-2">
-                        {analysis.extractedTerms.map((term, i) => (
-                          <div key={i} className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-                            <div className="text-[9px] text-slate-500">{term.label}</div>
-                            <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{term.value}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setShowCriticalModal(true)}
-                  className="w-full p-4 rounded-2xl bg-gradient-to-br from-red-500/15 via-amber-500/10 to-indigo-500/15 dark:from-red-950/50 dark:via-amber-950/40 dark:to-indigo-950/50 border-2 border-red-300/80 dark:border-red-800/80 shadow-md flex items-center justify-between text-left transition-all active:scale-[0.98] cursor-pointer"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-red-600 to-rose-700 text-white flex items-center justify-center shadow-md shrink-0">
-                      <span className="material-symbols-outlined text-[24px]" aria-hidden="true">gavel</span>
-                    </div>
-                    <div>
-                      <div className="text-sm font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                        Critical Points &amp; Flagged Risks
-                        <span className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-950/90 text-red-700 dark:text-red-300 font-mono text-[11px] font-bold border border-red-200 dark:border-red-800">
-                          {risks.length} Items
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                        Tap to inspect statutory flags, excerpts &amp; explanations in popup
-                      </p>
-                    </div>
-                  </div>
-                  <span className="material-symbols-outlined text-slate-400 text-[24px] shrink-0" aria-hidden="true">open_in_new</span>
-                </button>
-
-                {conversationMessages.length > 0 && (
-                  <div className="rounded-2xl border border-indigo-200 dark:border-indigo-900 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-3">
-                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-indigo-600 text-[18px]" aria-hidden="true">forum</span>
-                        <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100">Conversation History</h2>
-                      </div>
-                      <span className="text-[10px] font-mono text-indigo-600 font-bold">
-                        {conversationMessages.filter(m => m.role === "user").length} Questions
-                      </span>
-                    </div>
-
-                    <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
-                      {conversationMessages.map((msg, idx) => (
-                        <div key={idx} className={`p-3 rounded-xl text-xs ${
-                          msg.role === "user"
-                            ? "bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 ml-4"
-                            : "bg-indigo-50/50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900 mr-4"
-                        }`}>
-                          <div className="font-bold text-[10px] text-slate-500 mb-1">
-                            {msg.role === "user" ? "You" : "JurisAI"}
-                          </div>
-                          <div className="leading-relaxed font-medium">
-                            {msg.role === "user" ? (
-                              msg.content
-                            ) : (
-                              <div>
-                                {(() => {
-                                  try {
-                                    const parsed = JSON.parse(msg.content);
-                                    return parsed.answer || msg.content;
-                                  } catch {
-                                    return msg.content;
-                                  }
-                                })()}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                  <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{documentTitle}</h2>
-                  <div className="flex items-center gap-2">
-                    <button onClick={handleZoomOut} className="p-1 rounded bg-slate-100 dark:bg-slate-800 text-xs">
-                      <span className="material-symbols-outlined text-[14px]" aria-hidden="true">remove</span>
-                    </button>
-                    <span className="font-mono text-xs">{zoomLevel}%</span>
-                    <button onClick={handleZoomIn} className="p-1 rounded bg-slate-100 dark:bg-slate-800 text-xs">
-                      <span className="material-symbols-outlined text-[14px]" aria-hidden="true">add</span>
-                    </button>
-                  </div>
-                </div>
-                <div className="text-xs leading-relaxed font-serif text-slate-800 dark:text-slate-200 whitespace-pre-wrap max-h-[60vh] overflow-y-auto p-2">
-                  {caseData?.fileSummary || "No document text preview available."}
-                </div>
-              </div>
-            )}
-          </div>
+          <CaseAnalysisMobileWorkspace
+            mobileTab={mobileTab}
+            setMobileTab={setMobileTab}
+            showExecBox={showExecBox}
+            overallRiskScore={overallRiskScore}
+            riskStyles={riskStyles}
+            risks={risks}
+            showMeme={showMeme}
+            handleToggleMeme={handleToggleMeme}
+            confidenceScore={confidenceScore}
+            analysis={analysis}
+            caseData={caseData}
+            isSummaryExpanded={isSummaryExpanded}
+            setIsSummaryExpanded={setIsSummaryExpanded}
+            setShowCriticalModal={setShowCriticalModal}
+            conversationMessages={conversationMessages}
+            documentTitle={documentTitle}
+            zoomLevel={zoomLevel}
+            handleZoomIn={handleZoomIn}
+            handleZoomOut={handleZoomOut}
+          />
         </div>
       </main>
 

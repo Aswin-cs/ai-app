@@ -5,9 +5,9 @@
  * [PERFORMANCE FEATURE: Database Query Projection & Payload Trimming]
  * [SECURITY FEATURE: Session Ownership Verification & Error Masking]
  */
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import Case from "@/models/case.model";
-import { getAuthenticatedUser } from "@/lib/authUtils";
+import { withAuth } from "@/lib/authUtils";
 import { safeErrorMessage } from "@/lib/security";
 import { logger } from "@/lib/logger";
 
@@ -24,11 +24,8 @@ interface LeanCaseItem {
   };
 }
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (request, { user }) => {
   try {
-    // 1. Authenticate user
-    const { user, errorResponse } = await getAuthenticatedUser();
-    if (errorResponse || !user) return errorResponse!;
 
     // Parse query params for pagination
     const { searchParams } = new URL(request.url);
@@ -75,4 +72,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

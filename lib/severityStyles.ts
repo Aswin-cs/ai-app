@@ -18,7 +18,11 @@ export interface SeverityStyles {
 }
 
 /**
- * Returns unified styling tokens for a given risk severity level.
+ * Returns unified Tailwind styling tokens for a given risk severity level.
+ * Maps severity strings ("critical", "high", "warning", "medium", "note", "low") to design system tokens.
+ *
+ * @param {SeverityLevel} severity Raw severity string from analysis payload.
+ * @returns {SeverityStyles} Style tokens object containing dot bg, text color, badge background/border, card border, card background, and gradient classes.
  */
 export function getSeverityStyles(severity: SeverityLevel): SeverityStyles {
   const norm = (severity || "").toLowerCase().trim();
@@ -66,7 +70,11 @@ export function getSeverityStyles(severity: SeverityLevel): SeverityStyles {
 }
 
 /**
- * Returns unified styling tokens based on a 0-100 overall risk score.
+ * Returns unified Tailwind styling tokens and human-readable risk labels based on a 0-100 overall risk score.
+ * Clamps input score between 0 and 100 automatically.
+ *
+ * @param {number} score Numeric risk score (0 to 100).
+ * @returns {{ score: number, level: string, label: string, badgeClass: string, dotClass: string, textClass: string }} Styling object with clamped score, level identifier, human-readable label, and CSS utility classes.
  */
 export function getRiskScoreStyles(score: number) {
   const safeScore = Math.max(0, Math.min(100, score || 0));

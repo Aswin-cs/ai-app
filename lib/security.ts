@@ -8,6 +8,10 @@
 
 /**
  * Escape special HTML characters to prevent Cross-Site Scripting (XSS) attacks.
+ * Converts characters `&`, `<`, `>`, `"`, and `'` into HTML entity equivalents.
+ *
+ * @param input Raw value or string to be escaped safely for HTML output.
+ * @returns {string} Sanitized string safe for rendering in HTML context.
  */
 export function escapeHtml(input: unknown): string {
   if (input === null || input === undefined) {
@@ -23,7 +27,11 @@ export function escapeHtml(input: unknown): string {
 }
 
 /**
- * Sanitize user-provided file names to prevent path traversal and script injection in headers/logs.
+ * Sanitize user-provided file names to prevent path traversal, control character injection,
+ * and header pollution when processing uploads or output filenames.
+ *
+ * @param fileName Raw input filename provided by user or request payload.
+ * @returns {string} Clean, safe filename stripped of path traversal sequences and special characters.
  */
 export function sanitizeFileName(fileName: string): string {
   if (!fileName || typeof fileName !== "string") {
@@ -44,7 +52,12 @@ export function sanitizeFileName(fileName: string): string {
 }
 
 /**
- * Sanitize and clamp string inputs (e.g., user prompts, queries).
+ * Sanitize and clamp string inputs (e.g., user prompts, query parameters) to prevent memory exhaustion
+ * and remove dangerous null bytes.
+ *
+ * @param input Raw string or unknown input value.
+ * @param {number} [maxLength=2000] Maximum allowable character length (defaults to 2000).
+ * @returns {string} Cleaned, trimmed, and truncated string.
  */
 export function sanitizeString(input: unknown, maxLength: number = 2000): string {
   if (typeof input !== "string") {
@@ -55,8 +68,12 @@ export function sanitizeString(input: unknown, maxLength: number = 2000): string
 }
 
 /**
- * Formats error messages safely for API responses to prevent information disclosure
- * (e.g. stack traces, system paths, environment secrets).
+ * Formats error messages safely for API responses to prevent infrastructure information disclosure
+ * (e.g. stack traces, system paths, environment secrets) in production.
+ *
+ * @param error Caught error object or exception value.
+ * @param {string} [fallbackMessage="An error occurred"] Generic user-facing error message.
+ * @returns {string} Safe error message string suitable for JSON response payloads.
  */
 export function safeErrorMessage(error: unknown, fallbackMessage: string = "An error occurred"): string {
   if (process.env.NODE_ENV === "development") {

@@ -28,7 +28,9 @@ export const authService = {
 
 /**
  * Authenticates the current server request and retrieves the corresponding database user.
- * Returns either `{ user, errorResponse: null }` on success or `{ user: null, errorResponse }` on failure.
+ * 
+ * @returns {Promise<AuthUserResult>} Object containing `{ user, errorResponse: null }` on success,
+ * or `{ user: null, errorResponse }` with a 401/404 NextResponse on failure.
  */
 export async function getAuthenticatedUser(): Promise<AuthUserResult> {
   try {
@@ -68,4 +70,40 @@ export async function getAuthenticatedUser(): Promise<AuthUserResult> {
       ),
     };
   }
+}
+
+export type RouteContext<Params = Record<string, string | string[]>> = {
+  params?: Promise<Params> | Params;
+};
+
+export type AuthenticatedHandler<Params = Record<string, string | string[]>> = (
+  request: NextRequest,
+  context: { user: IUser; params: Params }
+) => Promise<NextResponse | Response>;
+
+/**
+ * Higher-order function wrapper for Next.js API route handlers. Automatically executes
+ * session authentication and database user retrieval, passing the authenticated user and
+ * resolved route params into the handler body. Returns a 401/404 response automatically on failure.
+ *
+ * @template Params Route parameter type signature (e.g. `{ id: string }`)
+ * @param handler Function executing business logic with authenticated `{ user, params }` context.
+ * @returns Standard Next.js route handler function `(request, routeContext) => Promise<Response>`
+ */
+export function withAuth<Params = Record<string, string | string[]>>(
+  handler: AuthenticatedHandler<Params>
+) {
+  return async (
+    request: NextRequest,
+    routeContext?: RouteContext<Params>
+  ): Promise<NextResponse | Response> => {
+    const { user, errorResponse } = await getAuthenticatedUser();
+    if (errorResponse || !user) {
+      return errorResponse!;
+    }
+    const resolvedParams = routeContext?.params
+      ? await Promise.resolve(routeContext.params)
+      : ({} as Params);
+    return handler(request, { user, params: resolvedParams });
+  };
 }

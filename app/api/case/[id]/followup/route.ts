@@ -5,13 +5,13 @@
  * [FEATURE: Interactive Document-Specific Q&A & Counter-Proposal Drafting]
  * [SECURITY FEATURE: Input Sanitization & Session Verification]
  */
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import Case from "@/models/case.model";
 import Conversation from "@/models/conversation.model";
 import { generateGeminiContent, createGeminiContextCache } from "@/config/gemini";
 import { FOLLOWUP_SYSTEM_INSTRUCTION } from "@/config/followupSystemPrompt";
 import { sanitizeString, safeErrorMessage } from "@/lib/security";
-import { getAuthenticatedUser } from "@/lib/authUtils";
+import { withAuth } from "@/lib/authUtils";
 import { logger } from "@/lib/logger";
 
 export interface FollowupParty {
@@ -51,19 +51,11 @@ export interface FollowupParsedResponse {
  * POST /api/case/[id]/followup
  * Send a follow-up question about an analyzed case and get an AI response.
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const POST = withAuth<{ id: string }>(async (request, { user, params }) => {
   try {
-    // 1. Authenticate user & connect to DB
-    const { user, errorResponse } = await getAuthenticatedUser();
-    if (errorResponse || !user) {
-      return errorResponse || NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     // 3. Validate case ID
-    const { id } = await params;
+    const { id } = params;
     if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
       return NextResponse.json(
         { error: "Invalid case ID format." },
@@ -294,23 +286,15 @@ export async function POST(
       { status: 500 }
     );
   }
-}
+});
 
 /**
  * GET /api/case/[id]/followup
  * Retrieve the conversation history for a specific case.
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const GET = withAuth<{ id: string }>(async (_request, { user, params }) => {
   try {
-    const { user, errorResponse } = await getAuthenticatedUser();
-    if (errorResponse || !user) {
-      return errorResponse || NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id } = await params;
+    const { id } = params;
     if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
       return NextResponse.json(
         { error: "Invalid case ID." },
@@ -334,4 +318,4 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+});

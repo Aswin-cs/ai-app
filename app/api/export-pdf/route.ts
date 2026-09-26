@@ -5,9 +5,9 @@
  * [SECURITY FEATURE: Multi-Layer XSS Prevention & HTML Sanitization]
  * [PERFORMANCE FEATURE: Optimized Puppeteer Serverless Resource Lifecycle]
  */
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { escapeHtml, safeErrorMessage, sanitizeFileName } from "@/lib/security";
-import { getAuthenticatedUser } from "@/lib/authUtils";
+import { withAuth } from "@/lib/authUtils";
 import { logger } from "@/lib/logger";
 
 export interface PdfParty {
@@ -329,14 +329,9 @@ interface PuppeteerBrowser {
   close: () => Promise<void>;
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request) => {
   let browser: PuppeteerBrowser | null = null;
   try {
-    // 1. Authenticate user
-    const { errorResponse } = await getAuthenticatedUser();
-    if (errorResponse) {
-      return errorResponse;
-    }
 
     // 2. Parse request body safely
     const body: PdfExportData = await request.json();
@@ -461,4 +456,4 @@ export async function POST(request: NextRequest) {
       } catch {}
     }
   }
-}
+});

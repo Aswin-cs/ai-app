@@ -1,20 +1,13 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import Case from "@/models/case.model";
-import { getAuthenticatedUser } from "@/lib/authUtils";
+import { withAuth } from "@/lib/authUtils";
 import { safeErrorMessage } from "@/lib/security";
 import { logger } from "@/lib/logger";
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const GET = withAuth<{ id: string }>(async (_request, { user, params }) => {
   try {
-    // 1. Authenticate user
-    const { user, errorResponse } = await getAuthenticatedUser();
-    if (errorResponse || !user) return errorResponse!;
-
-    // 2. Resolve params and validate ObjectId format
-    const { id } = await params;
+    // 2. Validate ObjectId format
+    const { id } = params;
 
     if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
       return NextResponse.json(
@@ -65,19 +58,12 @@ export async function GET(
       { status: 500 }
     );
   }
-}
+});
 
-export async function DELETE(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export const DELETE = withAuth<{ id: string }>(async (_request, { user, params }) => {
   try {
-    // 1. Authenticate user
-    const { user, errorResponse } = await getAuthenticatedUser();
-    if (errorResponse || !user) return errorResponse!;
-
     // 2. Validate ID
-    const { id } = await params;
+    const { id } = params;
     if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
       return NextResponse.json(
         { error: "Invalid case ID format." },
@@ -115,4 +101,4 @@ export async function DELETE(
       { status: 500 }
     );
   }
-}
+});
