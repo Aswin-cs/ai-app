@@ -308,6 +308,7 @@ const DEFAULT_PROS = [
 export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapProps) {
   const [activeScenario, setActiveScenario] = useState<DecisionScenarioKey>("as_is");
   const [filterMode, setFilterMode] = useState<"all" | "cons_only" | "pros_only">("all");
+  const [mobileView, setMobileView] = useState<"graph" | "list">("graph");
 
   // Keyboard Escape listener
   useEffect(() => {
@@ -320,7 +321,7 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  const { nodes, edges, prosCount, consCount } = useMemo(() => {
+  const { nodes, edges, prosCount, consCount, consData, prosData } = useMemo(() => {
     const initialNodes: Node[] = [];
     const initialEdges: Edge[] = [];
 
@@ -554,6 +555,8 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
       edges: initialEdges,
       prosCount: prosData.length,
       consCount: consData.length,
+      consData,
+      prosData,
     };
   }, [activeScenario, filterMode, risks]);
 
@@ -562,40 +565,41 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
       role="dialog"
       aria-modal="true"
       aria-labelledby="whatif-modal-title"
-      className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-xl flex flex-col font-sans animate-fade-in text-slate-900 dark:text-slate-100"
+      className="fixed inset-0 z-50 bg-slate-900/70 dark:bg-slate-950/85 backdrop-blur-xl flex flex-col font-sans animate-fade-in text-slate-900 dark:text-slate-100 overflow-hidden"
     >
       {/* TOP HEADER BAR */}
-      <header className="h-16 px-6 bg-white/95 dark:bg-slate-900/95 border-b border-slate-200/90 dark:border-slate-800 flex items-center justify-between gap-4 text-slate-900 dark:text-slate-100 shadow-xs backdrop-blur-md">
+      <header className="h-14 sm:h-16 px-3 sm:px-6 bg-white/95 dark:bg-slate-900/95 border-b border-slate-200/90 dark:border-slate-800 flex items-center justify-between gap-2 text-slate-900 dark:text-slate-100 shadow-xs backdrop-blur-md shrink-0">
         {/* Title & Document Context */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             onClick={onClose}
             aria-label="Back to Case Analysis"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition-all border border-slate-200 dark:border-slate-700 shadow-xs text-xs font-semibold group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-200 dark:border-slate-700 transition-colors shrink-0 cursor-pointer"
             title="Back to Case Analysis"
             type="button"
           >
-            <span className="material-symbols-outlined text-[18px] transition-transform group-hover:-translate-x-0.5" aria-hidden="true">arrow_back</span>
-            <span>Back</span>
+            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+            <span className="hidden sm:inline">Back</span>
           </button>
 
-          <div className="h-5 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block" />
+          <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block" />
 
-          <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-xs shrink-0">
-            <span className="material-symbols-outlined text-[22px]" aria-hidden="true">alt_route</span>
+          <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+            <span className="material-symbols-outlined text-[20px]" aria-hidden="true">alt_route</span>
           </div>
-          <div>
-            <h2 id="whatif-modal-title" className="font-[Plus_Jakarta_Sans] font-extrabold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              What-If Decision Map
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60">
-                Interactive Map
+
+          <div className="min-w-0">
+            <h2 id="whatif-modal-title" className="font-[Plus_Jakarta_Sans] font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 flex items-center gap-1.5 truncate">
+              What-If Map
+              <span className="hidden sm:inline-block text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60">
+                Interactive
               </span>
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-xs sm:max-w-md font-[Inter]">{documentTitle}</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-[140px] sm:max-w-md font-[Inter]">{documentTitle}</p>
           </div>
         </div>
 
-        {/* Center Scenario Switcher Pills */}
+        {/* Center Scenario Switcher Pills (Desktop) */}
         <div className="hidden lg:flex items-center gap-1.5 bg-slate-100/80 dark:bg-slate-800/80 p-1 rounded-2xl border border-slate-200 dark:border-slate-700 text-xs font-medium">
           <button
             onClick={() => setActiveScenario("as_is")}
@@ -632,14 +636,14 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
           </button>
         </div>
 
-        {/* Right Action Controls */}
-        <div className="flex items-center gap-3">
-          {/* View Filter */}
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
+        {/* Right Controls */}
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          {/* View Filter (Desktop & Tablet) */}
+          <div className="hidden sm:flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
             <button
               onClick={() => setFilterMode("all")}
               aria-label="Show All Nodes"
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
                 filterMode === "all" ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 shadow-xs" : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
               }`}
             >
@@ -648,7 +652,7 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
             <button
               onClick={() => setFilterMode("cons_only")}
               aria-label="Show Cons Only"
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 ${
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
                 filterMode === "cons_only" ? "bg-rose-600 text-white shadow-xs" : "text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400"
               }`}
             >
@@ -657,7 +661,7 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
             <button
               onClick={() => setFilterMode("pros_only")}
               aria-label="Show Pros Only"
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
                 filterMode === "pros_only" ? "bg-emerald-600 text-white shadow-xs" : "text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400"
               }`}
             >
@@ -669,7 +673,7 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
           <button
             onClick={onClose}
             aria-label="Close What-If Map"
-            className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors border border-slate-200 dark:border-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex items-center justify-center transition-colors border border-slate-200 dark:border-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             title="Close What-If Map"
           >
             <span className="material-symbols-outlined text-[20px]" aria-hidden="true">close</span>
@@ -677,85 +681,276 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
         </div>
       </header>
 
-      {/* MAIN FLOW CANVAS */}
-      <div className="flex-1 w-full h-full relative bg-[#F8F9FA] dark:bg-[#0B1120]">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={nodeTypes}
-          fitView
-          fitViewOptions={{ padding: 0.25 }}
-          minZoom={0.2}
-          maxZoom={1.5}
-        >
-          <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color="#CBD5E1" />
-          
-          <Controls className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-xl overflow-hidden shadow-lg fill-slate-800 dark:fill-slate-200" />
-          
-          <MiniMap
-            nodeColor={(node) => {
-              if (node.type === "centerDecision") return "#4F46E5";
-              if (node.type === "conNode" || node.type === "conImpactNode") return "#F43F5E";
-              if (node.type === "proNode" || node.type === "proBenefitNode") return "#10B981";
-              return "#64748B";
-            }}
-            maskColor="rgba(15, 23, 42, 0.7)"
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-md"
-          />
+      {/* MOBILE SCENARIO & VIEW STRIP (MOBILE ONLY) */}
+      <div className="lg:hidden bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-3 py-2 flex flex-col gap-2 shrink-0">
+        {/* Scenario Pills Selector */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar text-xs font-semibold">
+          <button
+            onClick={() => setActiveScenario("as_is")}
+            className={`px-3 py-1.5 rounded-xl shrink-0 transition-all text-xs font-bold ${
+              activeScenario === "as_is"
+                ? "bg-indigo-600 text-white shadow-sm"
+                : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+            }`}
+          >
+            Option A: Sign As-Is
+          </button>
+          <button
+            onClick={() => setActiveScenario("negotiate")}
+            className={`px-3 py-1.5 rounded-xl shrink-0 transition-all text-xs font-bold ${
+              activeScenario === "negotiate"
+                ? "bg-indigo-600 text-white shadow-sm"
+                : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+            }`}
+          >
+            Option B: Negotiate
+          </button>
+          <button
+            onClick={() => setActiveScenario("decline")}
+            className={`px-3 py-1.5 rounded-xl shrink-0 transition-all text-xs font-bold ${
+              activeScenario === "decline"
+                ? "bg-rose-600 text-white shadow-sm"
+                : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+            }`}
+          >
+            Option C: Decline
+          </button>
+        </div>
 
-          <Panel position="top-left" className="bg-white/90 dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800 text-slate-800 dark:text-slate-200 p-3.5 rounded-2xl backdrop-blur-md shadow-lg text-xs space-y-1.5 max-w-xs">
-            <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 font-[Plus_Jakarta_Sans]">
-              <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-ping" aria-hidden="true" />
-              What-If Agreement Analysis
-            </div>
-            <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed font-[Inter]">
-              The central decision node connects <strong>Cons (Risks &amp; Disadvantages)</strong> on the left side with <strong>Pros (Protections &amp; Value)</strong> on the right side.
-            </p>
-            <div className="pt-2 flex items-center gap-3 text-[10px] font-mono font-bold">
-              <span className="flex items-center gap-1 text-rose-600 dark:text-rose-400">
-                <span className="w-2 h-2 rounded-full bg-rose-500" aria-hidden="true" /> Cons (Left)
-              </span>
-              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" aria-hidden="true" /> Pros (Right)
-              </span>
-            </div>
-          </Panel>
+        {/* View Switcher: Graph Map vs Cons/Pros List */}
+        <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-800">
+          <div className="flex items-center gap-1 bg-slate-200/80 dark:bg-slate-800 p-0.5 rounded-xl flex-1 max-w-[220px]">
+            <button
+              onClick={() => setMobileView("graph")}
+              className={`flex-1 py-1 px-2 rounded-lg text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${
+                mobileView === "graph"
+                  ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
+                  : "text-slate-600 dark:text-slate-400"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[14px]">map</span>
+              <span>Graph</span>
+            </button>
+            <button
+              onClick={() => setMobileView("list")}
+              className={`flex-1 py-1 px-2 rounded-lg text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${
+                mobileView === "list"
+                  ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
+                  : "text-slate-600 dark:text-slate-400"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[14px]">view_list</span>
+              <span>Breakdown</span>
+            </button>
+          </div>
 
-          <Panel position="bottom-center" className="mb-4">
-            <div className="bg-white/95 dark:bg-slate-900/95 border border-slate-200/90 dark:border-slate-800 backdrop-blur-xl px-6 py-3 rounded-full shadow-xl flex items-center gap-6 text-xs font-medium text-slate-900 dark:text-slate-100 border-t-2 border-t-indigo-600">
-              <div className="flex items-center gap-2 font-[Plus_Jakarta_Sans]">
-                <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[10px] font-mono">Decision Balance:</span>
-                <span className="font-extrabold text-sm text-indigo-700 dark:text-indigo-300">
-                  {activeScenario === "as_is" ? "Sign Agreement As-Is" : activeScenario === "negotiate" ? "Negotiated Terms" : "Decline Agreement"}
+          {/* Mobile Filter Toggle */}
+          <div className="flex items-center gap-1 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-xl border border-slate-200 dark:border-slate-700 text-[10px] font-mono">
+            <button
+              onClick={() => setFilterMode("all")}
+              className={`px-1.5 py-0.5 rounded font-bold ${filterMode === "all" ? "text-indigo-600 dark:text-indigo-400" : "text-slate-400"}`}
+            >
+              All
+            </button>
+            <span className="text-slate-300">|</span>
+            <button
+              onClick={() => setFilterMode("cons_only")}
+              className={`px-1.5 py-0.5 rounded font-bold ${filterMode === "cons_only" ? "text-rose-600 dark:text-rose-400" : "text-slate-400"}`}
+            >
+              Cons
+            </button>
+            <span className="text-slate-300">|</span>
+            <button
+              onClick={() => setFilterMode("pros_only")}
+              className={`px-1.5 py-0.5 rounded font-bold ${filterMode === "pros_only" ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400"}`}
+            >
+              Pros
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* MAIN CONTENT AREA */}
+      <div className="flex-1 w-full h-full relative bg-[#F8F9FA] dark:bg-[#0B1120] overflow-hidden">
+        {/* MOBILE LIST BREAKDOWN VIEW */}
+        {mobileView === "list" ? (
+          <div className="lg:hidden h-full overflow-y-auto p-4 space-y-4 pb-24">
+            {/* Decision Overview Card */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                <span className="text-[10px] font-mono font-bold uppercase text-indigo-600 dark:text-indigo-400">
+                  Decision Scenario
+                </span>
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                  {activeScenario === "as_is" ? "As-Is Signature" : activeScenario === "negotiate" ? "Negotiated Terms" : "Decline & Exit"}
                 </span>
               </div>
 
-              <div className="h-4 w-px bg-slate-200 dark:bg-slate-800" />
+              <h3 className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 leading-snug">
+                {activeScenario === "as_is"
+                  ? "What if I sign this agreement as proposed?"
+                  : activeScenario === "negotiate"
+                    ? "What if I negotiate core critical clauses?"
+                    : "What if I decline and exit this agreement?"}
+              </h3>
 
-              <div className="flex items-center gap-4 text-xs">
-                <span className="flex items-center gap-1.5 font-bold text-rose-600 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/70 px-2.5 py-1 rounded-lg border border-rose-200 dark:border-rose-800/60">
-                  <span className="material-symbols-outlined text-[16px]" aria-hidden="true">warning</span>
-                  {consCount} Cons Identified
+              <div className="flex items-center gap-2 pt-1">
+                <span className="flex items-center gap-1 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/70 px-2.5 py-1 rounded-xl border border-rose-200 dark:border-rose-900/60">
+                  <span className="material-symbols-outlined text-[15px]">warning</span>
+                  {consCount} Cons (Risks)
                 </span>
-                <span className="flex items-center gap-1.5 font-bold text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/70 px-2.5 py-1 rounded-lg border border-emerald-200 dark:border-emerald-800/60">
-                  <span className="material-symbols-outlined text-[16px]" aria-hidden="true">verified</span>
-                  {prosCount} Pros Highlighted
-                </span>
-              </div>
-
-              <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block" />
-
-              <div className="hidden sm:flex items-center gap-2">
-                <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">Net Risk Rating:</span>
-                <span className={`px-2.5 py-0.5 rounded-full font-mono text-[10px] font-bold uppercase ${
-                  consCount > prosCount ? "bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60" : "bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
-                }`}>
-                  {consCount > prosCount ? "Higher Risk Exposure" : "Balanced / Favorable"}
+                <span className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 px-2.5 py-1 rounded-xl border border-emerald-200 dark:border-emerald-900/60">
+                  <span className="material-symbols-outlined text-[15px]">verified</span>
+                  {prosCount} Pros (Protections)
                 </span>
               </div>
             </div>
-          </Panel>
-        </ReactFlow>
+
+            {/* CONS (RISKS) SECTION */}
+            {(filterMode === "all" || filterMode === "cons_only") && (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-rose-700 dark:text-rose-400 font-mono uppercase tracking-wider px-1">
+                  <span className="material-symbols-outlined text-[16px]">warning</span>
+                  <span>Cons / Risks & Liabilities ({consData.length})</span>
+                </div>
+
+                {consData.map((con: any, i: number) => (
+                  <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-rose-200 dark:border-rose-900/80 p-4 shadow-sm space-y-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950 px-2 py-0.5 rounded border border-rose-200 dark:border-rose-800 truncate max-w-[200px]">
+                        Ref: {con.clause || "Risk Item"}
+                      </span>
+                      <span className={`text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full shrink-0 ${
+                        con.severity === "critical" ? "bg-rose-600 text-white" : "bg-amber-500 text-white"
+                      }`}>
+                        {con.severity}
+                      </span>
+                    </div>
+
+                    <h4 className="font-bold text-xs text-slate-900 dark:text-slate-100 leading-snug">
+                      {con.title}
+                    </h4>
+
+                    <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed font-[Inter]">
+                      {con.explanation}
+                    </p>
+
+                    {con.impactTitle && (
+                      <div className="p-2.5 rounded-xl bg-rose-50/70 dark:bg-rose-950/50 border border-rose-100 dark:border-rose-900/40 text-[11px]">
+                        <div className="font-bold text-rose-800 dark:text-rose-300 text-[10px] uppercase font-mono mb-0.5">
+                          {con.impactTitle}
+                        </div>
+                        <div className="text-rose-900 dark:text-rose-200">{con.impactDesc}</div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* PROS (PROTECTIONS) SECTION */}
+            {(filterMode === "all" || filterMode === "pros_only") && (
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 dark:text-emerald-400 font-mono uppercase tracking-wider px-1">
+                  <span className="material-symbols-outlined text-[16px]">verified</span>
+                  <span>Pros / Protections & Value ({prosData.length})</span>
+                </div>
+
+                {prosData.map((pro: any, i: number) => (
+                  <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border-2 border-emerald-200 dark:border-emerald-900/80 p-4 shadow-sm space-y-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 truncate max-w-[200px]">
+                        Ref: {pro.clause || "Protection Item"}
+                      </span>
+                      <span className="text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-600 text-white shrink-0">
+                        {pro.badge || "Protection"}
+                      </span>
+                    </div>
+
+                    <h4 className="font-bold text-xs text-slate-900 dark:text-slate-100 leading-snug">
+                      {pro.title}
+                    </h4>
+
+                    <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed font-[Inter]">
+                      {pro.explanation}
+                    </p>
+
+                    {pro.impactTitle && (
+                      <div className="p-2.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/50 border border-emerald-100 dark:border-emerald-900/40 text-[11px]">
+                        <div className="font-bold text-emerald-800 dark:text-emerald-300 text-[10px] uppercase font-mono mb-0.5">
+                          {pro.impactTitle}
+                        </div>
+                        <div className="text-emerald-900 dark:text-emerald-200">{pro.impactDesc}</div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* REACTFLOW INTERACTIVE CANVAS */
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            nodeTypes={nodeTypes}
+            fitView
+            fitViewOptions={{ padding: 0.15 }}
+            minZoom={0.2}
+            maxZoom={1.5}
+          >
+            <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color="#CBD5E1" />
+            
+            <Controls className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-xl overflow-hidden shadow-lg fill-slate-800 dark:fill-slate-200" />
+            
+            <MiniMap
+              nodeColor={(node) => {
+                if (node.type === "centerDecision") return "#4F46E5";
+                if (node.type === "conNode" || node.type === "conImpactNode") return "#F43F5E";
+                if (node.type === "proNode" || node.type === "proBenefitNode") return "#10B981";
+                return "#64748B";
+              }}
+              maskColor="rgba(15, 23, 42, 0.7)"
+              className="hidden sm:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-md"
+            />
+
+            {/* Desktop Top-Left Info Panel */}
+            <Panel position="top-left" className="hidden sm:block bg-white/90 dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800 text-slate-800 dark:text-slate-200 p-3.5 rounded-2xl backdrop-blur-md shadow-lg text-xs space-y-1.5 max-w-xs">
+              <div className="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 font-[Plus_Jakarta_Sans]">
+                <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-ping" aria-hidden="true" />
+                What-If Agreement Analysis
+              </div>
+              <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed font-[Inter]">
+                The central decision node connects <strong>Cons (Risks)</strong> on the left side with <strong>Pros (Protections)</strong> on the right side.
+              </p>
+            </Panel>
+
+            {/* Bottom Floating Decision Balance Bar */}
+            <Panel position="bottom-center" className="mb-2 sm:mb-4 px-2">
+              <div className="bg-white/95 dark:bg-slate-900/95 border border-slate-200/90 dark:border-slate-800 backdrop-blur-xl px-3 sm:px-6 py-2 sm:py-3 rounded-2xl sm:rounded-full shadow-xl flex items-center justify-between gap-3 sm:gap-6 text-xs font-medium text-slate-900 dark:text-slate-100 border-t-2 border-t-indigo-600 max-w-[95vw]">
+                <div className="flex items-center gap-1.5 font-[Plus_Jakarta_Sans] shrink-0">
+                  <span className="font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[9px] sm:text-[10px] font-mono hidden sm:inline">Balance:</span>
+                  <span className="font-extrabold text-xs sm:text-sm text-indigo-700 dark:text-indigo-300 truncate max-w-[130px] sm:max-w-none">
+                    {activeScenario === "as_is" ? "Sign As-Is" : activeScenario === "negotiate" ? "Negotiated Terms" : "Decline Agreement"}
+                  </span>
+                </div>
+
+                <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 shrink-0" />
+
+                <div className="flex items-center gap-2 sm:gap-4 text-xs shrink-0">
+                  <span className="flex items-center gap-1 font-bold text-rose-600 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/70 px-2 py-0.5 sm:py-1 rounded-lg border border-rose-200 dark:border-rose-800/60 text-[10px] sm:text-xs">
+                    <span className="material-symbols-outlined text-[14px] sm:text-[16px]">warning</span>
+                    <span>{consCount} Cons</span>
+                  </span>
+                  <span className="flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/70 px-2 py-0.5 sm:py-1 rounded-lg border border-emerald-200 dark:border-emerald-800/60 text-[10px] sm:text-xs">
+                    <span className="material-symbols-outlined text-[14px] sm:text-[16px]">verified</span>
+                    <span>{prosCount} Pros</span>
+                  </span>
+                </div>
+              </div>
+            </Panel>
+          </ReactFlow>
+        )}
       </div>
     </div>
   );

@@ -50,6 +50,10 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
   const [showMeme, setShowMeme] = useState<boolean>(true);
   const [showExecBox, setShowExecBox] = useState<boolean>(true);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [showCriticalModal, setShowCriticalModal] = useState<boolean>(false);
+  const [mobileTab, setMobileTab] = useState<"overview" | "document">("overview");
+  const [modalSearch, setModalSearch] = useState<string>("");
   const prevCaseStatusRef = useRef<string | null>(null);
 
   // Sync showExecBox with localStorage on mount
@@ -502,24 +506,24 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
   return (
     <div className="h-screen w-screen overflow-hidden flex flex-col bg-[#F8FAFC] text-[#0F172A] font-sans">
       {/* Header Bar */}
-      <header className="fixed top-0 w-full z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-[0_1px_4px_rgba(0,0,0,0.03)]">
-        <div className="h-16 w-full px-6 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+      <header className="fixed top-0 w-full z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-[0_1px_4px_rgba(0,0,0,0.03)]">
+        <div className="h-16 w-full px-4 sm:px-6 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">J</div>
-              <span className="font-bold text-lg tracking-tight text-[#0F172A]">JurisAI</span>
+              <span className="font-bold text-lg tracking-tight text-[#0F172A] dark:text-slate-100">JurisAI</span>
             </Link>
 
-            <div className="h-4 w-px bg-slate-200 hidden md:block"></div>
+            <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 hidden md:block"></div>
 
             <nav aria-label="Breadcrumbs" className="hidden md:flex items-center gap-1.5 text-slate-500 text-xs font-medium">
-              <Link href="/" className="hover:text-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded">Dashboard</Link>
+              <Link href="/" className="hover:text-slate-900 dark:hover:text-slate-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded">Dashboard</Link>
               <span className="material-symbols-outlined text-slate-400 text-[14px]" aria-hidden="true">chevron_right</span>
-              <span className="text-slate-900 font-semibold truncate max-w-[240px]">{documentTitle}</span>
+              <span className="text-slate-900 dark:text-slate-100 font-semibold truncate max-w-[240px]">{documentTitle}</span>
             </nav>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Risk Score Badge */}
             <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${overallRiskScore >= 70 ? 'bg-red-50 dark:bg-red-950/70 border-red-200/60 dark:border-red-800/60' : overallRiskScore >= 40 ? 'bg-amber-50 dark:bg-amber-950/70 border-amber-200/60 dark:border-amber-800/60' : 'bg-emerald-50 dark:bg-emerald-950/70 border-emerald-200/60 dark:border-emerald-800/60'}`}>
               <span className={`w-2 h-2 rounded-full ${overallRiskScore >= 70 ? 'bg-red-500' : overallRiskScore >= 40 ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`}></span>
@@ -528,7 +532,8 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5 flex-wrap">
+            {/* Desktop Action Buttons */}
+            <div className="hidden md:flex items-center gap-1.5 flex-wrap">
               {/* Sound Toggle Button */}
               <button
                 onClick={handleToggleSound}
@@ -544,7 +549,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
                   {soundEnabled ? "volume_up" : "volume_off"}
                 </span>
-                <span className="hidden sm:inline">{soundEnabled ? "Sound On" : "Muted"}</span>
+                <span>{soundEnabled ? "Sound On" : "Muted"}</span>
               </button>
 
               {/* Executive Box Toggle Button */}
@@ -562,7 +567,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 <span className="material-symbols-outlined text-[16px] text-indigo-600 dark:text-indigo-400" aria-hidden="true">
                   {showExecBox ? "visibility" : "visibility_off"}
                 </span>
-                <span className="hidden sm:inline">Exec Box</span>
+                <span>Exec Box</span>
               </button>
 
               {/* Meme Toggle Button */}
@@ -580,7 +585,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 <span className="material-symbols-outlined text-[16px] text-purple-600 dark:text-purple-400" aria-hidden="true">
                   {showMeme ? "visibility" : "visibility_off"}
                 </span>
-                <span className="hidden sm:inline">Vibe Check</span>
+                <span>Vibe Check</span>
               </button>
 
               <button
@@ -603,14 +608,13 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 ) : (
                   <span className="material-symbols-outlined text-[16px]" aria-hidden="true">picture_as_pdf</span>
                 )}
-                <span className="hidden sm:inline">{isExporting ? "Exporting..." : "Export PDF"}</span>
+                <span>{isExporting ? "Exporting..." : "Export PDF"}</span>
               </button>
+              <ThemeToggle />
             </div>
 
-            <ThemeToggle />
-
-            {/* User Avatar */}
-            <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-sm overflow-hidden">
+            {/* Desktop User Avatar */}
+            <div className="hidden md:flex w-8 h-8 rounded-full bg-indigo-600 text-white items-center justify-center font-bold text-xs shadow-sm overflow-hidden">
               {user?.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={user.image} alt={user.name || "User"} className="w-full h-full object-cover" />
@@ -618,16 +622,170 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 user?.name?.[0]?.toUpperCase() || "U"
               )}
             </div>
+
+            {/* Mobile Hamburger Navbar Toggle Icon */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            >
+              <span className="material-symbols-outlined text-[24px]">
+                {isMobileMenuOpen ? "close" : "menu"}
+              </span>
+            </button>
           </div>
         </div>
       </header>
+
+      {/* MOBILE FULL NAVIGATION MENU DRAWER OVERLAY */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex flex-col bg-slate-950/80 backdrop-blur-md transition-all duration-300">
+          <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-4 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md">J</div>
+              <div>
+                <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-100">JurisAI Navigation</h3>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[200px]">{documentTitle}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+              aria-label="Close menu"
+            >
+              <span className="material-symbols-outlined text-[22px]">close</span>
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-5 space-y-5 text-sm">
+            {/* Quick Navigation */}
+            <div>
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block mb-2">Navigation</span>
+              <Link
+                href="/"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              >
+                <span className="material-symbols-outlined text-indigo-600 text-[20px]">dashboard</span>
+                <span>Dashboard / Case Overview</span>
+              </Link>
+            </div>
+
+            {/* Document Analysis Tools */}
+            <div>
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block mb-2">Analysis Tools</span>
+              <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    setShowWhatIf(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full flex items-center justify-between p-3.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/80 font-bold transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-[20px]">account_tree</span>
+                    <span>Simulate What-If Scenarios</span>
+                  </div>
+                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    handleExportPDF();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  disabled={isExporting}
+                  className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold disabled:opacity-50 transition-all"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-[20px] text-rose-500">picture_as_pdf</span>
+                    <span>{isExporting ? "Exporting PDF..." : "Export Full PDF Report"}</span>
+                  </div>
+                  <span className="material-symbols-outlined text-[18px]">download</span>
+                </button>
+              </div>
+            </div>
+
+            {/* View & Preference Toggles */}
+            <div>
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block mb-2">Preferences & Toggles</span>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={handleToggleExecBox}
+                  className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all ${
+                    showExecBox
+                      ? "bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+                      : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    {showExecBox ? "visibility" : "visibility_off"}
+                  </span>
+                  <span>Exec Box</span>
+                </button>
+
+                <button
+                  onClick={handleToggleMeme}
+                  className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all ${
+                    showMeme
+                      ? "bg-purple-50 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800"
+                      : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    {showMeme ? "visibility" : "visibility_off"}
+                  </span>
+                  <span>Vibe Check</span>
+                </button>
+
+                <button
+                  onClick={handleToggleSound}
+                  className={`flex items-center justify-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all ${
+                    soundEnabled
+                      ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
+                      : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    {soundEnabled ? "volume_up" : "volume_off"}
+                  </span>
+                  <span>{soundEnabled ? "Sound On" : "Muted"}</span>
+                </button>
+
+                <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Theme</span>
+                  <ThemeToggle />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shadow-sm">
+                {user?.name?.[0]?.toUpperCase() || "U"}
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{user?.name || "User"}</div>
+                <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{user?.email || "Pro Plan"}</div>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="px-3 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Workspace */}
       <main className="w-full pt-16 flex-1 flex flex-col bg-[#F8FAFC] dark:bg-[#0F172A] overflow-hidden h-[calc(100vh-4rem)]">
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden relative h-[calc(100vh-7.5rem)] min-h-0">
 
           {/* LEFT COLUMN: Risk Ledger */}
-          <aside className="lg:col-span-3 h-full flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 overflow-hidden">
+          <aside className="hidden lg:flex lg:col-span-3 h-full flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 overflow-hidden">
             <div className="p-5 pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -710,7 +868,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
           </aside>
 
           {/* CENTER COLUMN: Document Viewer */}
-          <section className="lg:col-span-6 h-full flex flex-col bg-slate-100/70 dark:bg-[#0B1120] relative overflow-hidden">
+          <section className="hidden lg:flex lg:col-span-6 h-full flex-col bg-slate-100/70 dark:bg-[#0B1120] relative overflow-hidden">
             {/* Viewer Controls Toolbar */}
             <div className="w-full bg-white dark:bg-slate-900 px-5 py-2 flex items-center justify-between border-b border-slate-200 dark:border-slate-800 select-none text-xs">
               <div className="flex items-center gap-3">
@@ -1452,7 +1610,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
           </section>
 
           {/* RIGHT COLUMN: Summary & Extracted Terms */}
-          <aside className="lg:col-span-3 h-full flex flex-col bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-hidden">
+          <aside className="hidden lg:flex lg:col-span-3 h-full flex-col bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 overflow-hidden">
             <div className="p-5 pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center justify-between mb-1">
                 <h2 className="font-semibold text-sm text-slate-900 dark:text-slate-100 tracking-tight">Summary</h2>
@@ -1565,8 +1723,381 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
               </section>
             </div>
           </aside>
+
+          {/* MOBILE ONLY DEDICATED WORKSPACE VIEW */}
+          <div className="lg:hidden flex-1 overflow-y-auto px-4 py-4 space-y-5 pb-28">
+            {/* View Switcher Tabs (Overview & Vibe Check vs Full Document View) */}
+            <div className="flex items-center justify-center p-1 bg-slate-200/70 dark:bg-slate-800/80 rounded-2xl">
+              <button
+                type="button"
+                onClick={() => setMobileTab("overview")}
+                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  mobileTab === "overview"
+                    ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[16px]">overview</span>
+                <span>Overview & Vibe Check</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMobileTab("document")}
+                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  mobileTab === "document"
+                    ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[16px]">description</span>
+                <span>Full Document View</span>
+              </button>
+            </div>
+
+            {mobileTab === "overview" ? (
+              <>
+                {/* 1. EXECUTIVE RISK ASSESSMENT & LEGAL VIBE CHECK */}
+                {showExecBox && (
+                  <div className={`rounded-2xl border p-4 transition-all duration-300 relative overflow-hidden ${
+                    overallRiskScore >= 70
+                      ? "bg-gradient-to-br from-red-500/15 via-rose-500/10 to-amber-500/15 border-red-200 dark:border-red-900/80"
+                      : overallRiskScore >= 40
+                        ? "bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-yellow-500/15 border-amber-200 dark:border-amber-900/80"
+                        : "bg-gradient-to-br from-emerald-500/15 via-teal-500/10 to-indigo-500/15 border-emerald-200 dark:border-emerald-900/80"
+                  }`}>
+                    <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-200/60 dark:border-slate-800">
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-indigo-600 text-[20px]">analytics</span>
+                        <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100">Executive Risk Assessment</h2>
+                      </div>
+                      <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${
+                        overallRiskScore >= 70 ? 'bg-red-100 text-red-800 border-red-300 dark:bg-red-950 dark:text-red-300' : overallRiskScore >= 40 ? 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-300' : 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
+                      }`}>
+                        Score: {overallRiskScore}/100
+                      </span>
+                    </div>
+
+                    <div className="space-y-4">
+                      {/* Score Pill Card */}
+                      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-3.5 rounded-xl border border-white/80 dark:border-slate-800 flex items-center justify-between">
+                        <div>
+                          <div className="text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400 uppercase">Critical Threat Index</div>
+                          <div className={`text-3xl font-extrabold tracking-tight ${riskScoreColor(overallRiskScore)}`}>
+                            {overallRiskScore} <span className="text-xs font-normal text-slate-400">/ 100</span>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase border ${
+                            overallRiskScore >= 70 ? 'bg-red-50 text-red-700 border-red-200' : overallRiskScore >= 40 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          }`}>
+                            {riskScoreLabel(overallRiskScore)}
+                          </span>
+                          <div className="text-[10px] text-slate-400 mt-1 font-mono">{risks.length} Risks Flagged</div>
+                        </div>
+                      </div>
+
+                      {/* MemeVibeCheck Component */}
+                      <MemeVibeCheck
+                        riskScore={overallRiskScore}
+                        criticalCount={risks.filter((r) => r.severity === "critical").length}
+                        isVisible={showMeme}
+                        onToggleVisible={handleToggleMeme}
+                        layout="compact"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. FILE SUMMARY & AI SYNTHESIS */}
+                <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-indigo-600 text-[20px]">auto_awesome</span>
+                      <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100">AI Synthesis & Document Summary</h2>
+                    </div>
+                    <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
+                      {confidenceScore}% Confidence
+                    </span>
+                  </div>
+
+                  {/* AI Synthesis Summary Text */}
+                  {analysis?.summary && (
+                    <div className="relative pl-3 border-l-2 border-indigo-500">
+                      <p className="text-xs leading-relaxed text-slate-700 dark:text-slate-300 font-[Inter]">
+                        {analysis.summary}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Source Document Summary Preview */}
+                  {caseData?.fileSummary && !caseData.fileSummary.startsWith("[Binary file:") && (
+                    <div className="pt-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-mono font-bold uppercase text-slate-400">Source Text Context</span>
+                        <button
+                          type="button"
+                          onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                          className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1"
+                        >
+                          <span>{isSummaryExpanded ? "Show Less" : "Expand Summary"}</span>
+                          <span className="material-symbols-outlined text-[14px]">
+                            {isSummaryExpanded ? "expand_less" : "expand_more"}
+                          </span>
+                        </button>
+                      </div>
+                      <div className={`text-[11px] leading-relaxed text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200/70 dark:border-slate-700/60 font-serif ${
+                        isSummaryExpanded ? "" : "line-clamp-4"
+                      }`}>
+                        {caseData.fileSummary}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Extracted Terms Badges */}
+                  {analysis?.extractedTerms && analysis.extractedTerms.length > 0 && (
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <div className="text-[10px] font-mono font-bold uppercase text-slate-400 mb-2">Extracted Key Terms</div>
+                      <div className="grid grid-cols-2 gap-2">
+                        {analysis.extractedTerms.map((term, i) => (
+                          <div key={i} className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
+                            <div className="text-[9px] text-slate-500">{term.label}</div>
+                            <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">{term.value}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. CRITICAL POINTS POPUP TRIGGER BUTTON */}
+                <button
+                  type="button"
+                  onClick={() => setShowCriticalModal(true)}
+                  className="w-full p-4 rounded-2xl bg-gradient-to-br from-red-500/15 via-amber-500/10 to-indigo-500/15 dark:from-red-950/50 dark:via-amber-950/40 dark:to-indigo-950/50 border-2 border-red-300/80 dark:border-red-800/80 shadow-md flex items-center justify-between text-left transition-all active:scale-[0.98] cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-red-600 to-rose-700 text-white flex items-center justify-center shadow-md shrink-0">
+                      <span className="material-symbols-outlined text-[24px]">gavel</span>
+                    </div>
+                    <div>
+                      <div className="text-sm font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                        Critical Points & Flagged Risks
+                        <span className="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-950/90 text-red-700 dark:text-red-300 font-mono text-[11px] font-bold border border-red-200 dark:border-red-800">
+                          {risks.length} Items
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                        Tap to inspect statutory flags, excerpts & explanations in popup
+                      </p>
+                    </div>
+                  </div>
+                  <span className="material-symbols-outlined text-slate-400 text-[24px] shrink-0">open_in_new</span>
+                </button>
+
+                {/* 4. AI CONVERSATION FEED (Mobile) */}
+                {conversationMessages.length > 0 && (
+                  <div className="rounded-2xl border border-indigo-200 dark:border-indigo-900 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-indigo-600 text-[18px]">forum</span>
+                        <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100">Conversation History</h2>
+                      </div>
+                      <span className="text-[10px] font-mono text-indigo-600 font-bold">
+                        {conversationMessages.filter(m => m.role === "user").length} Questions
+                      </span>
+                    </div>
+
+                    <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+                      {conversationMessages.map((msg, idx) => (
+                        <div key={idx} className={`p-3 rounded-xl text-xs ${
+                          msg.role === "user"
+                            ? "bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 ml-4"
+                            : "bg-indigo-50/50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900 mr-4"
+                        }`}>
+                          <div className="font-bold text-[10px] text-slate-500 mb-1">
+                            {msg.role === "user" ? "You" : "JurisAI"}
+                          </div>
+                          <div className="leading-relaxed font-medium">
+                            {msg.role === "user" ? (
+                              msg.content
+                            ) : (
+                              <div>
+                                {(() => {
+                                  try {
+                                    const parsed = JSON.parse(msg.content);
+                                    return parsed.answer || msg.content;
+                                  } catch (e) {
+                                    return msg.content;
+                                  }
+                                })()}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              /* Full Document Mobile Tab */
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{documentTitle}</h2>
+                  <div className="flex items-center gap-2">
+                    <button onClick={handleZoomOut} className="p-1 rounded bg-slate-100 dark:bg-slate-800 text-xs">
+                      <span className="material-symbols-outlined text-[14px]">remove</span>
+                    </button>
+                    <span className="font-mono text-xs">{zoomLevel}%</span>
+                    <button onClick={handleZoomIn} className="p-1 rounded bg-slate-100 dark:bg-slate-800 text-xs">
+                      <span className="material-symbols-outlined text-[14px]">add</span>
+                    </button>
+                  </div>
+                </div>
+                <div className="text-xs leading-relaxed font-serif text-slate-800 dark:text-slate-200 whitespace-pre-wrap max-h-[60vh] overflow-y-auto p-2">
+                  {caseData?.fileSummary || "No document text preview available."}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </main>
+
+      {/* CRITICAL POINTS POPUP BOX MODAL */}
+      {showCriticalModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-2xl max-h-[85vh] bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col overflow-hidden">
+            {/* Modal Header */}
+            <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-rose-700 text-white flex items-center justify-center shadow-md">
+                  <span className="material-symbols-outlined text-[20px]">gavel</span>
+                </div>
+                <div>
+                  <h2 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+                    Critical Points & Risk Ledger
+                  </h2>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {filteredRisks.length} flagged statutory items &amp; compliance risks
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowCriticalModal(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                aria-label="Close Critical Points popup"
+              >
+                <span className="material-symbols-outlined text-[22px]">close</span>
+              </button>
+            </div>
+
+            {/* Modal Filter & Search Bar */}
+            <div className="p-3 sm:p-4 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/30 dark:bg-slate-900/30 flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex-1 min-w-[140px]">
+                <input
+                  type="text"
+                  placeholder="Search critical points..."
+                  value={modalSearch}
+                  onChange={(e) => setModalSearch(e.target.value)}
+                  className="w-full bg-white dark:bg-slate-800 text-xs px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+
+              <GlideSelect
+                options={[
+                  { value: "All", label: "All Risks", tag: `${risks.length}` },
+                  { value: "critical", label: "Critical", tag: `${risks.filter(r => r.severity === 'critical').length}` },
+                  { value: "warning", label: "Warning", tag: `${risks.filter(r => r.severity === 'warning').length}` },
+                  { value: "note", label: "Notes", tag: `${risks.filter(r => r.severity !== 'critical' && r.severity !== 'warning').length}` },
+                ]}
+                value={filterSeverity}
+                onChange={(val) => setFilterSeverity(val)}
+                ariaLabel="Filter risks by severity"
+                showTags={true}
+                accentColor="#4f46e5"
+                surfaceColor="#ffffff"
+                highlightColor="#e0e7ff"
+                textColor="#4338ca"
+                size="sm"
+                radius={10}
+                menuWidth={150}
+                placement="bottom"
+                align="right"
+              />
+            </div>
+
+            {/* Modal Risk Items List */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+              {filteredRisks
+                .filter((r) => !modalSearch.trim() || r.title.toLowerCase().includes(modalSearch.toLowerCase()) || r.clause.toLowerCase().includes(modalSearch.toLowerCase()))
+                .map((risk) => (
+                  <div
+                    key={risk.id}
+                    className={`rounded-2xl border p-4 transition-all ${
+                      risk.severity === "critical"
+                        ? "bg-red-50/40 dark:bg-red-950/30 border-red-200 dark:border-red-900/60"
+                        : risk.severity === "warning"
+                          ? "bg-amber-50/40 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/60"
+                          : "bg-slate-50/50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="font-mono text-[10px] font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2.5 py-0.5 rounded-md truncate max-w-[260px]">
+                        {risk.clause}
+                      </span>
+                      <span className={`font-mono text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider ${
+                        risk.severity === "critical" ? "bg-red-600 text-white" : risk.severity === "warning" ? "bg-amber-500 text-white" : "bg-slate-600 text-white"
+                      }`}>
+                        {risk.severity}
+                      </span>
+                    </div>
+
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-2">
+                      {risk.title}
+                    </h4>
+
+                    {risk.statuteReference && (
+                      <div className="flex items-center gap-1 text-[11px] text-indigo-600 dark:text-indigo-400 font-mono mb-3">
+                        <span className="material-symbols-outlined text-[14px]">gavel</span>
+                        <span>{risk.statuteReference}</span>
+                      </div>
+                    )}
+
+                    {/* Excerpt */}
+                    <div className="p-3 rounded-xl bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 mb-3 text-xs italic font-serif text-slate-700 dark:text-slate-300">
+                      &ldquo;{risk.sourceText}&rdquo;
+                    </div>
+
+                    {/* Explanation */}
+                    <div className="p-3 rounded-xl bg-indigo-50/50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 text-xs text-slate-700 dark:text-slate-300">
+                      <div className="text-[10px] font-mono font-bold uppercase text-indigo-600 dark:text-indigo-400 mb-1">Statutory Explanation</div>
+                      <p>{risk.explanation}</p>
+                    </div>
+                  </div>
+                ))}
+
+              {filteredRisks.length === 0 && (
+                <div className="text-center py-10 text-slate-400 text-xs">
+                  No critical points found matching the criteria.
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowCriticalModal(false)}
+                className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* FOOTER CONTROL BAR */}
       <footer className="w-full bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-6 py-3 sticky bottom-0 z-40 shadow-lg">
