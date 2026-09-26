@@ -599,7 +599,7 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
             title="Back to Case Analysis"
             type="button"
           >
-            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_back</span>
             <span className="hidden sm:inline">Back</span>
           </button>
 
@@ -749,7 +749,7 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
                   : "text-slate-600 dark:text-slate-400"
               }`}
             >
-              <span className="material-symbols-outlined text-[14px]">map</span>
+              <span className="material-symbols-outlined text-[14px]" aria-hidden="true">map</span>
               <span>Graph</span>
             </button>
             <button
@@ -760,7 +760,7 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
                   : "text-slate-600 dark:text-slate-400"
               }`}
             >
-              <span className="material-symbols-outlined text-[14px]">view_list</span>
+              <span className="material-symbols-outlined text-[14px]" aria-hidden="true">view_list</span>
               <span>Breakdown</span>
             </button>
           </div>
@@ -817,11 +817,11 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
 
               <div className="flex items-center gap-2 pt-1">
                 <span className="flex items-center gap-1 text-xs font-bold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/70 px-2.5 py-1 rounded-xl border border-rose-200 dark:border-rose-900/60">
-                  <span className="material-symbols-outlined text-[15px]">warning</span>
+                  <span className="material-symbols-outlined text-[15px]" aria-hidden="true">warning</span>
                   {consCount} Cons (Risks)
                 </span>
                 <span className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/70 px-2.5 py-1 rounded-xl border border-emerald-200 dark:border-emerald-900/60">
-                  <span className="material-symbols-outlined text-[15px]">verified</span>
+                  <span className="material-symbols-outlined text-[15px]" aria-hidden="true">verified</span>
                   {prosCount} Pros (Protections)
                 </span>
               </div>
@@ -831,7 +831,7 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
             {(filterMode === "all" || filterMode === "cons_only") && (
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-xs font-bold text-rose-700 dark:text-rose-400 font-mono uppercase tracking-wider px-1">
-                  <span className="material-symbols-outlined text-[16px]">warning</span>
+                  <span className="material-symbols-outlined text-[16px]" aria-hidden="true">warning</span>
                   <span>Cons / Risks & Liabilities ({consData.length})</span>
                 </div>
 
@@ -876,7 +876,7 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
             {(filterMode === "all" || filterMode === "pros_only") && (
               <div className="space-y-3 pt-2">
                 <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 dark:text-emerald-400 font-mono uppercase tracking-wider px-1">
-                  <span className="material-symbols-outlined text-[16px]">verified</span>
+                  <span className="material-symbols-outlined text-[16px]" aria-hidden="true">verified</span>
                   <span>Pros / Protections & Value ({prosData.length})</span>
                 </div>
 
@@ -963,11 +963,11 @@ export default function WhatIfMap({ documentTitle, risks, onClose }: WhatIfMapPr
 
                 <div className="flex items-center gap-2 sm:gap-4 text-xs shrink-0">
                   <span className="flex items-center gap-1 font-bold text-rose-600 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/70 px-2 py-0.5 sm:py-1 rounded-lg border border-rose-200 dark:border-rose-800/60 text-[10px] sm:text-xs">
-                    <span className="material-symbols-outlined text-[14px] sm:text-[16px]">warning</span>
+                    <span className="material-symbols-outlined text-[14px] sm:text-[16px]" aria-hidden="true">warning</span>
                     <span>{consCount} Cons</span>
                   </span>
                   <span className="flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/70 px-2 py-0.5 sm:py-1 rounded-lg border border-emerald-200 dark:border-emerald-800/60 text-[10px] sm:text-xs">
-                    <span className="material-symbols-outlined text-[14px] sm:text-[16px]">verified</span>
+                    <span className="material-symbols-outlined text-[14px] sm:text-[16px]" aria-hidden="true">verified</span>
                     <span>{prosCount} Pros</span>
                   </span>
                 </div>

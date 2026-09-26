@@ -370,7 +370,7 @@ export default function Dashboard({ user }: DashboardProps) {
                         className="flex items-start gap-3 min-w-0 flex-1"
                       >
                         <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 mt-0.5">
-                          <span className="material-symbols-outlined text-[16px]">
+                          <span className="material-symbols-outlined text-[16px]" aria-hidden="true">
                             {getDocIcon(c.documentType || c.fileName)}
                           </span>
                         </div>
@@ -395,7 +395,7 @@ export default function Dashboard({ user }: DashboardProps) {
                         className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0"
                         title="Delete consultation"
                       >
-                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                        <span className="material-symbols-outlined text-[18px]" aria-hidden="true">delete</span>
                       </button>
                     </div>
                   ))
@@ -411,7 +411,7 @@ export default function Dashboard({ user }: DashboardProps) {
                   onClick={() => signOut()}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-rose-600 hover:bg-rose-50 font-semibold transition-colors text-left"
                 >
-                  <span className="material-symbols-outlined text-[20px]">logout</span>
+                  <span className="material-symbols-outlined text-[20px]" aria-hidden="true">logout</span>
                   <span>Sign Out</span>
                 </button>
               </div>
@@ -741,10 +741,10 @@ export default function Dashboard({ user }: DashboardProps) {
                   className="text-left p-3 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/70 shadow-sm hover:shadow-md dark:hover:border-indigo-500/50 transition-all flex flex-col justify-between h-[76px] group active:scale-[0.98]"
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span className="material-symbols-outlined text-[18px] text-indigo-600 dark:text-indigo-400">
+                    <span className="material-symbols-outlined text-[18px] text-indigo-600 dark:text-indigo-400" aria-hidden="true">
                       home_work
                     </span>
-                    <span className="material-symbols-outlined text-[14px] text-slate-400 dark:text-slate-500">
+                    <span className="material-symbols-outlined text-[14px] text-slate-400 dark:text-slate-500" aria-hidden="true">
                       arrow_forward
                     </span>
                   </div>
@@ -763,10 +763,10 @@ export default function Dashboard({ user }: DashboardProps) {
                   className="text-left p-3 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/70 shadow-sm hover:shadow-md dark:hover:border-indigo-500/50 transition-all flex flex-col justify-between h-[76px] group active:scale-[0.98]"
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span className="material-symbols-outlined text-[18px] text-indigo-600 dark:text-indigo-400">
+                    <span className="material-symbols-outlined text-[18px] text-indigo-600 dark:text-indigo-400" aria-hidden="true">
                       report_problem
                     </span>
-                    <span className="material-symbols-outlined text-[14px] text-slate-400 dark:text-slate-500">
+                    <span className="material-symbols-outlined text-[14px] text-slate-400 dark:text-slate-500" aria-hidden="true">
                       arrow_forward
                     </span>
                   </div>
@@ -783,10 +783,10 @@ export default function Dashboard({ user }: DashboardProps) {
                   className="text-left p-3 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/70 shadow-sm hover:shadow-md dark:hover:border-indigo-500/50 transition-all flex flex-col justify-between h-[76px] group active:scale-[0.98]"
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span className="material-symbols-outlined text-[18px] text-indigo-600 dark:text-indigo-400">
+                    <span className="material-symbols-outlined text-[18px] text-indigo-600 dark:text-indigo-400" aria-hidden="true">
                       badge
                     </span>
-                    <span className="material-symbols-outlined text-[14px] text-slate-400 dark:text-slate-500">
+                    <span className="material-symbols-outlined text-[14px] text-slate-400 dark:text-slate-500" aria-hidden="true">
                       arrow_forward
                     </span>
                   </div>
@@ -805,10 +805,10 @@ export default function Dashboard({ user }: DashboardProps) {
                   className="text-left p-3 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/70 shadow-sm hover:shadow-md dark:hover:border-indigo-500/50 transition-all flex flex-col justify-between h-[76px] group active:scale-[0.98]"
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span className="material-symbols-outlined text-[18px] text-indigo-600 dark:text-indigo-400">
+                    <span className="material-symbols-outlined text-[18px] text-indigo-600 dark:text-indigo-400" aria-hidden="true">
                       account_balance
                     </span>
-                    <span className="material-symbols-outlined text-[14px] text-slate-400 dark:text-slate-500">
+                    <span className="material-symbols-outlined text-[14px] text-slate-400 dark:text-slate-500" aria-hidden="true">
                       arrow_forward
                     </span>
                   </div>
@@ -829,7 +829,7 @@ export default function Dashboard({ user }: DashboardProps) {
                   }
                   className="px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/70 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
                 >
-                  <span className="material-symbols-outlined text-[15px] text-indigo-600 dark:text-indigo-400">
+                  <span className="material-symbols-outlined text-[15px] text-indigo-600 dark:text-indigo-400" aria-hidden="true">
                     description
                   </span>
                   <span>Review residential lease</span>
@@ -844,7 +844,7 @@ export default function Dashboard({ user }: DashboardProps) {
                   }
                   className="px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/70 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
                 >
-                  <span className="material-symbols-outlined text-[15px] text-indigo-600 dark:text-indigo-400">
+                  <span className="material-symbols-outlined text-[15px] text-indigo-600 dark:text-indigo-400" aria-hidden="true">
                     gavel
                   </span>
                   <span>Dispute notice to vacate</span>
@@ -857,7 +857,7 @@ export default function Dashboard({ user }: DashboardProps) {
                   }
                   className="px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/70 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
                 >
-                  <span className="material-symbols-outlined text-[15px] text-indigo-600 dark:text-indigo-400">
+                  <span className="material-symbols-outlined text-[15px] text-indigo-600 dark:text-indigo-400" aria-hidden="true">
                     assignment_turned_in
                   </span>
                   <span>Severance clause check</span>
@@ -872,7 +872,7 @@ export default function Dashboard({ user }: DashboardProps) {
                   }
                   className="px-3.5 py-1.5 rounded-full bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/70 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white text-xs font-medium transition-colors flex items-center gap-1.5 shadow-sm"
                 >
-                  <span className="material-symbols-outlined text-[15px] text-indigo-600 dark:text-indigo-400">
+                  <span className="material-symbols-outlined text-[15px] text-indigo-600 dark:text-indigo-400" aria-hidden="true">
                     calculate
                   </span>
                   <span>Small claims guidance</span>

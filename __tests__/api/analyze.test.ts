@@ -13,6 +13,7 @@ import { MAX_FILE_SIZE } from "@/config/legalSystemPrompt";
 import mongoose from "mongoose";
 
 import { IUser } from "@/models/user.model";
+import { authService } from "@/lib/authUtils";
 
 (globalThis as unknown as Record<string, unknown>).mongooseCache = { conn: mongoose, promise: Promise.resolve(mongoose) };
 
@@ -35,7 +36,10 @@ describe("API Route: /api/analyze", () => {
 
   beforeEach(() => {
     mock.restoreAll();
-    globalThis.__mockAuthResult = { user: mockUser as unknown as IUser, errorResponse: null };
+    mock.method(authService, "getSession", async () => ({
+      user: { email: "test@example.com", name: "Test User" },
+    }));
+    mock.method(authService, "findUserByEmail", async () => mockUser as unknown as IUser);
 
     mock.method(Case, "create", async (data: Record<string, unknown>) => ({
       _id: { toString: () => "650000000000000000000010" },
@@ -45,14 +49,11 @@ describe("API Route: /api/analyze", () => {
   });
 
   afterEach(() => {
-    globalThis.__mockAuthResult = undefined;
+    mock.restoreAll();
   });
 
   it("should return 401 if user is unauthenticated", async () => {
-    globalThis.__mockAuthResult = {
-      user: null,
-      errorResponse: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
-    };
+    mock.method(authService, "getSession", async () => null);
 
     const formData = new FormData();
     formData.append("file", createDummyFile("contract.txt", "text/plain"));

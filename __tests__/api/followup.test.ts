@@ -13,6 +13,7 @@ import { ai } from "@/config/gemini";
 import mongoose from "mongoose";
 
 import { IUser } from "@/models/user.model";
+import { authService } from "@/lib/authUtils";
 
 (globalThis as unknown as Record<string, unknown>).mongooseCache = { conn: mongoose, promise: Promise.resolve(mongoose) };
 
@@ -58,18 +59,18 @@ describe("API Route: /api/case/[id]/followup", () => {
 
   beforeEach(() => {
     mock.restoreAll();
-    globalThis.__mockAuthResult = { user: mockUser as unknown as IUser, errorResponse: null };
+    mock.method(authService, "getSession", async () => ({
+      user: { email: "test@example.com", name: "Test User" },
+    }));
+    mock.method(authService, "findUserByEmail", async () => mockUser as unknown as IUser);
   });
 
   afterEach(() => {
-    globalThis.__mockAuthResult = undefined;
+    mock.restoreAll();
   });
 
   it("should return 401 if user is unauthenticated", async () => {
-    globalThis.__mockAuthResult = {
-      user: null,
-      errorResponse: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
-    };
+    mock.method(authService, "getSession", async () => null);
 
     const req = new NextRequest(`http://localhost:3000/api/case/${validCaseId}/followup`, {
       method: "POST",

@@ -16,21 +16,23 @@ export interface AuthUserResult {
 }
 
 
-declare global {
-  var __mockAuthResult: AuthUserResult | undefined;
-}
+export const authService = {
+  async getSession() {
+    return getServerSession(authOptions);
+  },
+  async findUserByEmail(email: string) {
+    await connectDB();
+    return User.findOne({ email });
+  },
+};
 
 /**
  * Authenticates the current server request and retrieves the corresponding database user.
  * Returns either `{ user, errorResponse: null }` on success or `{ user: null, errorResponse }` on failure.
  */
 export async function getAuthenticatedUser(): Promise<AuthUserResult> {
-  if (globalThis.__mockAuthResult !== undefined) {
-    return globalThis.__mockAuthResult;
-  }
-
   try {
-    const session = await getServerSession(authOptions);
+    const session = await authService.getSession();
     if (!session?.user?.email) {
       return {
         user: null,
@@ -41,8 +43,7 @@ export async function getAuthenticatedUser(): Promise<AuthUserResult> {
       };
     }
 
-    await connectDB();
-    const user = await User.findOne({ email: session.user.email });
+    const user = await authService.findUserByEmail(session.user.email);
     if (!user) {
       return {
         user: null,

@@ -70,7 +70,11 @@ export const CriticalPointsModal = React.memo(function CriticalPointsModal({
         {/* Modal Filter & Search Bar */}
         <div className="p-3 sm:p-4 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/30 dark:bg-slate-900/30 flex items-center justify-between gap-2 flex-wrap">
           <div className="flex-1 min-w-[140px]">
+            <label htmlFor="critical-points-search" className="sr-only">
+              Search critical points
+            </label>
             <input
+              id="critical-points-search"
               type="text"
               placeholder="Search critical points..."
               value={modalSearch}

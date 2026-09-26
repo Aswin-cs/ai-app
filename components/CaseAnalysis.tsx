@@ -371,7 +371,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
               className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
               aria-label="Close menu"
             >
-              <span className="material-symbols-outlined text-[22px]">close</span>
+              <span className="material-symbols-outlined text-[22px]" aria-hidden="true">close</span>
             </button>
           </div>
 
@@ -384,7 +384,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center gap-3 p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
               >
-                <span className="material-symbols-outlined text-indigo-600 text-[20px]">dashboard</span>
+                <span className="material-symbols-outlined text-indigo-600 text-[20px]" aria-hidden="true">dashboard</span>
                 <span>Dashboard / Case Overview</span>
               </Link>
             </div>
@@ -401,10 +401,10 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   className="w-full flex items-center justify-between p-3.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/80 font-bold transition-all"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[20px]">account_tree</span>
+                    <span className="material-symbols-outlined text-[20px]" aria-hidden="true">account_tree</span>
                     <span>Simulate What-If Scenarios</span>
                   </div>
-                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">chevron_right</span>
                 </button>
 
                 <button
@@ -416,10 +416,10 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   className="w-full flex items-center justify-between p-3.5 rounded-xl bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold disabled:opacity-50 transition-all"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-[20px] text-rose-500">picture_as_pdf</span>
+                    <span className="material-symbols-outlined text-[20px] text-rose-500" aria-hidden="true">picture_as_pdf</span>
                     <span>{isExporting ? "Exporting PDF..." : "Export Full PDF Report"}</span>
                   </div>
-                  <span className="material-symbols-outlined text-[18px]">download</span>
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">download</span>
                 </button>
               </div>
             </div>
@@ -436,7 +436,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                       : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700"
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[18px]">
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                     {showExecBox ? "visibility" : "visibility_off"}
                   </span>
                   <span>Exec Box</span>
@@ -450,7 +450,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                       : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700"
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[18px]">
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                     {showMeme ? "visibility" : "visibility_off"}
                   </span>
                   <span>Vibe Check</span>
@@ -464,7 +464,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                       : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700"
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[18px]">
+                  <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                     {soundEnabled ? "volume_up" : "volume_off"}
                   </span>
                   <span>{soundEnabled ? "Sound On" : "Muted"}</span>
@@ -632,7 +632,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   <div className="flex items-center justify-center gap-3 mt-3 text-[11px] text-slate-700 dark:text-slate-300 font-mono font-medium">
                     {analysis?.jurisdiction && (
                       <span className="flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[13px] text-slate-600 dark:text-slate-400">location_on</span>
+                        <span className="material-symbols-outlined text-[13px] text-slate-600 dark:text-slate-400" aria-hidden="true">location_on</span>
                         {analysis.jurisdiction}
                       </span>
                     )}
@@ -640,7 +640,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                       <>
                         <span className="text-slate-400 dark:text-slate-500">·</span>
                         <span className="flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[13px] text-slate-600 dark:text-slate-400">calendar_today</span>
+                          <span className="material-symbols-outlined text-[13px] text-slate-600 dark:text-slate-400" aria-hidden="true">calendar_today</span>
                           {analysis.effectiveDate}
                         </span>
                       </>
@@ -1389,7 +1389,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
                 }`}
               >
-                <span className="material-symbols-outlined text-[16px]">overview</span>
+                <span className="material-symbols-outlined text-[16px]" aria-hidden="true">overview</span>
                 <span>Overview &amp; Vibe Check</span>
               </button>
               <button
@@ -1401,7 +1401,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
                 }`}
               >
-                <span className="material-symbols-outlined text-[16px]">description</span>
+                <span className="material-symbols-outlined text-[16px]" aria-hidden="true">description</span>
                 <span>Full Document View</span>
               </button>
             </div>
@@ -1418,7 +1418,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   }`}>
                     <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-200/60 dark:border-slate-800">
                       <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-indigo-600 text-[20px]">analytics</span>
+                        <span className="material-symbols-outlined text-indigo-600 text-[20px]" aria-hidden="true">analytics</span>
                         <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100">Executive Risk Assessment</h2>
                       </div>
                       <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${
@@ -1460,7 +1460,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-4">
                   <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
                     <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-indigo-600 text-[20px]">auto_awesome</span>
+                      <span className="material-symbols-outlined text-indigo-600 text-[20px]" aria-hidden="true">auto_awesome</span>
                       <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100">AI Synthesis &amp; Document Summary</h2>
                     </div>
                     <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
@@ -1486,7 +1486,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                           className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1"
                         >
                           <span>{isSummaryExpanded ? "Show Less" : "Expand Summary"}</span>
-                          <span className="material-symbols-outlined text-[14px]">
+                          <span className="material-symbols-outlined text-[14px]" aria-hidden="true">
                             {isSummaryExpanded ? "expand_less" : "expand_more"}
                           </span>
                         </button>
@@ -1521,7 +1521,7 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-red-600 to-rose-700 text-white flex items-center justify-center shadow-md shrink-0">
-                      <span className="material-symbols-outlined text-[24px]">gavel</span>
+                      <span className="material-symbols-outlined text-[24px]" aria-hidden="true">gavel</span>
                     </div>
                     <div>
                       <div className="text-sm font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-2">
@@ -1535,14 +1535,14 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                       </p>
                     </div>
                   </div>
-                  <span className="material-symbols-outlined text-slate-400 text-[24px] shrink-0">open_in_new</span>
+                  <span className="material-symbols-outlined text-slate-400 text-[24px] shrink-0" aria-hidden="true">open_in_new</span>
                 </button>
 
                 {conversationMessages.length > 0 && (
                   <div className="rounded-2xl border border-indigo-200 dark:border-indigo-900 bg-white dark:bg-slate-900 p-4 shadow-sm space-y-3">
                     <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                       <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-indigo-600 text-[18px]">forum</span>
+                        <span className="material-symbols-outlined text-indigo-600 text-[18px]" aria-hidden="true">forum</span>
                         <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100">Conversation History</h2>
                       </div>
                       <span className="text-[10px] font-mono text-indigo-600 font-bold">
@@ -1588,11 +1588,11 @@ export default function CaseAnalysis({ caseId, user }: CaseAnalysisProps) {
                   <h2 className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{documentTitle}</h2>
                   <div className="flex items-center gap-2">
                     <button onClick={handleZoomOut} className="p-1 rounded bg-slate-100 dark:bg-slate-800 text-xs">
-                      <span className="material-symbols-outlined text-[14px]">remove</span>
+                      <span className="material-symbols-outlined text-[14px]" aria-hidden="true">remove</span>
                     </button>
                     <span className="font-mono text-xs">{zoomLevel}%</span>
                     <button onClick={handleZoomIn} className="p-1 rounded bg-slate-100 dark:bg-slate-800 text-xs">
-                      <span className="material-symbols-outlined text-[14px]">add</span>
+                      <span className="material-symbols-outlined text-[14px]" aria-hidden="true">add</span>
                     </button>
                   </div>
                 </div>

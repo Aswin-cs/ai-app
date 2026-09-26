@@ -14,4 +14,22 @@ describe("getAuthenticatedUser Helper", () => {
     assert.ok(result.errorResponse !== null);
     assert.strictEqual(result.errorResponse?.status, 401);
   });
+
+  it("should ignore globalThis.__mockAuthResult global bypass attempts", async () => {
+    // Attempting to set globalThis.__mockAuthResult bypass
+    (globalThis as any).__mockAuthResult = {
+      user: { _id: "hacked", name: "Hacker" } as any,
+      errorResponse: null,
+    };
+
+    try {
+      const result = await getAuthenticatedUser();
+      // Must not return the bypassed user
+      assert.notStrictEqual(result.user?.name, "Hacker");
+      assert.strictEqual(result.user, null);
+      assert.ok(result.errorResponse !== null);
+    } finally {
+      delete (globalThis as any).__mockAuthResult;
+    }
+  });
 });
