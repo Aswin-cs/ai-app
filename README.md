@@ -26,9 +26,7 @@ JurisAI is an AI-powered legal intelligence engine designed to provide rapid con
 - Retains full case context (extracted document text, flagged risks, original user prompt, and conversation history).
 - Generates structured answers with key takeaways, confidence ratings, and referenced clause tags.
 
-### 5. Server-Side Executive PDF Export
-- Generate high-resolution, print-ready PDF executive summaries via serverless Puppeteer rendering.
-- Features formatted party tables, statutory risk score badges, formatted clause boxes, and confidential document footers.
+
 
 ### 6. Enterprise-Grade Security & Performance
 - **XSS & HTML Sanitization**: Multi-layer HTML escaping across client components and PDF rendering pipelines.
