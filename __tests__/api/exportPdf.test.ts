@@ -5,7 +5,7 @@
 import { describe, it, beforeEach, afterEach, mock } from "node:test";
 import assert from "node:assert/strict";
 import { POST } from "@/app/api/export-pdf/route";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import mongoose from "mongoose";
 
 import { IUser } from "@/models/user.model";

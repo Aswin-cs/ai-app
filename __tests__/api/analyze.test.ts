@@ -6,7 +6,7 @@ import "../setupDom";
 import { describe, it, beforeEach, afterEach, mock } from "node:test";
 import assert from "node:assert/strict";
 import { POST } from "@/app/api/analyze/route";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import Case from "@/models/case.model";
 import { ai } from "@/config/gemini";
 import { MAX_FILE_SIZE } from "@/config/legalSystemPrompt";

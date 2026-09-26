@@ -17,8 +17,8 @@ describe("getAuthenticatedUser Helper", () => {
 
   it("should ignore globalThis.__mockAuthResult global bypass attempts", async () => {
     // Attempting to set globalThis.__mockAuthResult bypass
-    (globalThis as any).__mockAuthResult = {
-      user: { _id: "hacked", name: "Hacker" } as any,
+    (globalThis as Record<string, unknown>).__mockAuthResult = {
+      user: { _id: "hacked", name: "Hacker" },
       errorResponse: null,
     };
 
@@ -29,7 +29,7 @@ describe("getAuthenticatedUser Helper", () => {
       assert.strictEqual(result.user, null);
       assert.ok(result.errorResponse !== null);
     } finally {
-      delete (globalThis as any).__mockAuthResult;
+      delete (globalThis as Record<string, unknown>).__mockAuthResult;
     }
   });
 });

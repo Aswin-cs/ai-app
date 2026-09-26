@@ -5,7 +5,7 @@
 import { describe, it, beforeEach, afterEach, mock } from "node:test";
 import assert from "node:assert/strict";
 import { GET } from "@/app/api/cases/route";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import Case from "@/models/case.model";
 import mongoose from "mongoose";
 
