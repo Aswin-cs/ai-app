@@ -94,24 +94,8 @@ export default function MemeVibeCheck({
   onToggleVisible,
   layout = "wide",
 }: MemeVibeCheckProps) {
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const [showSimulator, setShowSimulator] = useState(false);
-  const [simulatedScore, setSimulatedScore] = useState<number | null>(null);
-
-  const activeScore = simulatedScore !== null ? simulatedScore : riskScore;
+  const activeScore = riskScore;
   const currentPhase = getMemePhase(activeScore);
-
-  // Escape listener for lightbox
-  useEffect(() => {
-    if (!isLightboxOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setIsLightboxOpen(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isLightboxOpen]);
 
   if (!isVisible) {
     return (
@@ -139,251 +123,82 @@ export default function MemeVibeCheck({
   }
 
   return (
-    <>
-      <div className={`h-full flex flex-col justify-between rounded-2xl border transition-all duration-300 group ${
-        layout === "wide"
-          ? "bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm border-white/80 dark:border-slate-800 shadow-2xs"
-          : "bg-gradient-to-br from-white via-indigo-50/20 to-purple-50/20 dark:from-slate-900 dark:via-slate-800/90 dark:to-slate-900 border-slate-200/90 dark:border-slate-800 shadow-[0_4px_20px_rgba(15,23,42,0.04)]"
-      } overflow-hidden`}>
-        {/* Card Header */}
-        <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between gap-2 shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-xs">
-              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">sentiment_very_satisfied</span>
-            </div>
-            <div>
-              <h3 className="text-xs font-bold text-[#0F172A] dark:text-slate-100 tracking-tight flex items-center gap-1.5">
-                Legal Vibe Check
-                {simulatedScore !== null ? (
-                  <span className="text-[10px] font-mono font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/80 px-1.5 py-0.5 rounded border border-amber-300 dark:border-amber-800/60 animate-pulse">
-                    Simulator Mode
-                  </span>
-                ) : (
-                  <span className="text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 px-1.5 py-0.5 rounded border border-indigo-200/60 dark:border-indigo-800/60">
-                    AI Meme
-                  </span>
-                )}
-              </h3>
-            </div>
+    <div className={`h-full flex flex-col justify-between rounded-2xl border transition-all duration-300 group ${
+      layout === "wide"
+        ? "bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm border-white/80 dark:border-slate-800 shadow-2xs"
+        : "bg-gradient-to-br from-white via-indigo-50/20 to-purple-50/20 dark:from-slate-900 dark:via-slate-800/90 dark:to-slate-900 border-slate-200/90 dark:border-slate-800 shadow-[0_4px_20px_rgba(15,23,42,0.04)]"
+    } overflow-hidden`}>
+      {/* Card Header */}
+      <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between gap-2 shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-xs">
+            <span className="material-symbols-outlined text-[16px]" aria-hidden="true">sentiment_very_satisfied</span>
           </div>
-
-          <div className="flex items-center gap-1.5">
-            {/* Simulator Toggle Button */}
-            <button
-              type="button"
-              onClick={() => setShowSimulator(!showSimulator)}
-              aria-label="Toggle Risk Score Simulator"
-              className={`px-2 py-1 rounded-lg text-[10px] font-semibold border transition-all flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-                showSimulator || simulatedScore !== null
-                  ? "bg-amber-50 dark:bg-amber-950/70 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800/60 shadow-xs"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-200/70 dark:hover:bg-slate-700"
-              }`}
-              title="Toggle Score Simulator"
-            >
-              <span className="material-symbols-outlined text-[13px]" aria-hidden="true">tune</span>
-              <span>Test Slider</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={onToggleVisible}
-              aria-label="Hide Legal Vibe Check section"
-              className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-1 text-[11px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-              title="Hide Meme Section"
-            >
-              <span className="material-symbols-outlined text-[16px]" aria-hidden="true">visibility_off</span>
-            </button>
+          <div>
+            <h3 className="text-xs font-bold text-[#0F172A] dark:text-slate-100 tracking-tight flex items-center gap-1.5">
+              Legal Vibe Check
+              <span className="text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 px-1.5 py-0.5 rounded border border-indigo-200/60 dark:border-indigo-800/60">
+                AI Meme
+              </span>
+            </h3>
           </div>
         </div>
 
-        {/* Simulator Control Drawer */}
-        {showSimulator && (
-          <div className="bg-amber-50/90 dark:bg-amber-950/90 border-b border-amber-200/80 dark:border-amber-800/80 p-3.5 space-y-2.5 text-xs animate-fade-in shrink-0">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-amber-900 dark:text-amber-200 font-bold text-[11px] uppercase tracking-wider">
-                <span className="material-symbols-outlined text-[15px] text-amber-600 dark:text-amber-400" aria-hidden="true">science</span>
-                <span>Critical Score Test Simulator</span>
-              </div>
-              {simulatedScore !== null && (
-                <button
-                  type="button"
-                  onClick={() => setSimulatedScore(null)}
-                  className="text-[10px] text-amber-800 dark:text-amber-300 underline hover:text-amber-950 font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-500"
-                >
-                  Reset to Actual ({riskScore})
-                </button>
-              )}
-            </div>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={onToggleVisible}
+            aria-label="Hide Legal Vibe Check section"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-1 text-[11px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            title="Hide Meme Section"
+          >
+            <span className="material-symbols-outlined text-[16px]" aria-hidden="true">visibility_off</span>
+          </button>
+        </div>
+      </div>
 
-            {/* Range Slider with Accessible Label & Live Value Announcement */}
-            <div className="space-y-1.5">
-              <div className="flex justify-between items-center text-[11px] font-mono">
-                <label htmlFor="meme-simulated-score-range" className="text-amber-800 dark:text-amber-300 cursor-pointer">
-                  Adjust Score:
-                </label>
-                <span className="font-extrabold text-amber-950 dark:text-amber-100 bg-amber-200/70 dark:bg-amber-900/80 px-2 py-0.5 rounded">
-                  {activeScore} / 100 ({currentPhase.title.split(":")[0]})
+      {/* Card Content */}
+      <div className="p-4 flex-1 flex flex-col justify-center">
+        {layout === "wide" ? (
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
+            {/* Meme Image Frame */}
+            <div className="sm:col-span-5 relative rounded-xl overflow-hidden border border-slate-200/90 dark:border-slate-700/80 shadow-xs bg-slate-900">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={currentPhase.image}
+                alt={currentPhase.title}
+                className="w-full h-40 sm:h-44 object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex flex-col justify-end p-2.5 pointer-events-none">
+                <span className="text-[11px] font-bold text-white drop-shadow-md">
+                  {currentPhase.vibeText}
                 </span>
               </div>
-              <input
-                id="meme-simulated-score-range"
-                type="range"
-                min="0"
-                max="100"
-                step="1"
-                value={activeScore}
-                onChange={(e) => setSimulatedScore(Number(e.target.value))}
-                aria-label="Adjust simulated risk score threshold"
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={activeScore}
-                aria-valuetext={`${activeScore} out of 100 risk score, ${currentPhase.title.split(":")[0]}`}
-                className="w-full h-2 bg-amber-200 dark:bg-amber-900 rounded-lg appearance-none cursor-pointer accent-amber-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-2"
-              />
             </div>
 
-            {/* Quick Phase Presets */}
-            <div className="flex flex-wrap gap-1 pt-1">
-              {[
-                { phase: 1, score: 10 },
-                { phase: 2, score: 25 },
-                { phase: 3, score: 38 },
-                { phase: 4, score: 50 },
-                { phase: 5, score: 65 },
-                { phase: 6, score: 80 },
-                { phase: 7, score: 95 },
-              ].map((p) => (
-                <button
-                  key={p.phase}
-                  type="button"
-                  onClick={() => setSimulatedScore(p.score)}
-                  aria-label={`Jump to Phase ${p.phase} (Score ${p.score})`}
-                  className={`px-2 py-0.5 text-[10px] font-mono rounded border transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-600 ${
-                    currentPhase.phase === p.phase
-                      ? "bg-amber-700 text-white border-amber-800 font-bold"
-                      : "bg-white dark:bg-slate-800 text-amber-900 dark:text-amber-200 border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/60"
-                  }`}
-                >
-                  P{p.phase} ({p.score})
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Card Content */}
-        <div className="p-4 flex-1 flex flex-col justify-center">
-          {layout === "wide" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center">
-              {/* Meme Image Frame */}
-              <div
-                tabIndex={0}
-                role="button"
-                aria-label={`Expand ${currentPhase.title} meme preview`}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setIsLightboxOpen(true); }}
-                className="sm:col-span-5 relative rounded-xl overflow-hidden border border-slate-200/90 dark:border-slate-700/80 shadow-xs bg-slate-900 group/img cursor-pointer transition-transform hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                onClick={() => setIsLightboxOpen(true)}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={currentPhase.image}
-                  alt={currentPhase.title}
-                  className="w-full h-40 sm:h-44 object-cover object-center group-hover/img:scale-105 transition-transform duration-500 ease-out"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex flex-col justify-end p-2.5 pointer-events-none">
-                  <span className="text-[11px] font-bold text-white drop-shadow-md">
-                    {currentPhase.vibeText}
-                  </span>
-                </div>
-                <div className="absolute top-2 right-2 opacity-0 group-hover/img:opacity-100 transition-opacity bg-slate-900/80 text-white p-1 rounded-md backdrop-blur-md">
-                  <span className="material-symbols-outlined text-[14px]" aria-hidden="true">fullscreen</span>
-                </div>
-              </div>
-
-              {/* Phase Info & Progress Meter */}
-              <div className="sm:col-span-7 flex flex-col justify-between space-y-3">
-                <div>
-                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                    <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full border ${currentPhase.badgeBg}`}>
-                      {currentPhase.title}
-                    </span>
-                    <span className="text-[10px] font-mono text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 px-2 py-0.5 rounded border border-indigo-200 dark:border-indigo-800">
-                      Score: {activeScore}/100
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                    {currentPhase.subtitle}
-                  </p>
-                </div>
-
-                {/* Phase Progress Bar */}
-                <div className="space-y-1.5 pt-1">
-                  <div className="flex justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400">
-                    <span>Phase {currentPhase.phase} of 7</span>
-                    <span>Score Index: {activeScore}%</span>
-                  </div>
-                  <div className="w-full h-2.5 bg-slate-200/80 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-200 dark:border-slate-700">
-                    <div
-                      className={`h-full rounded-full bg-gradient-to-r ${currentPhase.meterGradient} transition-all duration-700 shadow-xs`}
-                      style={{ width: `${Math.max(5, (currentPhase.phase / 7) * 100)}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {/* Phase Banner */}
-              <div className="flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full border ${currentPhase.badgeBg} inline-block mb-1`}>
+            {/* Phase Info & Progress Meter */}
+            <div className="sm:col-span-7 flex flex-col justify-between space-y-3">
+              <div>
+                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                  <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full border ${currentPhase.badgeBg}`}>
                     {currentPhase.title}
                   </span>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug line-clamp-2">
-                    {currentPhase.subtitle}
-                  </p>
+                  <span className="text-[10px] font-mono text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/70 px-2 py-0.5 rounded border border-indigo-200 dark:border-indigo-800">
+                    Score: {activeScore}/100
+                  </span>
                 </div>
-              </div>
-
-              {/* Meme Image Frame */}
-              <div
-                tabIndex={0}
-                role="button"
-                aria-label={`Expand ${currentPhase.title} meme preview`}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setIsLightboxOpen(true); }}
-                className="relative rounded-xl overflow-hidden border border-slate-200/90 dark:border-slate-700/80 shadow-xs bg-slate-900 group/img cursor-pointer transition-transform hover:scale-[1.01] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                onClick={() => setIsLightboxOpen(true)}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={currentPhase.image}
-                  alt={currentPhase.title}
-                  className="w-full h-48 sm:h-52 object-cover object-center group-hover/img:scale-105 transition-transform duration-500 ease-out"
-                />
-
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex flex-col justify-end p-3 pointer-events-none">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-white drop-shadow-md">
-                      {currentPhase.vibeText}
-                    </span>
-                    <span className="text-[10px] font-mono text-indigo-200 bg-slate-900/80 backdrop-blur-md px-2 py-0.5 rounded border border-white/20">
-                      Critical Score: {activeScore}/100
-                    </span>
-                  </div>
-                </div>
-
-                <div className="absolute top-2 right-2 opacity-0 group-hover/img:opacity-100 transition-opacity bg-slate-900/80 text-white p-1.5 rounded-lg backdrop-blur-md">
-                  <span className="material-symbols-outlined text-[16px]" aria-hidden="true">fullscreen</span>
-                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                  {currentPhase.subtitle}
+                </p>
               </div>
 
               {/* Phase Progress Bar */}
-              <div className="space-y-1">
+              <div className="space-y-1.5 pt-1">
                 <div className="flex justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400">
                   <span>Phase {currentPhase.phase} of 7</span>
                   <span>Score Index: {activeScore}%</span>
                 </div>
-                <div className="w-full h-2 bg-slate-200/80 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-200 dark:border-slate-700">
+                <div className="w-full h-2.5 bg-slate-200/80 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-200 dark:border-slate-700">
                   <div
                     className={`h-full rounded-full bg-gradient-to-r ${currentPhase.meterGradient} transition-all duration-700 shadow-xs`}
                     style={{ width: `${Math.max(5, (currentPhase.phase / 7) * 100)}%` }}
@@ -391,54 +206,58 @@ export default function MemeVibeCheck({
                 </div>
               </div>
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* Lightbox Preview Modal */}
-      {isLightboxOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="meme-lightbox-title"
-          className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setIsLightboxOpen(false)}
-        >
-          <div
-            className="relative max-w-xl w-full bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-              <div>
-                <h3 id="meme-lightbox-title" className="font-bold text-sm text-[#0F172A]">{currentPhase.title}</h3>
-                <p className="text-xs text-slate-500">{currentPhase.vibeText}</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {/* Phase Banner */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full border ${currentPhase.badgeBg} inline-block mb-1`}>
+                  {currentPhase.title}
+                </span>
+                <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug line-clamp-2">
+                  {currentPhase.subtitle}
+                </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsLightboxOpen(false)}
-                aria-label="Close meme preview"
-                className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-              >
-                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">close</span>
-              </button>
             </div>
 
-            <div className="p-4 bg-slate-900 flex justify-center">
+            {/* Meme Image Frame */}
+            <div className="relative rounded-xl overflow-hidden border border-slate-200/90 dark:border-slate-700/80 shadow-xs bg-slate-900">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={currentPhase.image}
                 alt={currentPhase.title}
-                className="max-h-[70vh] w-auto object-contain rounded-lg shadow-lg"
+                className="w-full h-48 sm:h-52 object-cover object-center"
               />
+
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex flex-col justify-end p-3 pointer-events-none">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-white drop-shadow-md">
+                    {currentPhase.vibeText}
+                  </span>
+                  <span className="text-[10px] font-mono text-indigo-200 bg-slate-900/80 backdrop-blur-md px-2 py-0.5 rounded border border-white/20">
+                    Critical Score: {activeScore}/100
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <div className="p-4 bg-white flex items-center justify-between text-xs text-slate-600">
-              <span>Critical Score: <strong className="text-indigo-600 font-mono">{activeScore}/100</strong></span>
-              {criticalCount > 0 && <span>Flagged Critical Clauses: <strong className="text-rose-600">{criticalCount}</strong></span>}
+            {/* Phase Progress Bar */}
+            <div className="space-y-1">
+              <div className="flex justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400">
+                <span>Phase {currentPhase.phase} of 7</span>
+                <span>Score Index: {activeScore}%</span>
+              </div>
+              <div className="w-full h-2 bg-slate-200/80 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-200 dark:border-slate-700">
+                <div
+                  className={`h-full rounded-full bg-gradient-to-r ${currentPhase.meterGradient} transition-all duration-700 shadow-xs`}
+                  style={{ width: `${Math.max(5, (currentPhase.phase / 7) * 100)}%` }}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </>
+        )}
+      </div>
+    </div>
   );
 }

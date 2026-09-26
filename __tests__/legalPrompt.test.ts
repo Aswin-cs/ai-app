@@ -9,6 +9,7 @@ import {
   MAX_FILE_SIZE,
   LEGAL_SYSTEM_INSTRUCTION,
 } from "@/config/legalSystemPrompt";
+import { FOLLOWUP_SYSTEM_INSTRUCTION } from "@/config/followupSystemPrompt";
 
 describe("Legal System Configuration & File Constraints", () => {
   it("should define supported file extensions with correct MIME types and categories", () => {
@@ -42,5 +43,7 @@ describe("Legal System Configuration & File Constraints", () => {
     assert.ok(LEGAL_SYSTEM_INSTRUCTION.includes("45% RULE"));
     assert.ok(LEGAL_SYSTEM_INSTRUCTION.includes("critical"));
     assert.ok(LEGAL_SYSTEM_INSTRUCTION.includes("warning"));
+    assert.ok(LEGAL_SYSTEM_INSTRUCTION.includes("STRICT SCOPE BOUNDARY"));
+    assert.ok(FOLLOWUP_SYSTEM_INSTRUCTION.includes("STRICT SCOPE BOUNDARY"));
   });
 });
